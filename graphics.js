@@ -72,7 +72,7 @@
     c.fillStyle='#ffffff04';for(let y=T;y<B;y+=5)c.fillRect(L,y,R-L,1);
     // Fine speckle is deterministic and cached once per resize.
     c.fillStyle='#eff8de12';for(let i=0;i<650;i++)c.fillRect(L+((i*73)%997)/997*(R-L),T+((i*137)%991)/991*(B-T),1,1);
-    const sl=L+(R-L)*.18,sr=R-(R-L)*.18,u=T+(N-T)*.58,l=N+(B-N)*.42;
+    const sl=L+(R-L)*.18,sr=R-(R-L)*.18,u=T+(B-T)*.21,l=T+(B-T)*.79;
     c.strokeStyle='#eff2d8';c.lineWidth=1.8;c.strokeRect(L,T,R-L,B-T);
     for(const p of [[[sl,T],[sl,B]],[[sr,T],[sr,B]],[[sl,u],[sr,u]],[[sl,l],[sr,l]],[[(L+R)/2,u],[(L+R)/2,l]]])line(c,p,'#edf4df',1.7);
     // Fence posts and mesh down both sides.

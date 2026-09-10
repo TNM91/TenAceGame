@@ -2,6 +2,21 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.5 — Find your rhythm
+
+- Ball flight now has height, gravity, surface rebounds, and net collision. Line calls use the first landing position inside the painted singles lines. A second bounce awards the hitter the point.
+- Service landings must be in the diagonal service box. Player faults get a second serve; double faults lose the point. Server still alternates each point under the prototype's first-to-seven rules. Each server switches court sides on their next service turn.
+- Wide, Body, and Down the T placement controls with a visible target on court. The existing practice drill remains a timing exercise.
+- Return after one bounce. A 200 ms input buffer accepts slightly early swings; the contact zone follows your player. Arrow-key and swipe controls remain supported.
+- Both players anticipate landing positions and adjust depth. Jax recovers more quickly and attacks the open court in longer rallies, with placement errors increasing under pressure and fatigue.
+- Ball shadows and height now follow simulation. Bounce rings, contact feedback, and shot-specific rebounds make rallies easier to read.
+- Optional synthesized hit, bounce, net, footstep, and point sounds. Sound starts off; toggle it in the court toolbar. Mute preference persists separately from career data. Browser audio support and device volume still apply.
+- Arcade simplifications: no volleys, service lets, spin aerodynamics, or regulation game/set scoring. This release retains one rival and the existing court.
+
+Tests: `node --test --test-isolation=none physics.test.cjs progression.test.cjs character.test.cjs game.test.cjs sound.test.cjs`.
+
+Coverage includes line/net calls at multiple frame rates, service boxes, double faults, legal return windows, sustained rallies, sound mute behavior, and earlier progression/customization checks.
+
 ## 0.4 — Your court. Your style.
 
 - Player studio with a live animated preview: name, five skin tones, five hairstyles, five hair colors, shirt and shorts palettes, racket color, and three frame shapes.

@@ -8,12 +8,12 @@ const html = fs.readFileSync('index.html', 'utf8');
 
 // Run the shipped game loop with a deterministic clock and a small DOM adapter.
 // No test-only entry points or cheats are added to the production game.
-function boot(storage = new Map(), blocked = false) {
+function boot(storage = new Map(), blocked = false, random = .5) {
   let now = 0, frame;
   const context2d = new Proxy({}, { get: () => () => {} });
   function element(classes = '') {
     const list = new Set(classes.split(' '));
-    return { style: {}, dataset: {}, textContent: '', disabled: false,
+    return { style: {}, dataset: {}, textContent: '', disabled: false, setAttribute(){},
       classList: { add: x => list.add(x), remove: x => list.delete(x), contains: x => list.has(x),
         toggle: (x, on) => on ? list.add(x) : list.delete(x) },
       querySelector: () => ({ textContent: '' }), clientWidth: 390, clientHeight: 500,
@@ -29,12 +29,13 @@ function boot(storage = new Map(), blocked = false) {
   const shots = ['slice', 'topspin', 'flat', 'lob'].map(key => {
     const el = element('shot'); el.dataset.shot = key; return el;
   });
+  const listeners={};
   const document = { createElement: () => element(), getElementById: id => ids[id], querySelector: () => element(),
     querySelectorAll: selector => selector === '.modal' ? modals : selector === '.shot' ? shots : upgrades,
-    addEventListener() {} };
-  const math = Object.create(Math); math.random = () => .5;
+    addEventListener(name,fn) {listeners[name]=fn;} };
+  const math = Object.create(Math); math.random = () => random;
   vm.runInNewContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], {
-    document, window: { TenAceProgression: Progress, TenAceCharacter: Character, TenAceGraphics: {person(){},court(){},net(){}} }, Math: math,
+    document, window: { TenAceProgression: Progress, TenAceCharacter: Character, TenAcePhysics:require('./physics.js'),TenAceSound:{enabled:false,unlock(){},set(){},play(){}}, TenAceGraphics: {person(){},court(){},net(){}} }, Math: math,
     localStorage: { getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => { if (blocked) throw Error('storage blocked'); storage.set(key, value); } },
     performance: { now: () => now }, navigator: {}, devicePixelRatio: 1,
@@ -42,6 +43,7 @@ function boot(storage = new Map(), blocked = false) {
     setTimeout: () => 1, clearTimeout() {},
   });
   return { ids, upgrades, storage,
+    press(key){listeners.keydown({key,preventDefault(){}});},
     tick(ms = 16) { now += ms; frame(now); },
     runUntil(predicate, limit = 20000) {
       for (let i = 0; i < limit && !predicate(); i++) { now += 16; frame(now); }
@@ -72,6 +74,26 @@ test('completed matches pay once, purchases persist, and reload does not pay aga
   const reloaded = boot(game.storage);
   assert.match(reloaded.ids.careerDetail.textContent, /Power 1/);
   assert.equal(JSON.parse(game.storage.get(Progress.KEY)).xp, before.xp);
+});
+test('keyboard returns sustain a rally under the shipped physics and opponent movement',()=>{
+ const game=boot();game.ids.startBtn.onclick();
+ for(let i=0;i<2400;i++){
+  if(game.ids.serveUI.classList.contains('show'))game.ids.tapServe.onclick();
+  if(i%6===0)game.press('ArrowUp');
+  game.tick();
+ }
+ game.runUntil(()=>{if(game.ids.serveUI.classList.contains('show'))game.ids.tapServe.onclick();return game.ids.result.classList.contains('show');});
+ const save=JSON.parse(game.storage.get(Progress.KEY));
+ assert.ok(save.bestRally>=6,`expected a sustained rally, got ${save.bestRally}`);
+});
+test('first service fault replays without scoring and second fault awards the receiver',()=>{
+ const game=boot(new Map(),false,0);game.ids.startBtn.onclick();
+ game.runUntil(()=>game.ids.serveUI.classList.contains('show'));game.ids.tapServe.onclick();
+ game.runUntil(()=>game.ids.toast.textContent.includes('FAULT'));
+ assert.equal(Number(game.ids.oScore.textContent),0);
+ game.runUntil(()=>game.ids.serveUI.classList.contains('show'));game.ids.tapServe.onclick();
+ game.runUntil(()=>Number(game.ids.oScore.textContent)===1);
+ assert.match(game.ids.toast.textContent,/double fault/);
 });
 test('pause freezes serve input, leave cancels the session, and practice saves its record without XP', () => {
   const game = boot();

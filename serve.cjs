@@ -10,6 +10,8 @@ const files = {
   '/progression.js': ['progression.js', 'text/javascript; charset=utf-8'],
   '/character.js': ['character.js', 'text/javascript; charset=utf-8'],
   '/graphics.js': ['graphics.js', 'text/javascript; charset=utf-8'],
+  '/physics.js': ['physics.js', 'text/javascript; charset=utf-8'],
+  '/sound.js': ['sound.js', 'text/javascript; charset=utf-8'],
 };
 
 http.createServer((req, res) => {
