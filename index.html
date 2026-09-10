@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"/>
+<meta name="theme-color" content="#06131f"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>TenAce — Prototype 0.2</title>
+<link rel="manifest" href="./manifest.webmanifest"/>
+<style>
+:root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#02070c;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;overflow:hidden}
+button{font:inherit}
+#app{width:min(100vw,520px);height:100dvh;margin:auto;position:relative;overflow:hidden;background:linear-gradient(#06131f,#020a11);touch-action:none}
+header{height:16.5%;min-height:118px;padding:calc(env(safe-area-inset-top) + 8px) 13px 8px;background:linear-gradient(180deg,#03101bfa,#082034ee);border-bottom:1px solid #1c3e56;position:relative;z-index:5}
+.brandrow{display:flex;align-items:center;justify-content:space-between;height:41px;gap:8px}
+.brandrow img{height:38px;max-width:58%;object-fit:contain;object-position:left center}
+.story{font-size:9px;text-align:right;color:#a8bdcd;letter-spacing:.11em;text-transform:uppercase;line-height:1.35}
+.story b{display:block;color:var(--green);font-size:11px}
+.hud{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:7px;margin-top:5px}
+.card{background:#0b263aeb;border:1px solid #2f526c;border-radius:11px;padding:7px 9px;min-width:0}
+.card.r{text-align:right}
+.namerow{display:flex;align-items:center;justify-content:space-between;font-weight:850;font-size:13px}
+.r .namerow{flex-direction:row-reverse}
+.sub{font-size:8px;color:#9eb1c2;text-transform:uppercase;letter-spacing:.05em;margin-top:2px}
+.meter{height:6px;background:#04101a;border:1px solid #2e4c61;border-radius:8px;margin-top:5px;overflow:hidden}
+.meter span{height:100%;display:block;background:linear-gradient(90deg,var(--green2),var(--green))}
+.meter.iq span{background:linear-gradient(90deg,#27a8f4,#5ee8ff)}
+.score{display:grid;grid-template-columns:35px 35px;grid-template-rows:27px 27px;gap:2px;background:#040e17;border:1px solid #355269;border-radius:9px;padding:3px}
+.score div{display:grid;place-items:center;background:#0b2234;border-radius:4px;font-weight:950;font-size:15px}
+.score .active{outline:2px solid var(--green);color:var(--green)}
+#gameWrap{height:69.5%;position:relative}
+canvas{display:block;width:100%;height:100%;background:#4e895b}
+.toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:#03111de8;border:1px solid #3b596e;border-radius:999px;padding:7px 11px;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.05em;opacity:0;transition:.15s opacity;white-space:nowrap;z-index:3}
+.toast.show{opacity:1}
+#serveUI{position:absolute;inset:0;display:none;z-index:4;align-items:flex-end;justify-content:center;padding-bottom:19px;background:linear-gradient(180deg,transparent 65%,rgba(2,8,13,.38))}
+#serveUI.show{display:flex}
+.servebox{width:88%;background:#071b2bea;border:1px solid #36546c;border-radius:18px;padding:10px 12px;text-align:center}
+.serveTitle{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.09em}
+.tossbar{height:14px;background:#03101a;border-radius:999px;margin:8px 0 5px;position:relative;overflow:hidden;border:1px solid #2d4a60}
+.tosszone{position:absolute;left:42%;width:16%;height:100%;background:rgba(155,225,29,.28);border-left:1px solid var(--green);border-right:1px solid var(--green)}
+#needle{position:absolute;top:0;width:4px;height:100%;background:white;border-radius:3px}
+.serveHint{font-size:9px;color:#a8b9c8}
+#tapServe{margin-top:8px;width:100%;border:0;border-radius:11px;background:var(--green);color:#09200b;font-weight:950;padding:10px}
+.controls{height:14%;min-height:106px;padding:8px 10px calc(env(safe-area-inset-bottom) + 6px);display:grid;grid-template-columns:repeat(4,1fr);gap:7px;background:linear-gradient(#06131f,#02080d);border-top:1px solid #27465d}
+.shot{border:1px solid #31516a;background:linear-gradient(#102c42,#071723);color:#fff;border-radius:17px;font-size:10px;font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.shot .i{font-size:21px}.shot small{color:#89a0b2;font-size:7px}.shot.active{outline:2px solid var(--green);border-color:var(--green)}
+.modal{position:absolute;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:22px;background:#01070bdc;backdrop-filter:blur(7px)}
+.modal.show{display:flex}
+.panel{width:100%;background:linear-gradient(#0e2c43,#061722);border:1px solid #365670;border-radius:22px;padding:18px;box-shadow:0 24px 80px #0009}
+.eyebrow{color:var(--green);font-size:10px;text-transform:uppercase;letter-spacing:.13em;font-weight:900}
+h1{margin:4px 0;font-size:25px}.copy{font-size:12px;color:#a9bbca;line-height:1.5}
+.rivalQuote{margin:13px 0;padding:11px;border-left:3px solid var(--green);background:#061826;border-radius:0 10px 10px 0;font-size:12px;font-style:italic}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.stat{border:1px solid #33536c;background:#092137;border-radius:12px;color:#fff;text-align:left;padding:10px}
+.stat b{display:block;font-size:14px}.stat span{font-size:9px;color:var(--green)}
+.primary{width:100%;border:0;background:var(--green);color:#09210b;border-radius:12px;padding:12px;margin-top:14px;font-weight:950}
+#intro.show{display:flex}
+</style>
+</head>
+<body>
+<div id="app">
+<header>
+  <div class="brandrow">
+    <img src="./tenaceiq-logo.png" alt="TenAceIQ"/>
+    <div class="story"><b>Road to #1</b>Chapter 1 · Riverdale Public Courts</div>
+  </div>
+  <div class="hud">
+    <div class="card">
+      <div class="namerow"><span id="youName">You</span><span>Lv 1</span></div>
+      <div class="sub">The Unknown</div>
+      <div class="meter"><span id="pStamBar" style="width:100%"></span></div>
+      <div class="meter iq"><span id="pIqBar" style="width:35%"></span></div>
+    </div>
+    <div class="score">
+      <div id="pScore" class="active">0</div><div id="oScore">0</div>
+      <div>7</div><div>PTS</div>
+    </div>
+    <div class="card r">
+      <div class="namerow"><span>Jax Mercer</span><span>Lv 2</span></div>
+      <div class="sub">Local Court King</div>
+      <div class="meter"><span id="oStamBar" style="width:100%"></span></div>
+      <div class="meter iq"><span style="width:42%"></span></div>
+    </div>
+  </div>
+</header>
+<main id="gameWrap">
+  <canvas id="game"></canvas>
+  <div id="toast" class="toast"></div>
+  <div id="serveUI">
+    <div class="servebox">
+      <div class="serveTitle">Your Serve · Tap in the green</div>
+      <div class="tossbar"><div class="tosszone"></div><div id="needle"></div></div>
+      <div class="serveHint">Better timing = more pace and placement</div>
+      <button id="tapServe">TAP TO SERVE</button>
+    </div>
+  </div>
+</main>
+<section class="controls">
+  <button class="shot" data-shot="slice"><span class="i">↘</span>SLICE<small>safe + low</small></button>
+  <button class="shot active" data-shot="topspin"><span class="i">↗</span>TOPSPIN<small>heavy + deep</small></button>
+  <button class="shot" data-shot="flat"><span class="i">━</span>FLAT<small>fast + risky</small></button>
+  <button class="shot" data-shot="lob"><span class="i">⌒</span>LOB<small>reset point</small></button>
+</section>
+
+<div id="intro" class="modal show">
+ <div class="panel">
+   <div class="eyebrow">Prototype 0.2 · First Rival</div>
+   <h1>Jax owns these courts.</h1>
+   <div class="copy">At least, that's what he tells everyone. Beat him to 7 points to earn your first level and unlock the start of your TenAce story.</div>
+   <div class="rivalQuote">“Nice gear. Shame the racquet can't hit the ball for you.” — Jax</div>
+   <button id="startBtn" class="primary">Challenge Jax</button>
+ </div>
+</div>
+
+<div id="result" class="modal">
+ <div class="panel">
+   <div class="eyebrow">Match Complete · +120 XP</div>
+   <h1 id="resultTitle">Level Up</h1>
+   <div id="resultCopy" class="copy"></div>
+   <div class="rivalQuote" id="resultQuote"></div>
+   <div class="stats">
+     <button class="stat" data-up="power"><b>Power +1</b><span>More depth and pace</span></button>
+     <button class="stat" data-up="control"><b>Control +1</b><span>Bigger timing window</span></button>
+     <button class="stat" data-up="speed"><b>Speed +1</b><span>Faster auto-positioning</span></button>
+     <button class="stat" data-up="iq"><b>Tennis IQ +1</b><span>Read shots earlier</span></button>
+   </div>
+   <button id="again" class="primary">Rematch Jax</button>
+ </div>
+</div>
+</div>
+
+<script>
+(() => {
+const C=document.getElementById('game'),ctx=C.getContext('2d'),wrap=document.getElementById('gameWrap');
+const toast=document.getElementById('toast'),serveUI=document.getElementById('serveUI'),needle=document.getElementById('needle');
+const pScoreEl=document.getElementById('pScore'),oScoreEl=document.getElementById('oScore');
+const pStamBar=document.getElementById('pStamBar'),oStamBar=document.getElementById('oStamBar'),pIqBar=document.getElementById('pIqBar');
+let W=0,H=0,dpr=1,last=performance.now(),selected='topspin',swipe=null;
+let pScore=0,oScore=0,target=7,rally=0,pStam=100,oStam=100,iq=35;
+let point=false,server='player',servePending=false,nextPoint=Infinity,servePhase=0;
+let selectedUpgrade=null;
+const player={x:.5,y:.86,tx:.5},opp={x:.5,y:.16,tx:.5};
+const ball={x:.5,y:.82,vx:0,vy:0,active:false,last:'player',trail:[],bounce:false};
+const court={};
+
+function vib(ms=20){try{navigator.vibrate?.(ms)}catch{}}
+function resize(){dpr=Math.min(devicePixelRatio||1,2);W=wrap.clientWidth;H=wrap.clientHeight;C.width=W*dpr;C.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
+court.L=W*.09;court.R=W*.91;court.T=H*.055;court.B=H*.96;court.N=H*.5}
+addEventListener('resize',resize);resize();
+
+function say(t,ms=850){toast.textContent=t;toast.classList.add('show');clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove('show'),ms)}
+function updateBars(){pStamBar.style.width=pStam+'%';oStamBar.style.width=oStam+'%';pIqBar.style.width=iq+'%'}
+function px(v){return court.L+v*(court.R-court.L)} function py(v){return court.T+v*(court.B-court.T)}
+function beginPoint(){
+  rally=0;point=true;ball.trail=[];ball.bounce=false;
+  if(server==='player'){
+    servePending=true;servePhase=0;serveUI.classList.add('show');ball.active=false;
+    ball.x=.53;ball.y=.83;say('Your serve');
+  }else{
+    servePending=false;serveUI.classList.remove('show');ball.active=true;ball.last='opp';
+    ball.x=.47;ball.y=.19;
+    const tx=.22+Math.random()*.56,ty=.75+Math.random()*.12;
+    setVelocity(tx,ty,.56); say('Jax serves');
+  }
+}
+function setVelocity(tx,ty,speed){const d=Math.hypot(tx-ball.x,ty-ball.y)||1;ball.vx=(tx-ball.x)/d*speed;ball.vy=(ty-ball.y)/d*speed}
+function schedulePoint(){server=server==='player'?'opp':'player';nextPoint=performance.now()+1050}
+function award(who,reason){
+ if(!point)return;point=false;ball.active=false;serveUI.classList.remove('show');
+ if(who==='player')pScore++;else oScore++;
+ pScoreEl.textContent=pScore;oScoreEl.textContent=oScore;
+ pStam=Math.min(100,pStam+7);oStam=Math.min(100,oStam+7);updateBars();
+ say((who==='player'?'TenAce point':'Jax point')+(reason?' · '+reason:''),1000);vib(who==='player'?[15,30,25]:18);
+ if(pScore>=target||oScore>=target)setTimeout(endMatch,950);else schedulePoint();
+}
+function endMatch(){
+ const win=pScore>oScore;
+ document.getElementById('resultTitle').textContent=win?'You knocked off the Court King.':'Jax survives.';
+ document.getElementById('resultCopy').textContent=win?`You win ${pScore}–${oScore}. The coach on Court 2 was watching. Choose your first upgrade.`:`Jax wins ${oScore}–${pScore}, but you earned enough XP to improve. Choose your first upgrade.`;
+ document.getElementById('resultQuote').textContent=win?'“Okay... maybe you can play. Don’t get used to it.” — Jax':'“Come back when you’re ready to actually make me run.” — Jax';
+ document.getElementById('result').classList.add('show');
+}
+document.getElementById('startBtn').onclick=()=>{document.getElementById('intro').classList.remove('show');nextPoint=performance.now()+400}
+document.getElementById('again').onclick=()=>{pScore=oScore=0;pScoreEl.textContent=oScoreEl.textContent='0';pStam=oStam=100;updateBars();document.getElementById('result').classList.remove('show');server='player';selectedUpgrade=null;nextPoint=performance.now()+450}
+document.querySelectorAll('.stat').forEach(b=>b.onclick=()=>{selectedUpgrade=b.dataset.up;document.querySelectorAll('.stat').forEach(x=>x.style.outline='');b.style.outline='2px solid var(--green)';if(selectedUpgrade==='iq'){iq=Math.min(100,iq+7);updateBars()}})
+document.querySelectorAll('.shot').forEach(b=>b.onpointerdown=e=>{e.stopPropagation();selected=b.dataset.shot;document.querySelectorAll('.shot').forEach(x=>x.classList.toggle('active',x===b))})
+
+function serve(){
+ if(!servePending)return;
+ const pos=(Math.sin(servePhase)+1)/2;
+ const err=Math.abs(pos-.5);
+ let q=err<.08?'ACE TIMING':err<.18?'GOOD SERVE':'OFF-TIMING';
+ const speed=err<.08?.72:err<.18?.62:.52;
+ const risk=err<.08?.03:err<.18?.07:.16;
+ servePending=false;serveUI.classList.remove('show');ball.active=true;ball.last='player';ball.x=.53;ball.y=.82;
+ let tx=.20+Math.random()*.60,ty=.12+Math.random()*.08;
+ if(Math.random()<risk) tx=Math.random()<.5?.00:1.0;
+ setVelocity(tx,ty,speed);pStam=Math.max(20,pStam-4);updateBars();say(q,700);vib(q==='ACE TIMING'?35:18);
+}
+document.getElementById('tapServe').onclick=serve;
+
+function pos(e){const r=C.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height,t:performance.now()}}
+C.onpointerdown=e=>{if(point&&!servePending)swipe=pos(e)}
+C.onpointerup=e=>{if(!swipe||!point||servePending)return;const b=pos(e),dx=b.x-swipe.x,dy=b.y-swipe.y,d=Math.hypot(dx,dy),dur=b.t-swipe.t;swipe=null;if(d<.045)return say('Swipe toward target');playerHit(dx,dy,d,dur)}
+
+function playerHit(dx,dy,dist,dur){
+ if(ball.last!=='opp'||ball.y<.61)return say('Too early');
+ const prox=Math.hypot((ball.x-player.x)*1.15,(ball.y-player.y)*1.45); if(prox>.34)return say('Out of reach');
+ const err=Math.abs(ball.y-.80),q=err<.05?'PERFECT':err<.11?'GOOD':'LATE';
+ const m={topspin:{s:.61,r:.045,st:3},flat:{s:.75,r:.14,st:5},slice:{s:.50,r:.03,st:2},lob:{s:.43,r:.055,st:3}}[selected];
+ let tx=Math.max(.1,Math.min(.9,.5+dx*1.10)),ty=selected==='lob'?.06:.12;
+ if(Math.random()<m.r+(q==='LATE'?.13:q==='GOOD'?.02:0)){if(Math.random()<.55)tx=Math.random()<.5?.01:.99;else ty=-.08}
+ setVelocity(tx,ty,m.s*(q==='PERFECT'?1.08:q==='GOOD'?1:.9)*(0.9+pStam/800));ball.last='player';rally++;pStam=Math.max(14,pStam-m.st);updateBars();say(q+' · '+selected.toUpperCase(),600);vib(q==='PERFECT'?28:12)
+}
+function oppHit(){
+ if(ball.last!=='player'||ball.y>.31)return;
+ const prox=Math.hypot((ball.x-opp.x)*1.1,(ball.y-opp.y)*1.5);if(prox>.33)return;
+ const make=.77+Math.min(.12,rally*.012)-(100-oStam)*.0015;
+ if(Math.random()>make)return award('player','forced error');
+ let tx=rally>2?(player.x<.5?.75:.25):(.18+Math.random()*.64),ty=.74+Math.random()*.13;
+ setVelocity(tx,ty,.50+Math.random()*.085);ball.last='opp';rally++;oStam=Math.max(16,oStam-2.4);updateBars()
+}
+
+function update(dt,t){
+ servePhase+=dt*5.3;needle.style.left=((Math.sin(servePhase)+1)/2*96)+'%';
+ if(!point&&t>=nextPoint&&pScore<target&&oScore<target){nextPoint=Infinity;beginPoint()}
+ if(!ball.active)return;
+ if(ball.last==='opp'){
+   const time=(.82-ball.y)/Math.max(.001,ball.vy);player.tx=Math.max(.13,Math.min(.87,ball.x+ball.vx*Math.max(0,time)));
+ }else{
+   const time=(.18-ball.y)/Math.min(-.001,ball.vy);opp.tx=Math.max(.13,Math.min(.87,ball.x+ball.vx*Math.max(0,time)));
+ }
+ player.x+=(player.tx-player.x)*Math.min(1,(1.05+iq/230)*dt);
+ opp.x+=(opp.tx-opp.x)*Math.min(1,1.32*dt);
+ ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;
+ ball.trail.push({x:ball.x,y:ball.y});if(ball.trail.length>11)ball.trail.shift();
+ if(ball.last==='player'&&ball.y<.285)oppHit();
+ if(ball.x<.035||ball.x>.965)return award(ball.last==='player'?'opp':'player','wide');
+ if(ball.y<-.035)return award(ball.last==='player'?'opp':'player','long');
+ if(ball.y>1.035)return award(ball.last==='opp'?'opp':'player','winner');
+}
+function drawCourt(){
+ ctx.clearRect(0,0,W,H);ctx.fillStyle='#4f895d';ctx.fillRect(0,0,W,H);
+ // trees / clubhouse
+ ctx.fillStyle='#183349';ctx.fillRect(0,0,W,H*.052);
+ for(let i=0;i<14;i++){ctx.fillStyle=i%2?'#29583f':'#356b49';ctx.beginPath();ctx.arc(i*W/13,H*.045,18+(i%3)*4,0,Math.PI*2);ctx.fill()}
+ let {L,R,T,B,N}=court;ctx.fillStyle='#2b648d';ctx.fillRect(L,T,R-L,B-T);ctx.strokeStyle='#f7fbff';ctx.lineWidth=2;ctx.strokeRect(L,T,R-L,B-T);
+ const sL=L+(R-L)*.18,sR=R-(R-L)*.18,u=T+(N-T)*.58,l=N+(B-N)*.42;
+ ctx.beginPath();ctx.moveTo(L,N);ctx.lineTo(R,N);ctx.moveTo(sL,T);ctx.lineTo(sL,B);ctx.moveTo(sR,T);ctx.lineTo(sR,B);ctx.moveTo(sL,u);ctx.lineTo(sR,u);ctx.moveTo(sL,l);ctx.lineTo(sR,l);ctx.moveTo((L+R)/2,u);ctx.lineTo((L+R)/2,l);ctx.stroke();
+ ctx.strokeStyle='#06131f';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(L-5,N);ctx.lineTo(R+5,N);ctx.stroke();ctx.strokeStyle='#eaf0f4';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(L-5,N-3);ctx.lineTo(R+5,N-3);ctx.stroke();
+ ctx.fillStyle='#0a2437';ctx.fillRect(L,T-24,R-L,18);ctx.fillStyle='#9be11d';ctx.font='800 9px system-ui';ctx.textAlign='center';ctx.fillText('MORE TENNIS. LESS CHAOS.',W/2,T-11)
+}
+function drawPlayer(p,you){
+ const x=px(p.x),y=py(p.y);ctx.save();ctx.translate(x,y);ctx.fillStyle='#0004';ctx.beginPath();ctx.ellipse(0,12,17,5,0,0,7);ctx.fill();
+ ctx.fillStyle=you?'#071827':'#1b2f3e';ctx.beginPath();ctx.arc(0,-3,9,0,7);ctx.fill();ctx.fillStyle='#eeb078';ctx.beginPath();ctx.arc(0,-14,5.5,0,7);ctx.fill();
+ ctx.strokeStyle='#f5f7f8';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-6,3);ctx.lineTo(-11,15);ctx.moveTo(6,3);ctx.lineTo(11,15);ctx.stroke();
+ ctx.strokeStyle='#9be11d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(6,-3);ctx.lineTo(14,-9);ctx.stroke();ctx.strokeStyle='#e6edf2';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(18,-11,5,8,.7,0,7);ctx.stroke();ctx.restore()
+}
+function drawBall(){
+ if(!ball.active)return;ball.trail.forEach((p,i)=>{ctx.globalAlpha=(i/ball.trail.length)*.17;ctx.fillStyle='#e8ff42';ctx.beginPath();ctx.arc(px(p.x),py(p.y),2.2,0,7);ctx.fill()});ctx.globalAlpha=1;
+ ctx.fillStyle='#e2ff32';ctx.beginPath();ctx.arc(px(ball.x),py(ball.y),4.6,0,7);ctx.fill()
+}
+function loop(t){const dt=Math.min(.033,(t-last)/1000);last=t;update(dt,t);drawCourt();drawPlayer(opp,false);drawPlayer(player,true);drawBall();requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>

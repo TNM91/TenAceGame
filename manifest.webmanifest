@@ -1,0 +1,9 @@
+{
+  "name": "TenAce \u2014 Road to #1",
+  "short_name": "TenAce",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#06131f",
+  "theme_color": "#06131f",
+  "orientation": "portrait"
+}
