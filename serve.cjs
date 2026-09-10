@@ -7,6 +7,7 @@ const files = {
   '/index.html': ['index.html', 'text/html; charset=utf-8'],
   '/tenaceiq-logo.png': ['tenaceiq-logo.png', 'image/png'],
   '/manifest.webmanifest': ['manifest.webmanifest', 'application/manifest+json'],
+  '/progression.js': ['progression.js', 'text/javascript; charset=utf-8'],
 };
 
 http.createServer((req, res) => {

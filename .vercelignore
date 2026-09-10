@@ -2,3 +2,4 @@
 *.md
 serve.cjs
 *.log
+*.test.cjs

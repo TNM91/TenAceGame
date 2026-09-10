@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Prototype 0.2</title>
+<title>TenAce — Road to #1 · 0.3</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -58,6 +58,24 @@ h1{margin:4px 0;font-size:25px}.copy{font-size:12px;color:#a9bbca;line-height:1.
 .stat b{display:block;font-size:14px}.stat span{font-size:9px;color:var(--green)}
 .primary{width:100%;border:0;background:var(--green);color:#09210b;border-radius:12px;padding:12px;margin-top:14px;font-weight:950}
 #intro.show{display:flex}
+#app{display:flex;flex-direction:column}
+header{height:auto;min-height:0;flex:none}
+#gameWrap{height:auto;min-height:140px;flex:1}
+.controls{height:92px;min-height:82px;flex:none}
+.toolbar{display:flex;justify-content:space-between;align-items:center;margin-top:7px;gap:8px;font-size:10px;color:#b7cddd}
+.toolbar button,.secondary{border:1px solid #426079;border-radius:10px;background:#102b40;color:#f8fbff;padding:9px 12px;font-weight:750;cursor:pointer}
+.secondary{width:100%;margin-top:9px;min-height:44px}
+.toolbar button{min-height:36px}
+.panel{max-height:100%;overflow:auto;touch-action:pan-y}
+.modal{padding:16px}
+.careerline{padding:10px 0;color:#c5d9e8;font-size:12px;line-height:1.7}
+.saveStatus{font-size:10px;color:#96b6c9;margin-top:9px;line-height:1.4}
+.stat:disabled{opacity:.5;cursor:default}
+.stat:not(:disabled),.primary,.shot{cursor:pointer}
+button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
+.tip{font-size:11px;line-height:1.5;color:#abc2d1;margin-top:10px}
+#rallyLabel{color:#9be11d}
+@media(max-height:600px){.brandrow{height:28px}.brandrow img{height:26px}.card{padding:4px 7px}.controls{height:70px;min-height:70px}.toolbar{margin-top:3px}.modal{padding:8px}h1{font-size:21px}}
 </style>
 </head>
 <body>
@@ -69,7 +87,7 @@ h1{margin:4px 0;font-size:25px}.copy{font-size:12px;color:#a9bbca;line-height:1.
   </div>
   <div class="hud">
     <div class="card">
-      <div class="namerow"><span id="youName">You</span><span>Lv 1</span></div>
+      <div class="namerow"><span id="youName">You</span><span id="levelLabel">Lv 1</span></div>
       <div class="sub">The Unknown</div>
       <div class="meter"><span id="pStamBar" style="width:100%"></span></div>
       <div class="meter iq"><span id="pIqBar" style="width:35%"></span></div>
@@ -85,6 +103,7 @@ h1{margin:4px 0;font-size:25px}.copy{font-size:12px;color:#a9bbca;line-height:1.
       <div class="meter iq"><span style="width:42%"></span></div>
     </div>
   </div>
+  <div class="toolbar"><span id="rallyLabel">First to 7 · Swipe to hit</span><button id="pauseBtn" aria-label="Pause game" disabled>Pause</button></div>
 </header>
 <main id="gameWrap">
   <canvas id="game"></canvas>
@@ -107,20 +126,27 @@ h1{margin:4px 0;font-size:25px}.copy{font-size:12px;color:#a9bbca;line-height:1.
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Prototype 0.2 · First Rival</div>
+   <div class="eyebrow">Season 0.3 · Riverdale</div>
    <h1>Jax owns these courts.</h1>
-   <div class="copy">At least, that's what he tells everyone. Beat him to 7 points to earn your first level and unlock the start of your TenAce story.</div>
+   <div class="copy">Your climb starts here. Beat the local Court King to 7 points. Earn 120 XP for a win or 60 XP for a loss; every 100 XP unlocks an upgrade.</div>
+   <div id="careerSummary" class="careerline"></div>
+   <div id="practiceSummary" class="tip" role="status"></div>
    <div class="rivalQuote">“Nice gear. Shame the racquet can't hit the ball for you.” — Jax</div>
    <button id="startBtn" class="primary">Challenge Jax</button>
+   <button id="practiceBtn" class="secondary">Serve practice · 10 attempts</button>
+   <button id="careerBtn" class="secondary">Player upgrades</button>
+   <div class="tip">Tap to serve in the green. When the ball reaches your highlighted hitting zone, swipe upward toward your target. On desktop, drag or use ← ↑ → to return.</div>
+   <div class="saveStatus" id="saveStatus" role="status"></div>
  </div>
 </div>
 
 <div id="result" class="modal">
  <div class="panel">
-   <div class="eyebrow">Match Complete · +120 XP</div>
+   <div class="eyebrow" id="rewardLabel">Match Complete</div>
    <h1 id="resultTitle">Level Up</h1>
    <div id="resultCopy" class="copy"></div>
    <div class="rivalQuote" id="resultQuote"></div>
+   <div id="upgradeStatus" class="careerline" aria-live="polite"></div>
    <div class="stats">
      <button class="stat" data-up="power"><b>Power +1</b><span>More depth and pace</span></button>
      <button class="stat" data-up="control"><b>Control +1</b><span>Bigger timing window</span></button>
@@ -128,10 +154,27 @@ h1{margin:4px 0;font-size:25px}.copy{font-size:12px;color:#a9bbca;line-height:1.
      <button class="stat" data-up="iq"><b>Tennis IQ +1</b><span>Read shots earlier</span></button>
    </div>
    <button id="again" class="primary">Rematch Jax</button>
+   <button id="resultHome" class="secondary">Back to clubhouse</button>
  </div>
 </div>
+<div id="career" class="modal" role="dialog" aria-label="Player upgrades"><div class="panel">
+ <div class="eyebrow">Build your player</div><h1>Every point counts.</h1>
+ <div id="careerDetail" class="careerline"></div>
+ <div class="stats">
+  <button class="stat" data-up="power"><b>Power +1</b><span>+2.5% shot and serve pace</span></button>
+  <button class="stat" data-up="control"><b>Control +1</b><span>More timing forgiveness, less risk</span></button>
+  <button class="stat" data-up="speed"><b>Speed +1</b><span>Faster movement and recovery</span></button>
+  <button class="stat" data-up="iq"><b>Tennis IQ +1</b><span>Earlier shot anticipation</span></button>
+ </div><button id="careerClose" class="primary">Back to clubhouse</button>
+</div></div>
+<div id="paused" class="modal" role="dialog" aria-label="Game paused"><div class="panel">
+ <div class="eyebrow">Take a breath</div><h1>Game paused</h1>
+ <div class="copy">Your current point is waiting. Leaving a match gives no XP; previously earned progress is kept.</div>
+ <button id="resumeBtn" class="primary">Resume game</button><button id="leaveBtn" class="secondary">Leave for clubhouse</button>
+</div></div>
 </div>
 
+<script src="./progression.js"></script>
 <script>
 (() => {
 const C=document.getElementById('game'),ctx=C.getContext('2d'),wrap=document.getElementById('gameWrap');
@@ -141,9 +184,14 @@ const pStamBar=document.getElementById('pStamBar'),oStamBar=document.getElementB
 let W=0,H=0,dpr=1,last=performance.now(),selected='topspin',swipe=null;
 let pScore=0,oScore=0,target=7,rally=0,pStam=100,oStam=100,iq=35;
 let point=false,server='player',servePending=false,nextPoint=Infinity,servePhase=0;
-let selectedUpgrade=null;
+const Progress=window.TenAceProgression;
+let career=Progress.fresh(),storageOK=true;
+try{career=Progress.normalize(JSON.parse(localStorage.getItem(Progress.KEY)))}catch{storageOK=false}
+let mode='home',paused=false,pausedAt=0,matchFinished=false,bestRally=0,matchEndAt=Infinity;
+let practiceAttempts=0,practiceTotal=0,practiceNext=Infinity;
+let fx=Progress.effects(career);
 const player={x:.5,y:.86,tx:.5},opp={x:.5,y:.16,tx:.5};
-const ball={x:.5,y:.82,vx:0,vy:0,active:false,last:'player',trail:[],bounce:false};
+const ball={x:.5,y:.82,vx:0,vy:0,active:false,last:'player',trail:[],bounce:false,out:false};
 const court={};
 
 function vib(ms=20){try{navigator.vibrate?.(ms)}catch{}}
@@ -152,10 +200,49 @@ court.L=W*.09;court.R=W*.91;court.T=H*.055;court.B=H*.96;court.N=H*.5}
 addEventListener('resize',resize);resize();
 
 function say(t,ms=850){toast.textContent=t;toast.classList.add('show');clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove('show'),ms)}
+function saveCareer(){try{localStorage.setItem(Progress.KEY,JSON.stringify(career));storageOK=true}catch{storageOK=false}renderCareer()}
+function renderCareer(){
+ fx=Progress.effects(career);iq=35+career.stats.iq*5;
+ const available=Progress.points(career),level=1+Math.floor(career.xp/100);
+ const stats=`Power ${career.stats.power} · Control ${career.stats.control} · Speed ${career.stats.speed} · IQ ${career.stats.iq}`;
+ document.getElementById('levelLabel').textContent='Lv '+level;
+ document.getElementById('careerSummary').textContent=`Level ${level} · ${career.xp} XP · ${career.wins}W / ${career.matches-career.wins}L`;
+ document.getElementById('careerDetail').textContent=`${available} upgrade point${available===1?'':'s'} available. ${100-career.xp%100} XP to next level. ${stats}. Best rally: ${career.bestRally}. Best serve drill: ${career.bestServe}%.`;
+ document.getElementById('upgradeStatus').textContent=`${available} upgrade point${available===1?'':'s'} available · ${stats}`;
+ document.getElementById('saveStatus').textContent=storageOK?'Progress saves on this browser. Matches restart if you reload.':'Saving is unavailable. Progress will last only while this page stays open.';
+ document.querySelectorAll('[data-up]').forEach(b=>{const n=career.stats[b.dataset.up];b.disabled=available<1||n>=10;b.querySelector('b').textContent=({power:'Power',control:'Control',speed:'Speed',iq:'Tennis IQ'}[b.dataset.up])+` ${n}/10`});
+ const zone=document.querySelector('.tosszone');zone.style.left=(50-fx.serveWindow*100)+'%';zone.style.width=fx.serveWindow*200+'%';
+ updateBars();
+}
+function resetSession(nextMode){
+ mode=nextMode;paused=false;matchFinished=false;point=false;ball.active=false;servePending=false;swipe=null;
+ nextPoint=matchEndAt=practiceNext=Infinity;bestRally=0;pScore=oScore=0;pStam=oStam=100;
+ pScoreEl.textContent=oScoreEl.textContent='0';player.x=player.tx=opp.x=opp.tx=.5;
+ server='player';ball.trail=[];serveUI.classList.remove('show');
+ document.querySelectorAll('.modal').forEach(el=>el.classList.remove('show'));
+ document.getElementById('pauseBtn').disabled=nextMode==='home';
+ document.getElementById('rallyLabel').textContent=nextMode==='practice'?'Serve lab · 10 attempts':'First to 7 · Swipe to hit';
+ renderCareer();
+}
+function home(){resetSession('home');document.getElementById('intro').classList.add('show')}
+function startMatch(){resetSession('match');nextPoint=performance.now()+400}
+function pauseGame(){if(mode==='home'||matchFinished||paused)return;paused=true;pausedAt=performance.now();swipe=null;document.getElementById('paused').classList.add('show')}
+function resumeGame(){if(!paused)return;const delay=performance.now()-pausedAt;nextPoint+=delay;matchEndAt+=delay;practiceNext+=delay;paused=false;last=performance.now();document.getElementById('paused').classList.remove('show')}
+document.getElementById('pauseBtn').onclick=pauseGame;
+document.getElementById('resumeBtn').onclick=resumeGame;
+document.getElementById('leaveBtn').onclick=home;
+document.getElementById('resultHome').onclick=home;
+document.getElementById('careerBtn').onclick=()=>{document.getElementById('intro').classList.remove('show');document.getElementById('career').classList.add('show')};
+document.getElementById('careerClose').onclick=home;
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame()});
+function practiceServe(){servePending=true;servePhase=0;serveUI.classList.add('show');document.getElementById('rallyLabel').textContent=`Serve lab · Attempt ${practiceAttempts+1}/10`}
+document.getElementById('practiceBtn').onclick=()=>{resetSession('practice');practiceAttempts=practiceTotal=0;practiceServe()};
 function updateBars(){pStamBar.style.width=pStam+'%';oStamBar.style.width=oStam+'%';pIqBar.style.width=iq+'%'}
 function px(v){return court.L+v*(court.R-court.L)} function py(v){return court.T+v*(court.B-court.T)}
 function beginPoint(){
-  rally=0;point=true;ball.trail=[];ball.bounce=false;
+  rally=0;point=true;ball.trail=[];ball.bounce=false;ball.out=false;
+  document.getElementById('rallyLabel').textContent=(pScore===6||oScore===6?'Match point · ':'')+(server==='player'?'You serve':'Jax serves');
+  pScoreEl.classList.toggle('active',server==='player');oScoreEl.classList.toggle('active',server==='opp');
   if(server==='player'){
     servePending=true;servePhase=0;serveUI.classList.add('show');ball.active=false;
     ball.x=.53;ball.y=.83;say('Your serve');
@@ -166,7 +253,7 @@ function beginPoint(){
     setVelocity(tx,ty,.56); say('Jax serves');
   }
 }
-function setVelocity(tx,ty,speed){const d=Math.hypot(tx-ball.x,ty-ball.y)||1;ball.vx=(tx-ball.x)/d*speed;ball.vy=(ty-ball.y)/d*speed}
+function setVelocity(tx,ty,speed){ball.out=tx<.035||tx>.965||ty<0||ty>1;const d=Math.hypot(tx-ball.x,ty-ball.y)||1;ball.vx=(tx-ball.x)/d*speed;ball.vy=(ty-ball.y)/d*speed}
 function schedulePoint(){server=server==='player'?'opp':'player';nextPoint=performance.now()+1050}
 function award(who,reason){
  if(!point)return;point=false;ball.active=false;serveUI.classList.remove('show');
@@ -174,27 +261,38 @@ function award(who,reason){
  pScoreEl.textContent=pScore;oScoreEl.textContent=oScore;
  pStam=Math.min(100,pStam+7);oStam=Math.min(100,oStam+7);updateBars();
  say((who==='player'?'TenAce point':'Jax point')+(reason?' · '+reason:''),1000);vib(who==='player'?[15,30,25]:18);
- if(pScore>=target||oScore>=target)setTimeout(endMatch,950);else schedulePoint();
+ if(pScore>=target||oScore>=target)matchEndAt=performance.now()+950;else schedulePoint();
 }
 function endMatch(){
+ if(matchFinished)return;matchFinished=true;matchEndAt=Infinity;
+ document.getElementById('pauseBtn').disabled=true;
  const win=pScore>oScore;
+ const earned=Progress.reward(career,win,bestRally);saveCareer();
+ document.getElementById('rewardLabel').textContent=`Match complete · +${earned} XP`;
  document.getElementById('resultTitle').textContent=win?'You knocked off the Court King.':'Jax survives.';
- document.getElementById('resultCopy').textContent=win?`You win ${pScore}–${oScore}. The coach on Court 2 was watching. Choose your first upgrade.`:`Jax wins ${oScore}–${pScore}, but you earned enough XP to improve. Choose your first upgrade.`;
+ document.getElementById('resultCopy').textContent=`${win?'You win':'Jax wins'} ${Math.max(pScore,oScore)}–${Math.min(pScore,oScore)}. Best rally: ${bestRally}. Spend available points now or save them for later.`;
  document.getElementById('resultQuote').textContent=win?'“Okay... maybe you can play. Don’t get used to it.” — Jax':'“Come back when you’re ready to actually make me run.” — Jax';
  document.getElementById('result').classList.add('show');
 }
-document.getElementById('startBtn').onclick=()=>{document.getElementById('intro').classList.remove('show');nextPoint=performance.now()+400}
-document.getElementById('again').onclick=()=>{pScore=oScore=0;pScoreEl.textContent=oScoreEl.textContent='0';pStam=oStam=100;updateBars();document.getElementById('result').classList.remove('show');server='player';selectedUpgrade=null;nextPoint=performance.now()+450}
-document.querySelectorAll('.stat').forEach(b=>b.onclick=()=>{selectedUpgrade=b.dataset.up;document.querySelectorAll('.stat').forEach(x=>x.style.outline='');b.style.outline='2px solid var(--green)';if(selectedUpgrade==='iq'){iq=Math.min(100,iq+7);updateBars()}})
+document.getElementById('startBtn').onclick=startMatch;
+document.getElementById('again').onclick=startMatch;
+document.querySelectorAll('.stat').forEach(b=>b.onclick=()=>{if(Progress.upgrade(career,b.dataset.up)){saveCareer();say('Upgrade applied')}});
 document.querySelectorAll('.shot').forEach(b=>b.onpointerdown=e=>{e.stopPropagation();selected=b.dataset.shot;document.querySelectorAll('.shot').forEach(x=>x.classList.toggle('active',x===b))})
 
 function serve(){
- if(!servePending)return;
+ if(!servePending||paused)return;
  const pos=(Math.sin(servePhase)+1)/2;
  const err=Math.abs(pos-.5);
- let q=err<.08?'ACE TIMING':err<.18?'GOOD SERVE':'OFF-TIMING';
- const speed=err<.08?.72:err<.18?.62:.52;
- const risk=err<.08?.03:err<.18?.07:.16;
+ let q=err<fx.serveWindow?'ACE TIMING':err<fx.serveWindow+.10?'GOOD SERVE':'OFF-TIMING';
+ const speed=(q==='ACE TIMING'?.72:q==='GOOD SERVE'?.62:.52)*fx.power;
+ const risk=(q==='ACE TIMING'?.03:q==='GOOD SERVE'?.07:.16)*fx.risk;
+ if(mode==='practice'){
+   const accuracy=Math.round((1-err*2)*100);practiceTotal+=accuracy;practiceAttempts++;
+   servePending=false;serveUI.classList.remove('show');say(`${q} · ${accuracy}%`,1200);
+   if(practiceAttempts===10){const average=Math.round(practiceTotal/10);career.bestServe=Math.max(career.bestServe,average);saveCareer();home();document.getElementById('practiceSummary').textContent=`Drill complete: ${average}% average accuracy. Personal best: ${career.bestServe}%. Practice does not spend or award XP.`}
+   else practiceNext=performance.now()+1200;
+   return;
+ }
  servePending=false;serveUI.classList.remove('show');ball.active=true;ball.last='player';ball.x=.53;ball.y=.82;
  let tx=.20+Math.random()*.60,ty=.12+Math.random()*.08;
  if(Math.random()<risk) tx=Math.random()<.5?.00:1.0;
@@ -203,43 +301,54 @@ function serve(){
 document.getElementById('tapServe').onclick=serve;
 
 function pos(e){const r=C.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height,t:performance.now()}}
-C.onpointerdown=e=>{if(point&&!servePending)swipe=pos(e)}
-C.onpointerup=e=>{if(!swipe||!point||servePending)return;const b=pos(e),dx=b.x-swipe.x,dy=b.y-swipe.y,d=Math.hypot(dx,dy),dur=b.t-swipe.t;swipe=null;if(d<.045)return say('Swipe toward target');playerHit(dx,dy,d,dur)}
+C.onpointerdown=e=>{if(point&&!servePending&&!paused){C.setPointerCapture(e.pointerId);swipe=pos(e)}}
+C.onpointercancel=()=>{swipe=null};
+C.onpointerup=e=>{if(!swipe||!point||servePending||paused)return;const b=pos(e),dx=b.x-swipe.x,dy=b.y-swipe.y,d=Math.hypot(dx,dy),dur=b.t-swipe.t;swipe=null;if(d<.045)return say('Swipe toward target');playerHit(dx,dy,d,dur)}
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'){paused?resumeGame():pauseGame();return}
+ if(mode!=='match'||paused||matchFinished||servePending||!point||!['ArrowLeft','ArrowUp','ArrowRight'].includes(e.key))return;
+ e.preventDefault();playerHit(e.key==='ArrowLeft'?-.3:e.key==='ArrowRight'?.3:0,-.3,.3,180);
+});
 
 function playerHit(dx,dy,dist,dur){
  if(ball.last!=='opp'||ball.y<.61)return say('Too early');
  const prox=Math.hypot((ball.x-player.x)*1.15,(ball.y-player.y)*1.45); if(prox>.34)return say('Out of reach');
- const err=Math.abs(ball.y-.80),q=err<.05?'PERFECT':err<.11?'GOOD':'LATE';
+ const err=Math.abs(ball.y-.80),q=err<fx.timing?'PERFECT':err<fx.timing+.06?'GOOD':'LATE';
  const m={topspin:{s:.61,r:.045,st:3},flat:{s:.75,r:.14,st:5},slice:{s:.50,r:.03,st:2},lob:{s:.43,r:.055,st:3}}[selected];
  let tx=Math.max(.1,Math.min(.9,.5+dx*1.10)),ty=selected==='lob'?.06:.12;
- if(Math.random()<m.r+(q==='LATE'?.13:q==='GOOD'?.02:0)){if(Math.random()<.55)tx=Math.random()<.5?.01:.99;else ty=-.08}
- setVelocity(tx,ty,m.s*(q==='PERFECT'?1.08:q==='GOOD'?1:.9)*(0.9+pStam/800));ball.last='player';rally++;pStam=Math.max(14,pStam-m.st);updateBars();say(q+' · '+selected.toUpperCase(),600);vib(q==='PERFECT'?28:12)
+ if(Math.random()<(m.r+(q==='LATE'?.13:q==='GOOD'?.02:0))*fx.risk){if(Math.random()<.55)tx=Math.random()<.5?.01:.99;else ty=-.08}
+ setVelocity(tx,ty,m.s*fx.power*(q==='PERFECT'?1.08:q==='GOOD'?1:.9)*(0.9+pStam/800));ball.last='player';rally++;bestRally=Math.max(bestRally,rally);document.getElementById('rallyLabel').textContent=`Rally ${rally} · ${q}`;pStam=Math.max(14,pStam-m.st);updateBars();say(q+' · '+selected.toUpperCase(),600);vib(q==='PERFECT'?28:12)
 }
 function oppHit(){
- if(ball.last!=='player'||ball.y>.31)return;
+ if(ball.last!=='player'||ball.y>.31||ball.out)return;
  const prox=Math.hypot((ball.x-opp.x)*1.1,(ball.y-opp.y)*1.5);if(prox>.33)return;
  const make=.77+Math.min(.12,rally*.012)-(100-oStam)*.0015;
  if(Math.random()>make)return award('player','forced error');
  let tx=rally>2?(player.x<.5?.75:.25):(.18+Math.random()*.64),ty=.74+Math.random()*.13;
- setVelocity(tx,ty,.50+Math.random()*.085);ball.last='opp';rally++;oStam=Math.max(16,oStam-2.4);updateBars()
+ setVelocity(tx,ty,.50+Math.random()*.085);ball.last='opp';rally++;bestRally=Math.max(bestRally,rally);oStam=Math.max(16,oStam-2.4);updateBars()
 }
 
 function update(dt,t){
+ if(paused)return;
+ if(mode==='home')return;
+ if(t>=matchEndAt)endMatch();
+ if(t>=practiceNext){practiceNext=Infinity;practiceServe()}
  servePhase+=dt*5.3;needle.style.left=((Math.sin(servePhase)+1)/2*96)+'%';
  if(!point&&t>=nextPoint&&pScore<target&&oScore<target){nextPoint=Infinity;beginPoint()}
  if(!ball.active)return;
  if(ball.last==='opp'){
-   const time=(.82-ball.y)/Math.max(.001,ball.vy);player.tx=Math.max(.13,Math.min(.87,ball.x+ball.vx*Math.max(0,time)));
+   const time=(.82-ball.y)/Math.max(.001,ball.vy);player.tx=Math.max(.13,Math.min(.87,ball.x+ball.vx*Math.max(0,time)*fx.anticipation));
  }else{
    const time=(.18-ball.y)/Math.min(-.001,ball.vy);opp.tx=Math.max(.13,Math.min(.87,ball.x+ball.vx*Math.max(0,time)));
  }
- player.x+=(player.tx-player.x)*Math.min(1,(1.05+iq/230)*dt);
+ if(ball.last==='player')player.tx=.5;
+ player.x+=(player.tx-player.x)*Math.min(1,fx.movement*dt);
  opp.x+=(opp.tx-opp.x)*Math.min(1,1.32*dt);
  ball.x+=ball.vx*dt;ball.y+=ball.vy*dt;
  ball.trail.push({x:ball.x,y:ball.y});if(ball.trail.length>11)ball.trail.shift();
  if(ball.last==='player'&&ball.y<.285)oppHit();
  if(ball.x<.035||ball.x>.965)return award(ball.last==='player'?'opp':'player','wide');
- if(ball.y<-.035)return award(ball.last==='player'?'opp':'player','long');
+ if(ball.y<-.035)return award(ball.last==='player'&&!ball.out?'player':'opp',ball.out?'long':'winner');
  if(ball.y>1.035)return award(ball.last==='opp'?'opp':'player','winner');
 }
 function drawCourt(){
@@ -248,6 +357,7 @@ function drawCourt(){
  ctx.fillStyle='#183349';ctx.fillRect(0,0,W,H*.052);
  for(let i=0;i<14;i++){ctx.fillStyle=i%2?'#29583f':'#356b49';ctx.beginPath();ctx.arc(i*W/13,H*.045,18+(i%3)*4,0,Math.PI*2);ctx.fill()}
  let {L,R,T,B,N}=court;ctx.fillStyle='#2b648d';ctx.fillRect(L,T,R-L,B-T);ctx.strokeStyle='#f7fbff';ctx.lineWidth=2;ctx.strokeRect(L,T,R-L,B-T);
+ ctx.fillStyle=ball.active&&ball.last==='opp'&&Math.abs(ball.y-.80)<fx.timing?'#9be11d55':'#9be11d16';ctx.fillRect(L,py(.80-fx.timing),R-L,(B-T)*fx.timing*2);
  const sL=L+(R-L)*.18,sR=R-(R-L)*.18,u=T+(N-T)*.58,l=N+(B-N)*.42;
  ctx.beginPath();ctx.moveTo(L,N);ctx.lineTo(R,N);ctx.moveTo(sL,T);ctx.lineTo(sL,B);ctx.moveTo(sR,T);ctx.lineTo(sR,B);ctx.moveTo(sL,u);ctx.lineTo(sR,u);ctx.moveTo(sL,l);ctx.lineTo(sR,l);ctx.moveTo((L+R)/2,u);ctx.lineTo((L+R)/2,l);ctx.stroke();
  ctx.strokeStyle='#06131f';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(L-5,N);ctx.lineTo(R+5,N);ctx.stroke();ctx.strokeStyle='#eaf0f4';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(L-5,N-3);ctx.lineTo(R+5,N-3);ctx.stroke();
@@ -264,7 +374,7 @@ function drawBall(){
  ctx.fillStyle='#e2ff32';ctx.beginPath();ctx.arc(px(ball.x),py(ball.y),4.6,0,7);ctx.fill()
 }
 function loop(t){const dt=Math.min(.033,(t-last)/1000);last=t;update(dt,t);drawCourt();drawPlayer(opp,false);drawPlayer(player,true);drawBall();requestAnimationFrame(loop)}
-requestAnimationFrame(loop);
+renderCareer();requestAnimationFrame(loop);
 })();
 </script>
 </body>

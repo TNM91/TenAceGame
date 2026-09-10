@@ -26,4 +26,4 @@ The manifest requests standalone portrait display. Offline play is not configure
 
 All five original files are retained at the root. The logo, manifest, README, and design bible are byte-for-byte identical to the ZIP. `index.html` has two integration fixes: the intro now uses the existing `show` class so Challenge Jax can dismiss it, and the page links the supplied manifest.
 
-Prototype limitations remain: there is no persistent save, and the Power, Control, and Speed upgrade buttons currently select an option without applying stat changes. Tennis IQ updates its meter and positioning behavior.
+Version 0.3 adds browser-local career saves, functional upgrades, and serve practice. See RELEASE_NOTES.md. The original README and design bible remain historical references for the imported 0.2 prototype; index.html now contains the current game.
