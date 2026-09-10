@@ -57,9 +57,10 @@
     line(c,[[-3,-60],[2,-59],[4,-61]],'#683e36',1.2);
     c.restore();
   }
-  function court(c,w,h,bounds) {
+  function court(c,w,h,bounds,theme='park') {
     const {L,R,T,B,N}=bounds;
-    const ground=c.createLinearGradient(0,0,w,h);ground.addColorStop(0,'#547a66');ground.addColorStop(1,'#243f3c');c.fillStyle=ground;c.fillRect(0,0,w,h);
+    const terrace=theme==='terrace';
+    const ground=c.createLinearGradient(0,0,w,h);ground.addColorStop(0,terrace?'#d5b088':'#547a66');ground.addColorStop(1,terrace?'#756875':'#243f3c');c.fillStyle=ground;c.fillRect(0,0,w,h);
     // Garden, warm paths and geometric tree canopies around the playing surface.
     c.fillStyle='#b7a991';c.fillRect(0,h*.035,w,h*.045);
     for(let i=0;i<9;i++){
@@ -67,8 +68,10 @@
       ellipse(c,x+8,y+10,22,12,'#0b25354a');
       ellipse(c,x,y,24,18,'#203f3a');ellipse(c,x-6,y-5,18,13,'#406653');ellipse(c,x-9,y-9,10,7,'#71936a');
     }
+    if(terrace){const sky=c.createLinearGradient(0,0,0,T);sky.addColorStop(0,'#a68fbe');sky.addColorStop(1,'#f5c990');c.fillStyle=sky;c.fillRect(0,0,w,T-10);ellipse(c,w*.78,T*.25,15,15,'#ffe2ad');
+      for(let i=0;i<18;i++){const x=i*w/17,y=T*.35+(i*17%23);c.fillStyle=i%2?'#7a718d':'#686781';c.fillRect(x,y,w/20,T-y);c.fillStyle='#f6d7ad88';for(let yy=y+6;yy<T;yy+=9)c.fillRect(x+3,yy,2,3);}c.fillStyle='#ede0c9';c.fillRect(0,T-12,w,8);}
     c.fillStyle='#152f32';c.fillRect(L-9,T-8,R-L+18,B-T+16);
-    const surface=c.createLinearGradient(L,T,R,B);surface.addColorStop(0,'#5d9fad');surface.addColorStop(.5,'#418391');surface.addColorStop(1,'#2a6677');c.fillStyle=surface;c.fillRect(L,T,R-L,B-T);
+    const surface=c.createLinearGradient(L,T,R,B);surface.addColorStop(0,terrace?'#d28c6d':'#5d9fad');surface.addColorStop(.5,terrace?'#bc6d56':'#418391');surface.addColorStop(1,terrace?'#94534d':'#2a6677');c.fillStyle=surface;c.fillRect(L,T,R-L,B-T);
     c.fillStyle='#ffffff04';for(let y=T;y<B;y+=5)c.fillRect(L,y,R-L,1);
     // Fine speckle is deterministic and cached once per resize.
     c.fillStyle='#eff8de12';for(let i=0;i<650;i++)c.fillRect(L+((i*73)%997)/997*(R-L),T+((i*137)%991)/991*(B-T),1,1);
@@ -84,9 +87,11 @@
     for(const x of [3,w-13]){
       c.fillStyle='#153238';c.fillRect(x,h*.3,10,42);c.fillStyle='#b69870';for(let i=0;i<4;i++)c.fillRect(x,h*.3+i*10,9,6);
     }
+    for(const x of [L-23,R+23]){line(c,[[x,T+15],[x,T+80]],terrace?'#413e58':'#243e44',3);line(c,[[x-5,T+15],[x+5,T+15]],'#f4e8c5',5);ellipse(c,x,T+15,10,6,terrace?'#ffe9b133':'#ffffff10');for(let j=0;j<3;j++){const sy=h*.57+j*17;c.fillStyle=terrace?'#edd4a5':'#668b6f';c.fillRect(x-5,sy,10,7);ellipse(c,x,sy-4,3,3,j%2?'#dcb28d':'#865e48');}}
+    if(terrace)for(const x of [L-13,R+13])for(const y of [T+100,B-15]){c.fillStyle='#eee0c4';c.fillRect(x-5,y,10,10);for(let i=0;i<3;i++)ellipse(c,x-4+i*4,y-3-i%2*4,4,8,'#57715e');}
     // Afternoon shadows stay subtle enough to preserve ball contrast.
     c.fillStyle='#142f3e16';c.beginPath();c.moveTo(L,T);c.lineTo(R,T);c.lineTo(L,T+(B-T)*.28);c.closePath();c.fill();
-    c.font='800 9px system-ui';c.textAlign='center';c.fillStyle='#e9efd6';c.fillText('R I V E R D A L E   /   C O U R T  0 1',w/2,T-13);
+    c.font='800 9px system-ui';c.textAlign='center';c.fillStyle=terrace?'#fff3d7':'#e9efd6';c.fillText(terrace?'S O L S T I C E   /   T E R R A C E   C L U B':'R I V E R D A L E   /   C O U R T  0 1',w/2,T-13);
   }
   function net(c, bounds) {
     const {L,R,N}=bounds;

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.5</title>
+<title>TenAce — Road to #1 · 0.6</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -97,13 +97,16 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
 .toolbar{flex-wrap:wrap}.toolbar #rallyLabel{flex:1;min-width:120px}.toolbar button{padding:7px 9px}
 @media(max-height:700px){.creatorStage{height:152px}.creatorHead{padding:12px 16px 6px}.creatorFields{gap:8px;padding:12px 16px}.creatorFields label{gap:4px}.clubPortrait{height:68px}#clubPreview{height:68px}.rivalQuote{margin:8px 0}}
 </style>
+<style>
+.journeyPanel{background:linear-gradient(150deg,#193d43,#0b1d2a);padding:20px}.journeyPanel h1{font-size:29px;letter-spacing:-1px}.routeCard{border:1px solid #46656c;border-radius:15px;overflow:hidden;margin-top:13px;background:#102b36}.routeArt{width:100%;height:140px;display:block}.routeBody{padding:13px}.routeBody h2{margin:4px 0;font-size:20px;letter-spacing:-.5px}.routeBody p{font-size:11px;line-height:1.6;color:#bed0cf;margin:6px 0}.routeBody button{margin-top:9px}.routeTag{font-size:9px;letter-spacing:1.8px;color:#d1eba4;font-weight:850}.routeCard.locked .routeArt{filter:saturate(.35);opacity:.65}.routeCard button:disabled{background:#3c5055;color:#a4b6b8;cursor:default}.routeFooter{font-size:11px;line-height:1.5;color:#b9cdd0;margin-top:12px}.roadButtons{display:flex;gap:8px}.roadButtons button{font-size:11px}.rewardNote{padding:10px;border:1px solid #a4bb6e55;background:#b9ed6212;border-radius:9px;margin-top:10px;color:#d8efa5;font-size:12px;line-height:1.5}.rewardNote:empty{display:none}
+</style>
 </head>
 <body>
 <div id="app">
 <header>
   <div class="brandrow">
     <img src="./tenaceiq-logo.png" alt="TenAceIQ"/>
-    <div class="story"><b>Road to #1</b>Chapter 1 · Riverdale Public Courts</div>
+    <div class="story"><b>Road to #1</b><span id="venueLabel">Chapter 1 · Riverdale Public Courts</span></div>
   </div>
   <div class="hud">
     <div class="card">
@@ -117,8 +120,8 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
       <div>7</div><div>PTS</div>
     </div>
     <div class="card r">
-      <div class="namerow"><span>Jax Mercer</span><span>Lv 2</span></div>
-      <div class="sub">Local Court King</div>
+      <div class="namerow"><span id="rivalName">Jax Mercer</span><span id="rivalLevel">Lv 2</span></div>
+      <div id="rivalTitle" class="sub">Local Court King</div>
       <div class="meter"><span id="oStamBar" style="width:100%"></span></div>
       <div class="meter iq"><span style="width:42%"></span></div>
     </div>
@@ -147,13 +150,14 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.5 · Find your rhythm</div>
-   <h1>Jax owns these courts.</h1>
-   <div class="copy">Your climb starts here. Beat the local Court King to 7 points. Earn 120 XP for a win or 60 XP for a loss; every 100 XP unlocks an upgrade.</div>
+   <div class="eyebrow">Season 0.6 · Your road begins</div>
+   <h1 id="introTitle">Jax owns these courts.</h1>
+   <div class="copy">First to 7 wins. Earn 120 XP for a win or 60 XP for a loss; every 100 XP unlocks an upgrade. Explore the career map for rivals and first-win rewards.</div>
    <div id="careerSummary" class="careerline"></div>
    <div class="clubPortrait"><canvas id="clubPreview" width="216" height="180" aria-label="Your customized player"></canvas><div><b id="clubName">Rookie</b><small>RIVERDALE ROOKIE / YOUR JOURNEY</small></div></div>
    <div id="practiceSummary" class="tip" role="status"></div>
-   <div class="rivalQuote">“Nice gear. Shame the racquet can't hit the ball for you.” — Jax</div>
+   <div id="introQuote" class="rivalQuote">“Nice gear. Shame the racquet can't hit the ball for you.” — Jax</div>
+   <button id="mapBtn" class="secondary">Career map · Chapters & rewards</button>
    <button id="startBtn" class="primary">Challenge Jax</button>
    <button id="practiceBtn" class="secondary">Serve practice · 10 attempts</button>
    <button id="careerBtn" class="secondary">Player upgrades</button>
@@ -169,6 +173,7 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
    <h1 id="resultTitle">Level Up</h1>
    <div id="resultCopy" class="copy"></div>
    <div class="rivalQuote" id="resultQuote"></div>
+   <div id="chapterReward" class="rewardNote" role="status"></div>
    <div id="upgradeStatus" class="careerline" aria-live="polite"></div>
    <div class="stats">
      <button class="stat" data-up="power"><b>Power +1</b><span>More depth and pace</span></button>
@@ -178,6 +183,7 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
    </div>
    <button id="again" class="primary">Rematch Jax</button>
    <button id="resultHome" class="secondary">Back to clubhouse</button>
+   <button id="resultMap" class="secondary">Continue your journey</button>
  </div>
 </div>
 <div id="career" class="modal" role="dialog" aria-label="Player upgrades"><div class="panel">
@@ -203,7 +209,7 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
   <label>Skin tone<select id="editSkin" name="skin"><option value="#f3cba5">Light</option><option value="#dea575">Golden</option><option value="#bc8056">Warm brown</option><option value="#8c553b">Deep brown</option><option value="#573a2d">Rich brown</option></select></label>
   <label>Hairstyle<select id="editStyle" name="style"><option value="crop">Cropped</option><option value="curls">Curls</option><option value="ponytail">Ponytail</option><option value="bun">Bun</option><option value="shaved">Shaved</option></select></label>
   <label>Hair color<select id="editHair" name="hair"><option value="#24252c">Midnight</option><option value="#60402e">Chestnut</option><option value="#c58b43">Honey</option><option value="#eed8a8">Platinum</option><option value="#a34336">Auburn</option></select></label>
-  <label>Shirt<select id="editShirt" name="shirt"><option value="#b9ed62">Court lime</option><option value="#5ed6ce">Lagoon</option><option value="#778dff">Electric violet</option><option value="#f37968">Sunset coral</option><option value="#f4eee1">Club cream</option></select></label>
+  <label>Shirt<select id="editShirt" name="shirt"><option value="#b9ed62">Court lime</option><option value="#5ed6ce">Lagoon</option><option value="#778dff">Electric violet</option><option value="#f37968">Sunset coral</option><option value="#f4eee1">Club cream</option><option id="goldOutfit" value="#edc76d" disabled>Champion gold · Beat Mira</option></select></label>
   <label>Shorts<select id="editShorts" name="shorts"><option value="#182d3b">Midnight navy</option><option value="#e8e2d5">Warm cream</option><option value="#51487b">Plum</option><option value="#265750">Forest</option></select></label>
   <label>Racket color<select id="editRacket" name="racket"><option value="#b9ed62">Lime</option><option value="#ffad66">Apricot</option><option value="#9b9bff">Lavender</option><option value="#eeeeef">Silver</option></select></label>
   <label class="wide">Racket shape<select id="editFrame" name="frame"><option value="classic">Classic oval</option><option value="power">Wide frame</option><option value="control">Long frame</option></select></label>
@@ -211,9 +217,16 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
   <div class="tip wide">Style is yours. Gameplay bonuses come from your earned upgrades.</div>
  </form>
 </div></div>
-</div>
 
+<div id="journey" class="modal" role="dialog" aria-label="Career map"><div class="panel journeyPanel">
+ <div class="eyebrow">The local circuit / 0.6</div><h1>Make a name.</h1><div id="mapProgress" class="careerline"></div>
+ <article class="routeCard"><canvas id="parkMap" class="routeArt" width="640" height="280" aria-label="Riverdale court preview"></canvas><div class="routeBody"><div class="routeTag">01 / THE PUBLIC COURTS</div><h2>Jax Mercer</h2><p>The Court King attacks early. Create space, then finish the point.</p><p id="jaxMilestone"></p><button id="chooseJax" class="primary">Challenge Jax</button></div></article>
+ <article id="miraCard" class="routeCard locked"><canvas id="terraceMap" class="routeArt" width="640" height="280" aria-label="Solstice sunset court preview"></canvas><div class="routeBody"><div class="routeTag">02 / SOLSTICE TERRACE</div><h2>Mira Sol</h2><p>The Baseline Wall retrieves, absorbs pace, and makes you earn the opening.</p><p id="miraMilestone"></p><button id="chooseMira" class="primary" disabled>Beat Jax to unlock</button></div></article>
+ <div id="nextMilestone" class="routeFooter"></div><div class="roadButtons"><button id="mapPractice" class="secondary">Serve practice</button><button id="mapHome" class="secondary">Clubhouse</button></div>
+</div></div>
+</div>
 <script src="./character.js"></script>
+<script src="./rivals.js"></script>
 <script src="./progression.js"></script>
 <script src="./graphics.js"></script>
 <script src="./physics.js"></script>
@@ -229,6 +242,7 @@ let pScore=0,oScore=0,target=7,rally=0,pStam=100,oStam=100,iq=35;
 let point=false,server='player',servePending=false,nextPoint=Infinity,servePhase=0;
 const Progress=window.TenAceProgression;
 const Character=window.TenAceCharacter,Graphics=window.TenAceGraphics;
+const Rivals=window.TenAceRivals;let rival=Rivals.jax;
 const Physics=window.TenAcePhysics,Sound=window.TenAceSound;
 let serveAim='body',faults=0,serviceSide='left',bufferedHit=null,bounceMark=null,footstep=0;
 const soundButton=document.getElementById('soundBtn');
@@ -244,20 +258,20 @@ const player={x:.5,y:.86,tx:.5},opp={x:.5,y:.16,tx:.5};
 const ball={x:.5,y:.82,vx:0,vy:0,active:false,last:'player',trail:[],bounce:false,out:false};
 const court={};
 const backdrop=document.createElement('canvas'),backCtx=backdrop.getContext('2d');
-const rivalLook={...Character.fresh(),name:'Jax',skin:'#bc8056',hair:'#60402e',shirt:'#f37968',shorts:'#e8e2d5',style:'curls',racket:'#eeeeef'};
+let rivalLook=rival.look;
 let draft=null,animTime=0,playerSwing=0,oppSwing=0,swingSide=1,celebration=0,impact=null;
 const creatorFields={name:'editName',skin:'editSkin',hair:'editHair',shirt:'editShirt',shorts:'editShorts',racket:'editRacket',style:'editStyle',frame:'editFrame'};
 function readDraft(){const next={};for(const [key,id] of Object.entries(creatorFields))next[key]=document.getElementById(id).value;draft=Character.normalize(next)}
 document.getElementById('customizeBtn').onclick=()=>{draft={...career.character};for(const [key,id] of Object.entries(creatorFields))document.getElementById(id).value=draft[key];document.getElementById('intro').classList.remove('show');document.getElementById('creator').classList.add('show');document.querySelector('.creatorPanel').scrollTop=0};
 document.getElementById('creatorForm').oninput=readDraft;
 document.getElementById('creatorForm').onchange=readDraft;
-document.getElementById('creatorForm').onsubmit=e=>{e.preventDefault();readDraft();career.character={...draft};saveCareer();draft=null;home()};
+document.getElementById('creatorForm').onsubmit=e=>{e.preventDefault();readDraft();if(draft.shirt==='#edc76d'&&!career.victories.mira)draft.shirt=Character.fresh().shirt;career.character={...draft};saveCareer();draft=null;home()};
 document.getElementById('creatorCancel').onclick=()=>{draft=null;home()};
 
 function vib(ms=20){try{navigator.vibrate?.(ms)}catch{}}
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=wrap.clientWidth;H=wrap.clientHeight;C.width=W*dpr;C.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
 court.L=W*.09;court.R=W*.91;court.T=H*.095;court.B=H*.91;court.N=(court.T+court.B)/2;
-backdrop.width=W*dpr;backdrop.height=H*dpr;backCtx.setTransform(dpr,0,0,dpr,0,0);Graphics.court(backCtx,W,H,court)}
+backdrop.width=W*dpr;backdrop.height=H*dpr;backCtx.setTransform(dpr,0,0,dpr,0,0);Graphics.court(backCtx,W,H,court,rival.theme)}
 addEventListener('resize',resize);resize();
 
 function say(t,ms=850){toast.textContent=t;toast.classList.add('show');clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove('show'),ms)}
@@ -276,7 +290,24 @@ function renderCareer(){
  document.querySelectorAll('[data-up]').forEach(b=>{const n=career.stats[b.dataset.up];b.disabled=available<1||n>=10;b.querySelector('b').textContent=({power:'Power',control:'Control',speed:'Speed',iq:'Tennis IQ'}[b.dataset.up])+` ${n}/10`});
  const zone=document.querySelector('.tosszone');zone.style.left=(50-fx.serveWindow*100)+'%';zone.style.width=fx.serveWindow*200+'%';
  updateBars();
+ renderMap();
 }
+function renderMap(){
+ const unlocked=Progress.unlocked(career,'mira');
+ document.getElementById('chooseMira').disabled=!unlocked;document.getElementById('chooseMira').textContent=unlocked?'Meet Mira Sol':'Beat Jax to unlock';
+ document.getElementById('miraCard').classList.toggle('locked',!unlocked);
+ document.getElementById('goldOutfit').disabled=!career.victories.mira;
+ document.getElementById('mapProgress').textContent=`${Number(career.victories.jax>0)+Number(career.victories.mira>0)} / 2 rivals defeated · Level ${1+Math.floor(career.xp/100)}`;
+ document.getElementById('jaxMilestone').textContent=career.victories.jax?`Defeated · ${career.victories.jax} win(s). Rematches available.`:'First win: +80 bonus XP and access to Solstice Terrace.';
+ document.getElementById('miraMilestone').textContent=career.victories.mira?`Defeated · ${career.victories.mira} win(s). Champion gold shirt unlocked.`:'First win: +100 bonus XP and the Champion gold shirt.';
+ document.getElementById('nextMilestone').textContent=career.victories.mira?'Local circuit complete. Rematch either rival, refine your serve, or equip Champion gold in Customize player.':unlocked?'Next milestone: beat Mira at Solstice Terrace.':'Next milestone: defeat Jax to earn your terrace invitation.';
+}
+function openMap(){home();document.getElementById('intro').classList.remove('show');document.getElementById('journey').classList.add('show');document.querySelector('.journeyPanel').scrollTop=0;
+ for(const [id,theme] of [['parkMap','park'],['terraceMap','terrace']]){const c=document.getElementById(id),g=c.getContext('2d');Graphics.court(g,640,280,{L:130,R:510,T:70,B:265,N:167.5},theme);Graphics.net(g,{L:130,R:510,N:167.5});Graphics.person(g,525,265,1.8,theme==='park'?Rivals.jax.look:Rivals.mira.look,{time:0});}
+}
+function selectRival(id){if(!Progress.unlocked(career,id))return;rival=Rivals[id];rivalLook=rival.look;home();resize();document.getElementById('introTitle').textContent=id==='jax'?'Jax owns these courts.':'Meet the Baseline Wall.';document.getElementById('introQuote').textContent=rival.intro+' '+rival.tip;document.getElementById('startBtn').textContent='Challenge '+rival.short;document.getElementById('again').textContent='Rematch '+rival.short;document.getElementById('rivalName').textContent=rival.name;document.getElementById('rivalTitle').textContent=rival.title;document.getElementById('rivalLevel').textContent='Lv '+rival.level;document.getElementById('venueLabel').textContent=(id==='jax'?'Chapter 1 · ':'Chapter 2 · ')+rival.court;}
+document.getElementById('mapBtn').onclick=openMap;document.getElementById('resultMap').onclick=openMap;document.getElementById('mapHome').onclick=home;
+document.getElementById('chooseJax').onclick=()=>selectRival('jax');document.getElementById('chooseMira').onclick=()=>selectRival('mira');
 function resetSession(nextMode){
  mode=nextMode;paused=false;matchFinished=false;point=false;ball.active=false;servePending=false;swipe=null;
  playerSwing=oppSwing=celebration=0;impact=null;
@@ -302,12 +333,13 @@ document.getElementById('careerClose').onclick=home;
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame()});
 function practiceServe(){servePending=true;servePhase=0;serveUI.classList.add('show');document.getElementById('rallyLabel').textContent=`Serve lab · Attempt ${practiceAttempts+1}/10`}
 document.getElementById('practiceBtn').onclick=()=>{Sound.unlock();resetSession('practice');practiceAttempts=practiceTotal=0;practiceServe()};
+document.getElementById('mapPractice').onclick=()=>document.getElementById('practiceBtn').onclick();
 function updateBars(){pStamBar.style.width=pStam+'%';oStamBar.style.width=oStam+'%';pIqBar.style.width=iq+'%'}
 function px(v){return court.L+v*(court.R-court.L)} function py(v){return court.T+v*(court.B-court.T)}
 function beginPoint(){
   rally=0;point=true;ball.trail=[];ball.bounce=false;ball.out=false;bufferedHit=null;serviceSide=Math.floor((pScore+oScore)/2)%2===0?'left':'right';
   player.x=player.tx=serviceSide==='left'?.62:.38;opp.x=opp.tx=serviceSide==='left'?.38:.62;player.y=.86;opp.y=.16;
-  document.getElementById('rallyLabel').textContent=(pScore===6||oScore===6?'Match point · ':'')+(server==='player'?'You serve':'Jax serves');
+  document.getElementById('rallyLabel').textContent=(pScore===6||oScore===6?'Match point · ':'')+(server==='player'?'You serve':rival.short+' serves');
   pScoreEl.classList.toggle('active',server==='player');oScoreEl.classList.toggle('active',server==='opp');
   if(server==='player'){
     servePending=true;servePhase=0;serveUI.classList.add('show');ball.active=false;
@@ -317,7 +349,7 @@ function beginPoint(){
     servePending=false;serveUI.classList.remove('show');ball.active=true;ball.last='opp';
     ball.x=opp.x;ball.y=.1;
     const target=Physics.serveTarget(['wide','body','t'][Math.floor(Math.random()*3)],serviceSide==='left'?'right':'left');
-    Physics.launch(ball,{x:target.x,y:1-target.y,time:1.15,z:.18,serve:true,serviceSide:serviceSide==='left'?'right':'left'});oppSwing=1;Sound.play('hit');say('Jax serves');
+    Physics.launch(ball,{x:target.x,y:1-target.y,time:rival.id==='mira'?1.25:1.15,z:.18,serve:true,serviceSide:serviceSide==='left'?'right':'left'});oppSwing=1;Sound.play('hit');say(rival.short+' serves');
   }
 }
 function setVelocity(tx,ty,speed){Physics.launch(ball,{x:tx,y:ty,time:Math.max(.85,Math.min(1.6,Math.hypot(tx-ball.x,ty-ball.y)/speed)),z:Math.max(.08,ball.z||.12),kind:selected})}
@@ -329,18 +361,19 @@ function award(who,reason){
  celebration=who==='player'?1.8:0;
  pScoreEl.textContent=pScore;oScoreEl.textContent=oScore;
  pStam=Math.min(100,pStam+7);oStam=Math.min(100,oStam+7);updateBars();
- say((who==='player'?'TenAce point':'Jax point')+(reason?' · '+reason:''),1000);vib(who==='player'?[15,30,25]:18);
+ say((who==='player'?'TenAce point':rival.short+' point')+(reason?' · '+reason:''),1000);vib(who==='player'?[15,30,25]:18);
  if(pScore>=target||oScore>=target)matchEndAt=performance.now()+950;else schedulePoint();
 }
 function endMatch(){
  if(matchFinished)return;matchFinished=true;matchEndAt=Infinity;
  document.getElementById('pauseBtn').disabled=true;
  const win=pScore>oScore;
- const earned=Progress.reward(career,win,bestRally);saveCareer();
+ const reward=Progress.rewardMatch(career,win,bestRally,rival.id),earned=reward.earned;saveCareer();
  document.getElementById('rewardLabel').textContent=`Match complete · +${earned} XP`;
- document.getElementById('resultTitle').textContent=win?'You knocked off the Court King.':'Jax survives.';
- document.getElementById('resultCopy').textContent=`${win?'You win':'Jax wins'} ${Math.max(pScore,oScore)}–${Math.min(pScore,oScore)}. Best rally: ${bestRally}. Spend available points now or save them for later.`;
- document.getElementById('resultQuote').textContent=win?'“Okay... maybe you can play. Don’t get used to it.” — Jax':'“Come back when you’re ready to actually make me run.” — Jax';
+ document.getElementById('resultTitle').textContent=win?'You defeated '+rival.short+'.':rival.short+' holds the court.';
+ document.getElementById('resultCopy').textContent=`${win?'You win':rival.short+' wins'} ${Math.max(pScore,oScore)}–${Math.min(pScore,oScore)}. Best rally: ${bestRally}. Spend available points now or save them for later.`;
+ document.getElementById('resultQuote').textContent=(win?rival.win:rival.loss)+' — '+rival.short;
+ document.getElementById('chapterReward').textContent=reward.first?(rival.id==='jax'?'Terrace invitation earned! Mira Sol and Solstice Terrace are now available.':'Local circuit complete! Equip your Champion gold shirt in Customize player.')+` +${reward.bonus} first-win bonus XP.`:'';
  document.getElementById('result').classList.add('show');
 }
 document.getElementById('startBtn').onclick=startMatch;
@@ -399,9 +432,9 @@ function oppHit(){
  const prox=Math.hypot((ball.x-opp.x)*1.15,ball.y-opp.y);if(prox>.22)return;
  Sound.play('hit');
  oppSwing=1;impact={x:px(ball.x),y:py(ball.y),life:1,color:'#ffc0a1'};
- let tx=rally>3?(player.x<.5?.70:.30):(.32+Math.random()*.36),ty=.72+Math.random()*.06;
- if(Math.random()<.025+Math.max(0,prox-.12)*.4+(100-oStam)*.0004)tx=tx<.5?.12:.88;
- setVelocity(tx,ty,.50+Math.random()*.085);ball.last='opp';rally++;bestRally=Math.max(bestRally,rally);oStam=Math.max(16,oStam-2.4);updateBars()
+ let tx=rally>3?(player.x<.5?.70:.30):(.32+Math.random()*.36),ty=rival.id==='mira'?.77+Math.random()*.05:.72+Math.random()*.06;
+ if(Math.random()<rival.error+Math.max(0,prox-.12)*.4+(100-oStam)*.0004)tx=tx<.5?.12:.88;
+ setVelocity(tx,ty,rival.pace+Math.random()*.045);if(rival.id==='mira')ball.kind='lob';ball.last='opp';rally++;bestRally=Math.max(bestRally,rally);oStam=Math.max(16,oStam-(rival.id==='mira'?1.5:2.4));updateBars()
 }
 
 function update(dt,t){
@@ -423,7 +456,8 @@ function update(dt,t){
  }
  if(ball.last==='player')player.tx=.5;
  player.x+=(player.tx-player.x)*Math.min(1,fx.movement*(.9+fx.anticipation)*dt);
- opp.x+=(opp.tx-opp.x)*Math.min(1,2.35*dt);
+ if(ball.last==='opp')opp.tx=.5;
+ opp.x+=(opp.tx-opp.x)*Math.min(1,rival.movement*dt);
  if(animTime-footstep>.23&&Math.abs(player.tx-player.x)>.025){Sound.play('step');footstep=animTime;}
  for(const event of Physics.step(ball,dt)){
   if(event.type==='bounce'){bounceMark={x:event.x,y:event.y,life:1};Sound.play('bounce');if(ball.last==='opp')say('One bounce · Hit now',450);}

@@ -12,6 +12,7 @@ const files = {
   '/graphics.js': ['graphics.js', 'text/javascript; charset=utf-8'],
   '/physics.js': ['physics.js', 'text/javascript; charset=utf-8'],
   '/sound.js': ['sound.js', 'text/javascript; charset=utf-8'],
+  '/rivals.js': ['rivals.js', 'text/javascript; charset=utf-8'],
 };
 
 http.createServer((req, res) => {

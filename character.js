@@ -6,7 +6,7 @@
   const palettes = {
     skin: ['#f3cba5', '#dea575', '#bc8056', '#8c553b', '#573a2d'],
     hair: ['#24252c', '#60402e', '#c58b43', '#eed8a8', '#a34336'],
-    shirt: ['#b9ed62', '#5ed6ce', '#778dff', '#f37968', '#f4eee1'],
+    shirt: ['#b9ed62', '#5ed6ce', '#778dff', '#f37968', '#f4eee1', '#edc76d'],
     shorts: ['#182d3b', '#e8e2d5', '#51487b', '#265750'],
     racket: ['#b9ed62', '#ffad66', '#9b9bff', '#eeeeef'],
   };

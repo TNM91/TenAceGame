@@ -2,6 +2,18 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.6 — The local circuit
+
+- Career map with illustrated venue cards, rival introductions, unlock requirements, and next milestones. Reach it from the clubhouse or match results; practice and rematches remain available.
+- First Jax victory unlocks Mira Sol at Solstice Terrace and awards +80 bonus XP in addition to the normal win reward.
+- Mira is a defensive rival with quicker recovery, slower/deeper returns, fewer placement errors, and better stamina conservation. Her character, dialogue, scoreboard, and venue replace Jax's when selected.
+- First Mira victory awards +100 bonus XP and unlocks the Champion gold shirt in Customize player. Cosmetics remain stat-neutral. First-win bonuses cannot be farmed through rematches.
+- New terrace art: warm terracotta surface, sunset sky and skyline, planters, lamps, and spectator seats. Riverdale also gains court-side details. Both surfaces use the same physics in this release.
+- Older saves with wins receive credit for beating Jax, since he was the only opponent; no retroactive bonus XP is granted. Career, appearance, and upgrades are preserved.
+- Completing both rivals finishes the current local circuit. There is no third chapter yet.
+
+Validation: `node --test --test-isolation=none chapters.test.cjs physics.test.cjs progression.test.cjs character.test.cjs game.test.cjs sound.test.cjs`.
+
 ## 0.5 — Find your rhythm
 
 - Ball flight now has height, gravity, surface rebounds, and net collision. Line calls use the first landing position inside the painted singles lines. A second bounce awards the hitter the point.

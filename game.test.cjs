@@ -21,7 +21,7 @@ function boot(storage = new Map(), blocked = false, random = .5) {
   }
   const ids = {};
   for (const match of html.matchAll(/id="([^"]+)"/g)) ids[match[1]] = element();
-  const modals = ['intro', 'result', 'career', 'paused', 'creator'].map(id => ids[id]);
+  const modals = ['intro', 'result', 'career', 'paused', 'creator', 'journey'].map(id => ids[id]);
   ids.intro.classList.add('show');
   const upgrades = ['power', 'control', 'speed', 'iq'].map(key => {
     const el = element('stat'); el.dataset.up = key; return el;
@@ -35,7 +35,7 @@ function boot(storage = new Map(), blocked = false, random = .5) {
     addEventListener(name,fn) {listeners[name]=fn;} };
   const math = Object.create(Math); math.random = () => random;
   vm.runInNewContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], {
-    document, window: { TenAceProgression: Progress, TenAceCharacter: Character, TenAcePhysics:require('./physics.js'),TenAceSound:{enabled:false,unlock(){},set(){},play(){}}, TenAceGraphics: {person(){},court(){},net(){}} }, Math: math,
+    document, window: { TenAceProgression: Progress, TenAceRivals:require('./rivals.js'),TenAceCharacter: Character, TenAcePhysics:require('./physics.js'),TenAceSound:{enabled:false,unlock(){},set(){},play(){}}, TenAceGraphics: {person(){},court(){},net(){}} }, Math: math,
     localStorage: { getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => { if (blocked) throw Error('storage blocked'); storage.set(key, value); } },
     performance: { now: () => now }, navigator: {}, devicePixelRatio: 1,
@@ -138,4 +138,14 @@ test('creator cancellation is reversible and saved identity survives reload with
   assert.equal(save.character.style, 'ponytail');assert.equal(save.character.shirt, '#f37968');
   assert.equal(save.xp, 0);assert.deepEqual(save.stats, Progress.fresh().stats);
   assert.equal(boot(game.storage).ids.youName.textContent, 'Ace');
+});
+test('chapter selection enforces unlocks, loads Mira, and keeps Jax available',()=>{
+ const locked=boot();locked.ids.chooseMira.onclick();assert.equal(locked.ids.chooseMira.disabled,true);
+ const save=Progress.fresh();Progress.rewardMatch(save,true,5,'jax');
+ const game=boot(new Map([[Progress.KEY,JSON.stringify(save)]]));
+ game.ids.mapBtn.onclick();assert.ok(game.ids.journey.classList.contains('show'));
+ assert.equal(game.ids.chooseMira.disabled,false);game.ids.chooseMira.onclick();
+ assert.equal(game.ids.rivalName.textContent,'Mira Sol');assert.match(game.ids.venueLabel.textContent,/Solstice/);
+ loseMatch(game);assert.match(game.ids.resultQuote.textContent,/Mira/);
+ game.ids.resultMap.onclick();game.ids.chooseJax.onclick();assert.equal(game.ids.rivalName.textContent,'Jax Mercer');
 });
