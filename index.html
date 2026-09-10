@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.3</title>
+<title>TenAce — Road to #1 · 0.4</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -76,6 +76,24 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
 .tip{font-size:11px;line-height:1.5;color:#abc2d1;margin-top:10px}
 #rallyLabel{color:#9be11d}
 @media(max-height:600px){.brandrow{height:28px}.brandrow img{height:26px}.card{padding:4px 7px}.controls{height:70px;min-height:70px}.toolbar{margin-top:3px}.modal{padding:8px}h1{font-size:21px}}
+.creatorPanel{padding:0;max-width:460px;background:#102b36}
+.creatorHead{padding:18px 20px 12px;background:#173541}
+.creatorHead h1{font-size:27px;letter-spacing:-1px}
+.creatorStage{height:196px;position:relative;background:radial-gradient(ellipse at 50% 70%,#436c68,#1c414b 60%,#173541);overflow:hidden}
+#characterPreview{width:100%;height:100%;background:transparent}
+.stageBadge{position:absolute;left:18px;top:12px;color:#d8e6d0;font-size:9px;letter-spacing:2px;text-transform:uppercase}
+.creatorFields{padding:16px 20px 20px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.creatorFields label{display:flex;flex-direction:column;gap:6px;color:#b3c9cd;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.creatorFields input,.creatorFields select{width:100%;min-height:44px;border:1px solid #42606a;background:#0b222d;border-radius:9px;color:#f2f5e8;font:500 16px system-ui;padding:8px;letter-spacing:0;text-transform:none}
+.creatorFields .wide{grid-column:1/-1}
+.creatorActions{display:flex;gap:8px;grid-column:1/-1}.creatorActions button{margin:0}
+#customizeBtn{border-color:#b9ed6266;color:#d3f79a}
+.namerow #youName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:78px}
+.clubPortrait{height:90px;display:flex;align-items:center;background:linear-gradient(110deg,#244f52,#163541);border:1px solid #426966;border-radius:13px;margin-top:12px;overflow:hidden}
+#clubPreview{width:108px;height:90px;background:transparent;flex:none}.clubPortrait b{display:block;color:#edf2db;font-size:20px;letter-spacing:-.5px}.clubPortrait small{color:#a6c4b5;font-size:10px}
+.panel{border-color:#3e6166}.primary{background:#b9ed62}.eyebrow{color:#b9ed62}
+.toast{max-width:94%;white-space:normal;text-align:center;background:#102c36f5;border-color:#9bc897;font-size:11px;box-shadow:0 5px 18px #07182166}
+@media(max-height:700px){.creatorStage{height:152px}.creatorHead{padding:12px 16px 6px}.creatorFields{gap:8px;padding:12px 16px}.creatorFields label{gap:4px}.clubPortrait{height:68px}#clubPreview{height:68px}.rivalQuote{margin:8px 0}}
 </style>
 </head>
 <body>
@@ -126,15 +144,17 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.3 · Riverdale</div>
+   <div class="eyebrow">Season 0.4 · Make your mark</div>
    <h1>Jax owns these courts.</h1>
    <div class="copy">Your climb starts here. Beat the local Court King to 7 points. Earn 120 XP for a win or 60 XP for a loss; every 100 XP unlocks an upgrade.</div>
    <div id="careerSummary" class="careerline"></div>
+   <div class="clubPortrait"><canvas id="clubPreview" width="216" height="180" aria-label="Your customized player"></canvas><div><b id="clubName">Rookie</b><small>RIVERDALE ROOKIE / YOUR JOURNEY</small></div></div>
    <div id="practiceSummary" class="tip" role="status"></div>
    <div class="rivalQuote">“Nice gear. Shame the racquet can't hit the ball for you.” — Jax</div>
    <button id="startBtn" class="primary">Challenge Jax</button>
    <button id="practiceBtn" class="secondary">Serve practice · 10 attempts</button>
    <button id="careerBtn" class="secondary">Player upgrades</button>
+   <button id="customizeBtn" class="secondary">Customize player</button>
    <div class="tip">Tap to serve in the green. When the ball reaches your highlighted hitting zone, swipe upward toward your target. On desktop, drag or use ← ↑ → to return.</div>
    <div class="saveStatus" id="saveStatus" role="status"></div>
  </div>
@@ -172,9 +192,27 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
  <div class="copy">Your current point is waiting. Leaving a match gives no XP; previously earned progress is kept.</div>
  <button id="resumeBtn" class="primary">Resume game</button><button id="leaveBtn" class="secondary">Leave for clubhouse</button>
 </div></div>
+<div id="creator" class="modal" role="dialog" aria-label="Customize player"><div class="panel creatorPanel">
+ <div class="creatorHead"><div class="eyebrow">Player studio / 0.4</div><h1>Your court. Your style.</h1></div>
+ <div class="creatorStage"><span class="stageBadge">Live player preview</span><canvas id="characterPreview" width="800" height="392" aria-label="Live character preview"></canvas></div>
+ <form id="creatorForm" class="creatorFields">
+  <label class="wide">Player name<input id="editName" name="name" maxlength="18" autocomplete="off" placeholder="Rookie"></label>
+  <label>Skin tone<select id="editSkin" name="skin"><option value="#f3cba5">Light</option><option value="#dea575">Golden</option><option value="#bc8056">Warm brown</option><option value="#8c553b">Deep brown</option><option value="#573a2d">Rich brown</option></select></label>
+  <label>Hairstyle<select id="editStyle" name="style"><option value="crop">Cropped</option><option value="curls">Curls</option><option value="ponytail">Ponytail</option><option value="bun">Bun</option><option value="shaved">Shaved</option></select></label>
+  <label>Hair color<select id="editHair" name="hair"><option value="#24252c">Midnight</option><option value="#60402e">Chestnut</option><option value="#c58b43">Honey</option><option value="#eed8a8">Platinum</option><option value="#a34336">Auburn</option></select></label>
+  <label>Shirt<select id="editShirt" name="shirt"><option value="#b9ed62">Court lime</option><option value="#5ed6ce">Lagoon</option><option value="#778dff">Electric violet</option><option value="#f37968">Sunset coral</option><option value="#f4eee1">Club cream</option></select></label>
+  <label>Shorts<select id="editShorts" name="shorts"><option value="#182d3b">Midnight navy</option><option value="#e8e2d5">Warm cream</option><option value="#51487b">Plum</option><option value="#265750">Forest</option></select></label>
+  <label>Racket color<select id="editRacket" name="racket"><option value="#b9ed62">Lime</option><option value="#ffad66">Apricot</option><option value="#9b9bff">Lavender</option><option value="#eeeeef">Silver</option></select></label>
+  <label class="wide">Racket shape<select id="editFrame" name="frame"><option value="classic">Classic oval</option><option value="power">Wide frame</option><option value="control">Long frame</option></select></label>
+  <div class="creatorActions"><button type="button" id="creatorCancel" class="secondary">Cancel</button><button type="submit" class="primary">Save player</button></div>
+  <div class="tip wide">Style is yours. Gameplay bonuses come from your earned upgrades.</div>
+ </form>
+</div></div>
 </div>
 
+<script src="./character.js"></script>
 <script src="./progression.js"></script>
+<script src="./graphics.js"></script>
 <script>
 (() => {
 const C=document.getElementById('game'),ctx=C.getContext('2d'),wrap=document.getElementById('gameWrap');
@@ -185,6 +223,7 @@ let W=0,H=0,dpr=1,last=performance.now(),selected='topspin',swipe=null;
 let pScore=0,oScore=0,target=7,rally=0,pStam=100,oStam=100,iq=35;
 let point=false,server='player',servePending=false,nextPoint=Infinity,servePhase=0;
 const Progress=window.TenAceProgression;
+const Character=window.TenAceCharacter,Graphics=window.TenAceGraphics;
 let career=Progress.fresh(),storageOK=true;
 try{career=Progress.normalize(JSON.parse(localStorage.getItem(Progress.KEY)))}catch{storageOK=false}
 let mode='home',paused=false,pausedAt=0,matchFinished=false,bestRally=0,matchEndAt=Infinity;
@@ -193,10 +232,21 @@ let fx=Progress.effects(career);
 const player={x:.5,y:.86,tx:.5},opp={x:.5,y:.16,tx:.5};
 const ball={x:.5,y:.82,vx:0,vy:0,active:false,last:'player',trail:[],bounce:false,out:false};
 const court={};
+const backdrop=document.createElement('canvas'),backCtx=backdrop.getContext('2d');
+const rivalLook={...Character.fresh(),name:'Jax',skin:'#bc8056',hair:'#60402e',shirt:'#f37968',shorts:'#e8e2d5',style:'curls',racket:'#eeeeef'};
+let draft=null,animTime=0,playerSwing=0,oppSwing=0,swingSide=1,celebration=0,impact=null;
+const creatorFields={name:'editName',skin:'editSkin',hair:'editHair',shirt:'editShirt',shorts:'editShorts',racket:'editRacket',style:'editStyle',frame:'editFrame'};
+function readDraft(){const next={};for(const [key,id] of Object.entries(creatorFields))next[key]=document.getElementById(id).value;draft=Character.normalize(next)}
+document.getElementById('customizeBtn').onclick=()=>{draft={...career.character};for(const [key,id] of Object.entries(creatorFields))document.getElementById(id).value=draft[key];document.getElementById('intro').classList.remove('show');document.getElementById('creator').classList.add('show');document.querySelector('.creatorPanel').scrollTop=0};
+document.getElementById('creatorForm').oninput=readDraft;
+document.getElementById('creatorForm').onchange=readDraft;
+document.getElementById('creatorForm').onsubmit=e=>{e.preventDefault();readDraft();career.character={...draft};saveCareer();draft=null;home()};
+document.getElementById('creatorCancel').onclick=()=>{draft=null;home()};
 
 function vib(ms=20){try{navigator.vibrate?.(ms)}catch{}}
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=wrap.clientWidth;H=wrap.clientHeight;C.width=W*dpr;C.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
-court.L=W*.09;court.R=W*.91;court.T=H*.055;court.B=H*.96;court.N=H*.5}
+court.L=W*.09;court.R=W*.91;court.T=H*.095;court.B=H*.91;court.N=H*.5;
+backdrop.width=W*dpr;backdrop.height=H*dpr;backCtx.setTransform(dpr,0,0,dpr,0,0);Graphics.court(backCtx,W,H,court)}
 addEventListener('resize',resize);resize();
 
 function say(t,ms=850){toast.textContent=t;toast.classList.add('show');clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove('show'),ms)}
@@ -206,6 +256,8 @@ function renderCareer(){
  const available=Progress.points(career),level=1+Math.floor(career.xp/100);
  const stats=`Power ${career.stats.power} · Control ${career.stats.control} · Speed ${career.stats.speed} · IQ ${career.stats.iq}`;
  document.getElementById('levelLabel').textContent='Lv '+level;
+ document.getElementById('youName').textContent=career.character.name;
+ document.getElementById('clubName').textContent=career.character.name;
  document.getElementById('careerSummary').textContent=`Level ${level} · ${career.xp} XP · ${career.wins}W / ${career.matches-career.wins}L`;
  document.getElementById('careerDetail').textContent=`${available} upgrade point${available===1?'':'s'} available. ${100-career.xp%100} XP to next level. ${stats}. Best rally: ${career.bestRally}. Best serve drill: ${career.bestServe}%.`;
  document.getElementById('upgradeStatus').textContent=`${available} upgrade point${available===1?'':'s'} available · ${stats}`;
@@ -216,6 +268,7 @@ function renderCareer(){
 }
 function resetSession(nextMode){
  mode=nextMode;paused=false;matchFinished=false;point=false;ball.active=false;servePending=false;swipe=null;
+ playerSwing=oppSwing=celebration=0;impact=null;
  nextPoint=matchEndAt=practiceNext=Infinity;bestRally=0;pScore=oScore=0;pStam=oStam=100;
  pScoreEl.textContent=oScoreEl.textContent='0';player.x=player.tx=opp.x=opp.tx=.5;
  server='player';ball.trail=[];serveUI.classList.remove('show');
@@ -247,6 +300,7 @@ function beginPoint(){
     servePending=true;servePhase=0;serveUI.classList.add('show');ball.active=false;
     ball.x=.53;ball.y=.83;say('Your serve');
   }else{
+    oppSwing=1;
     servePending=false;serveUI.classList.remove('show');ball.active=true;ball.last='opp';
     ball.x=.47;ball.y=.19;
     const tx=.22+Math.random()*.56,ty=.75+Math.random()*.12;
@@ -258,6 +312,7 @@ function schedulePoint(){server=server==='player'?'opp':'player';nextPoint=perfo
 function award(who,reason){
  if(!point)return;point=false;ball.active=false;serveUI.classList.remove('show');
  if(who==='player')pScore++;else oScore++;
+ celebration=who==='player'?1.8:0;
  pScoreEl.textContent=pScore;oScoreEl.textContent=oScore;
  pStam=Math.min(100,pStam+7);oStam=Math.min(100,oStam+7);updateBars();
  say((who==='player'?'TenAce point':'Jax point')+(reason?' · '+reason:''),1000);vib(who==='player'?[15,30,25]:18);
@@ -286,6 +341,7 @@ function serve(){
  let q=err<fx.serveWindow?'ACE TIMING':err<fx.serveWindow+.10?'GOOD SERVE':'OFF-TIMING';
  const speed=(q==='ACE TIMING'?.72:q==='GOOD SERVE'?.62:.52)*fx.power;
  const risk=(q==='ACE TIMING'?.03:q==='GOOD SERVE'?.07:.16)*fx.risk;
+ playerSwing=1;swingSide=1;impact={x:px(player.x)+12,y:py(player.y)-32,life:1,color:'#fff5ad'};
  if(mode==='practice'){
    const accuracy=Math.round((1-err*2)*100);practiceTotal+=accuracy;practiceAttempts++;
    servePending=false;serveUI.classList.remove('show');say(`${q} · ${accuracy}%`,1200);
@@ -314,6 +370,7 @@ function playerHit(dx,dy,dist,dur){
  if(ball.last!=='opp'||ball.y<.61)return say('Too early');
  const prox=Math.hypot((ball.x-player.x)*1.15,(ball.y-player.y)*1.45); if(prox>.34)return say('Out of reach');
  const err=Math.abs(ball.y-.80),q=err<fx.timing?'PERFECT':err<fx.timing+.06?'GOOD':'LATE';
+ playerSwing=1;swingSide=ball.x<player.x?-1:1;impact={x:px(ball.x),y:py(ball.y),life:1,color:q==='PERFECT'?'#f9ffbc':'#98ede3'};
  const m={topspin:{s:.61,r:.045,st:3},flat:{s:.75,r:.14,st:5},slice:{s:.50,r:.03,st:2},lob:{s:.43,r:.055,st:3}}[selected];
  let tx=Math.max(.1,Math.min(.9,.5+dx*1.10)),ty=selected==='lob'?.06:.12;
  if(Math.random()<(m.r+(q==='LATE'?.13:q==='GOOD'?.02:0))*fx.risk){if(Math.random()<.55)tx=Math.random()<.5?.01:.99;else ty=-.08}
@@ -324,6 +381,7 @@ function oppHit(){
  const prox=Math.hypot((ball.x-opp.x)*1.1,(ball.y-opp.y)*1.5);if(prox>.33)return;
  const make=.77+Math.min(.12,rally*.012)-(100-oStam)*.0015;
  if(Math.random()>make)return award('player','forced error');
+ oppSwing=1;impact={x:px(ball.x),y:py(ball.y),life:1,color:'#ffc0a1'};
  let tx=rally>2?(player.x<.5?.75:.25):(.18+Math.random()*.64),ty=.74+Math.random()*.13;
  setVelocity(tx,ty,.50+Math.random()*.085);ball.last='opp';rally++;bestRally=Math.max(bestRally,rally);oStam=Math.max(16,oStam-2.4);updateBars()
 }
@@ -352,28 +410,34 @@ function update(dt,t){
  if(ball.y>1.035)return award(ball.last==='opp'?'opp':'player','winner');
 }
 function drawCourt(){
- ctx.clearRect(0,0,W,H);ctx.fillStyle='#4f895d';ctx.fillRect(0,0,W,H);
- // trees / clubhouse
- ctx.fillStyle='#183349';ctx.fillRect(0,0,W,H*.052);
- for(let i=0;i<14;i++){ctx.fillStyle=i%2?'#29583f':'#356b49';ctx.beginPath();ctx.arc(i*W/13,H*.045,18+(i%3)*4,0,Math.PI*2);ctx.fill()}
- let {L,R,T,B,N}=court;ctx.fillStyle='#2b648d';ctx.fillRect(L,T,R-L,B-T);ctx.strokeStyle='#f7fbff';ctx.lineWidth=2;ctx.strokeRect(L,T,R-L,B-T);
- ctx.fillStyle=ball.active&&ball.last==='opp'&&Math.abs(ball.y-.80)<fx.timing?'#9be11d55':'#9be11d16';ctx.fillRect(L,py(.80-fx.timing),R-L,(B-T)*fx.timing*2);
- const sL=L+(R-L)*.18,sR=R-(R-L)*.18,u=T+(N-T)*.58,l=N+(B-N)*.42;
- ctx.beginPath();ctx.moveTo(L,N);ctx.lineTo(R,N);ctx.moveTo(sL,T);ctx.lineTo(sL,B);ctx.moveTo(sR,T);ctx.lineTo(sR,B);ctx.moveTo(sL,u);ctx.lineTo(sR,u);ctx.moveTo(sL,l);ctx.lineTo(sR,l);ctx.moveTo((L+R)/2,u);ctx.lineTo((L+R)/2,l);ctx.stroke();
- ctx.strokeStyle='#06131f';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(L-5,N);ctx.lineTo(R+5,N);ctx.stroke();ctx.strokeStyle='#eaf0f4';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(L-5,N-3);ctx.lineTo(R+5,N-3);ctx.stroke();
- ctx.fillStyle='#0a2437';ctx.fillRect(L,T-24,R-L,18);ctx.fillStyle='#9be11d';ctx.font='800 9px system-ui';ctx.textAlign='center';ctx.fillText('MORE TENNIS. LESS CHAOS.',W/2,T-11)
+ ctx.clearRect(0,0,W,H);ctx.drawImage(backdrop,0,0,W,H);
+ const {L,R,T,B}=court;
+ ctx.fillStyle=ball.active&&ball.last==='opp'&&Math.abs(ball.y-.80)<fx.timing?'#ceff7b45':'#ceff7b0b';ctx.fillRect(L,py(.80-fx.timing),R-L,(B-T)*fx.timing*2);
+ Graphics.net(ctx,court);
 }
 function drawPlayer(p,you){
- const x=px(p.x),y=py(p.y);ctx.save();ctx.translate(x,y);ctx.fillStyle='#0004';ctx.beginPath();ctx.ellipse(0,12,17,5,0,0,7);ctx.fill();
- ctx.fillStyle=you?'#071827':'#1b2f3e';ctx.beginPath();ctx.arc(0,-3,9,0,7);ctx.fill();ctx.fillStyle='#eeb078';ctx.beginPath();ctx.arc(0,-14,5.5,0,7);ctx.fill();
- ctx.strokeStyle='#f5f7f8';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-6,3);ctx.lineTo(-11,15);ctx.moveTo(6,3);ctx.lineTo(11,15);ctx.stroke();
- ctx.strokeStyle='#9be11d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(6,-3);ctx.lineTo(14,-9);ctx.stroke();ctx.strokeStyle='#e6edf2';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(18,-11,5,8,.7,0,7);ctx.stroke();ctx.restore()
+ const size=Math.min(.72,W/550)*(you?1:.87);
+ Graphics.person(ctx,px(p.x),py(p.y)+8,size,you?career.character:rivalLook,{time:animTime,run:ball.active?Math.min(1,Math.abs(p.tx-p.x)*12):0,swing:you?playerSwing:oppSwing,side:you?swingSide:-1,serve:you&&servePending,celebrate:you&&celebration>0});
 }
 function drawBall(){
- if(!ball.active)return;ball.trail.forEach((p,i)=>{ctx.globalAlpha=(i/ball.trail.length)*.17;ctx.fillStyle='#e8ff42';ctx.beginPath();ctx.arc(px(p.x),py(p.y),2.2,0,7);ctx.fill()});ctx.globalAlpha=1;
- ctx.fillStyle='#e2ff32';ctx.beginPath();ctx.arc(px(ball.x),py(ball.y),4.6,0,7);ctx.fill()
+ if(servePending){const x=px(player.x)-14,y=py(player.y)-45-Math.abs(Math.sin(animTime*3))*15;ctx.fillStyle='#edff76';ctx.beginPath();ctx.arc(x,y,3.7,0,7);ctx.fill();return}
+ if(!ball.active)return;
+ const color={flat:'#ffce8a',slice:'#96e9ec',lob:'#d5b5ff',topspin:'#e1ff8c'}[selected];
+ ball.trail.forEach((p,i)=>{ctx.globalAlpha=i/ball.trail.length*.32;ctx.fillStyle=color;ctx.beginPath();ctx.arc(px(p.x),py(p.y),1.5+i*.17,0,7);ctx.fill()});ctx.globalAlpha=1;
+ const x=px(ball.x),y=py(ball.y),lift=4+Math.sin(Math.min(1,Math.max(0,ball.y))*Math.PI)*9;
+ ctx.fillStyle='#092b3c55';ctx.beginPath();ctx.ellipse(x+4,y+7,5,2.5,0,0,7);ctx.fill();
+ ctx.fillStyle='#efff7f';ctx.beginPath();ctx.arc(x,y-lift,4.5,0,7);ctx.fill();ctx.strokeStyle='#ffffe5';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x-1,y-lift,2.4,-1,1.2);ctx.stroke();
 }
-function loop(t){const dt=Math.min(.033,(t-last)/1000);last=t;update(dt,t);drawCourt();drawPlayer(opp,false);drawPlayer(player,true);drawBall();requestAnimationFrame(loop)}
+function drawEffects(){
+ if(impact){ctx.save();ctx.globalAlpha=impact.life;ctx.strokeStyle=impact.color;ctx.lineWidth=2;const radius=5+(1-impact.life)*22;for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(impact.x+Math.cos(a)*radius,impact.y+Math.sin(a)*radius);ctx.lineTo(impact.x+Math.cos(a)*(radius+6),impact.y+Math.sin(a)*(radius+6));ctx.stroke()}ctx.restore()}
+ if(celebration>0){ctx.save();ctx.globalAlpha=Math.min(1,celebration);for(let i=0;i<18;i++){ctx.fillStyle=i%2?'#b9ed62':'#f8daa1';const x=W*.5+Math.sin(i*13)*(1.8-celebration)*W*.45,y=H*.3+(1.8-celebration)*H*.22+Math.cos(i*9)*30;ctx.fillRect(x,y,3,6)}ctx.restore()}
+}
+function drawPortrait(id,look,large){const canvas=document.getElementById(id),c=canvas.getContext('2d'),w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;const ratio=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio)}c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);Graphics.person(c,w*.48,h*.88,large?h/110:h/96,look,{time:animTime,run:0});}
+function loop(t){const dt=Math.min(.033,(t-last)/1000);last=t;
+ if(!paused){animTime+=dt;playerSwing=Math.max(0,playerSwing-dt*3);oppSwing=Math.max(0,oppSwing-dt*3);celebration=Math.max(0,celebration-dt);if(impact){impact.life-=dt*4;if(impact.life<=0)impact=null}}
+ update(dt,t);drawCourt();drawPlayer(opp,false);drawPlayer(player,true);drawBall();drawEffects();
+ if(mode==='home'){if(draft)drawPortrait('characterPreview',draft,true);else drawPortrait('clubPreview',career.character,false)}
+ requestAnimationFrame(loop)}
 renderCareer();requestAnimationFrame(loop);
 })();
 </script>

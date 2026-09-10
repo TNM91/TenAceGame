@@ -1,6 +1,20 @@
-# TenAce 0.3 — Build your player
+# TenAce releases
 
 Live game: https://ten-ace-game.vercel.app/
+
+## 0.4 — Your court. Your style.
+
+- Player studio with a live animated preview: name, five skin tones, five hairstyles, five hair colors, shirt and shorts palettes, racket color, and three frame shapes.
+- Save applies your player to the clubhouse portrait, scoreboard name, and on-court character. Cancel discards the draft. Cosmetics have no stat advantage.
+- Existing 0.3 careers acquire a default appearance without losing XP, upgrades, or records. Appearance saves in the same browser-local career.
+- Shared vector character rig with a ready stance, moving legs, serve pose, directional return swings, and raised-arm point celebrations.
+- New textured teal court with garden canopy, paths, fencing, benches, afternoon shading, and net mesh. Static court art is cached per resize; no external image requests are required.
+- Colored ball trails, ball shadows and visual lift, contact sparks, and celebratory particles. Ball-height cues are cosmetic; this release does not add physical bounce or net collision simulation.
+- Verified creator save/cancel and reload, on-court appearance, and phone layouts at 390×844 and 375×667.
+
+Run all tests: `node --test --test-isolation=none progression.test.cjs game.test.cjs character.test.cjs`.
+
+## 0.3 — Build your player
 
 ## Progression
 

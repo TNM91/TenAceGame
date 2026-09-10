@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 const Progress = require('./progression.js');
+const Character = require('./character.js');
 const html = fs.readFileSync('index.html', 'utf8');
 
 // Run the shipped game loop with a deterministic clock and a small DOM adapter.
@@ -20,7 +21,7 @@ function boot(storage = new Map(), blocked = false) {
   }
   const ids = {};
   for (const match of html.matchAll(/id="([^"]+)"/g)) ids[match[1]] = element();
-  const modals = ['intro', 'result', 'career', 'paused'].map(id => ids[id]);
+  const modals = ['intro', 'result', 'career', 'paused', 'creator'].map(id => ids[id]);
   ids.intro.classList.add('show');
   const upgrades = ['power', 'control', 'speed', 'iq'].map(key => {
     const el = element('stat'); el.dataset.up = key; return el;
@@ -28,12 +29,12 @@ function boot(storage = new Map(), blocked = false) {
   const shots = ['slice', 'topspin', 'flat', 'lob'].map(key => {
     const el = element('shot'); el.dataset.shot = key; return el;
   });
-  const document = { getElementById: id => ids[id], querySelector: () => element(),
+  const document = { createElement: () => element(), getElementById: id => ids[id], querySelector: () => element(),
     querySelectorAll: selector => selector === '.modal' ? modals : selector === '.shot' ? shots : upgrades,
     addEventListener() {} };
   const math = Object.create(Math); math.random = () => .5;
   vm.runInNewContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], {
-    document, window: { TenAceProgression: Progress }, Math: math,
+    document, window: { TenAceProgression: Progress, TenAceCharacter: Character, TenAceGraphics: {person(){},court(){},net(){}} }, Math: math,
     localStorage: { getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => { if (blocked) throw Error('storage blocked'); storage.set(key, value); } },
     performance: { now: () => now }, navigator: {}, devicePixelRatio: 1,
@@ -99,4 +100,20 @@ test('corrupt and unavailable storage do not prevent play', () => {
   loseMatch(game);
   assert.match(game.ids.saveStatus.textContent, /Saving is unavailable/);
   assert.match(game.ids.careerSummary.textContent, /1L|1W/);
+});
+test('creator cancellation is reversible and saved identity survives reload without changing career stats', () => {
+  const game = boot();
+  game.ids.customizeBtn.onclick();
+  game.ids.editName.value = 'Discard me';game.ids.creatorForm.oninput();
+  game.ids.creatorCancel.onclick();
+  assert.equal(game.ids.youName.textContent, 'Rookie');
+  assert.equal(game.storage.size, 0);
+  game.ids.customizeBtn.onclick();
+  game.ids.editName.value = 'Ace';game.ids.editStyle.value='ponytail';game.ids.editShirt.value='#f37968';
+  game.ids.creatorForm.onsubmit({preventDefault(){}});
+  assert.equal(game.ids.youName.textContent, 'Ace');
+  const save = JSON.parse(game.storage.get(Progress.KEY));
+  assert.equal(save.character.style, 'ponytail');assert.equal(save.character.shirt, '#f37968');
+  assert.equal(save.xp, 0);assert.deepEqual(save.stats, Progress.fresh().stats);
+  assert.equal(boot(game.storage).ids.youName.textContent, 'Ace');
 });

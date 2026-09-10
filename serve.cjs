@@ -8,6 +8,8 @@ const files = {
   '/tenaceiq-logo.png': ['tenaceiq-logo.png', 'image/png'],
   '/manifest.webmanifest': ['manifest.webmanifest', 'application/manifest+json'],
   '/progression.js': ['progression.js', 'text/javascript; charset=utf-8'],
+  '/character.js': ['character.js', 'text/javascript; charset=utf-8'],
+  '/graphics.js': ['graphics.js', 'text/javascript; charset=utf-8'],
 };
 
 http.createServer((req, res) => {

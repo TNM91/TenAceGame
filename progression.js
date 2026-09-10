@@ -1,18 +1,19 @@
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module === 'object' && module.exports ? require('./character.js') : root.TenAceCharacter);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.TenAceProgression = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (Character) {
   'use strict';
   const KEY = 'tenace.career.v1';
   const names = ['power', 'control', 'speed', 'iq'];
   const integer = (n, max = 1000000) => Number.isSafeInteger(n) && n >= 0 ? Math.min(n, max) : 0;
   function fresh() {
-    return { version: 1, xp: 0, matches: 0, wins: 0, bestRally: 0, bestServe: 0, stats: { power: 0, control: 0, speed: 0, iq: 0 } };
+    return { version: 1, xp: 0, matches: 0, wins: 0, bestRally: 0, bestServe: 0, character: Character.fresh(), stats: { power: 0, control: 0, speed: 0, iq: 0 } };
   }
   function normalize(value) {
     const data = fresh();
     if (!value || value.version !== 1) return data;
+    data.character = Character.normalize(value.character);
     for (const key of ['xp', 'matches', 'wins', 'bestRally', 'bestServe']) data[key] = integer(value[key]);
     data.wins = Math.min(data.wins, data.matches);
     data.bestServe = Math.min(100, data.bestServe);
