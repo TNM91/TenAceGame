@@ -57,6 +57,35 @@ function loseMatch(game) {
     return game.ids.result.classList.contains('show');
   });
 }
+test('rally drill counts returns, finishes twelve feeds, and awards no career XP',()=>{
+ const game=boot();game.ids.rallyPractice.onclick();
+ let peak=0;
+ game.runUntil(()=>{
+   game.press('ArrowUp');
+   const count=game.ids.rallyLabel.textContent.match(/(\d+) returns/);if(count)peak=Math.max(peak,Number(count[1]));
+   return game.ids.practiceSummary.textContent.includes('Rally drill complete');
+ });
+ assert.ok(peak>0,'player can return the repeatable feeds');
+ assert.match(game.ids.practiceSummary.textContent,/\d+\/12 returns/);
+ assert.equal(game.storage.get(Progress.KEY),undefined);
+ assert.ok(game.ids.intro.classList.contains('show'));
+});
+test('rally drill pauses between feeds and leaving cancels all remaining feeds',()=>{
+ const game=boot();game.ids.rallyPractice.onclick();game.ids.pauseBtn.onclick();game.tick(60000);
+ assert.ok(!game.ids.rallyLabel.textContent.includes('Feed 1/12'));
+ game.ids.resumeBtn.onclick();game.runUntil(()=>game.ids.rallyLabel.textContent.includes('Feed 1/12'));
+ game.ids.pauseBtn.onclick();game.ids.leaveBtn.onclick();for(let i=0;i<500;i++)game.tick();
+ assert.ok(game.ids.intro.classList.contains('show'));assert.equal(game.storage.size,0);
+});
+test('difficulty persists separately and all difficulties complete playable matches',()=>{
+ for(const value of ['relaxed','standard','competitive']){
+  const game=boot();game.ids.difficulty.value=value;game.ids.difficulty.onchange();
+  assert.equal(game.storage.get('tenace.difficulty'),value);
+  assert.equal(boot(game.storage).ids.difficulty.value,value);
+  loseMatch(game);assert.equal(JSON.parse(game.storage.get(Progress.KEY)).matches,1);
+ }
+ const invalid=boot(new Map([['tenace.difficulty','constructor']]));assert.equal(invalid.ids.difficulty.value,'standard');
+});
 test('completed matches pay once, purchases persist, and reload does not pay again', () => {
   const game = boot();
   loseMatch(game);

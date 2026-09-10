@@ -2,6 +2,17 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.7 — Court depth and rally training
+
+- Rebuilt both courts with a receding perspective, sky, layered trees and skyline, textured surfaces, fencing, spectator benches, floodlights, and directional shading. Players, ball trails, bounce markers, service targets, and hitting zones follow the court projection.
+- Larger players scale with depth. Added back-facing match poses, shirt shading, preparation poses, body rotation, stronger footwork, and distinct slice, flat, topspin, and lob swing arcs. Creator previews retain the player's face and appearance.
+- Refined scoreboard, shot controls, and clubhouse styling. This remains a lightweight Canvas game with simulated depth, rather than a full 3D engine.
+- Relaxed, Standard, and Competitive difficulty adjust opponent pace/recovery and the player's timing/input buffer. Standard retains the original gameplay parameters. The setting persists separately from career data; rewards and unlocks remain the same at each difficulty.
+- Rally practice sends twelve repeatable center/left/right feeds. Return after one bounce using a swipe or arrow key; a return counts when it lands legally across the net. The drill reports successful returns, supports pause/leave, and awards no XP.
+- Clearer early-swing and expired-input messages. Existing career progress, appearance, serve practice, and chapter rewards are preserved.
+
+Validation: 25 automated tests cover full matches, all difficulty settings, drill completion and pause/leave, plus existing physics, save, chapter, creator, and audio behavior. Browser checks include 390 × 844 and 375 × 667 layouts.
+
 ## 0.6 — The local circuit
 
 - Career map with illustrated venue cards, rival introductions, unlock requirements, and next milestones. Reach it from the clubhouse or match results; practice and rematches remain available.

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.6</title>
+<title>TenAce — Road to #1 · 0.7</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -100,6 +100,16 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
 <style>
 .journeyPanel{background:linear-gradient(150deg,#193d43,#0b1d2a);padding:20px}.journeyPanel h1{font-size:29px;letter-spacing:-1px}.routeCard{border:1px solid #46656c;border-radius:15px;overflow:hidden;margin-top:13px;background:#102b36}.routeArt{width:100%;height:140px;display:block}.routeBody{padding:13px}.routeBody h2{margin:4px 0;font-size:20px;letter-spacing:-.5px}.routeBody p{font-size:11px;line-height:1.6;color:#bed0cf;margin:6px 0}.routeBody button{margin-top:9px}.routeTag{font-size:9px;letter-spacing:1.8px;color:#d1eba4;font-weight:850}.routeCard.locked .routeArt{filter:saturate(.35);opacity:.65}.routeCard button:disabled{background:#3c5055;color:#a4b6b8;cursor:default}.routeFooter{font-size:11px;line-height:1.5;color:#b9cdd0;margin-top:12px}.roadButtons{display:flex;gap:8px}.roadButtons button{font-size:11px}.rewardNote{padding:10px;border:1px solid #a4bb6e55;background:#b9ed6212;border-radius:9px;margin-top:10px;color:#d8efa5;font-size:12px;line-height:1.5}.rewardNote:empty{display:none}
 </style>
+<style>
+.difficultyLabel{display:block;margin:14px 0 6px;color:#c4d6d8;font-size:10px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+#difficulty{width:100%;min-height:44px;padding:10px;border:1px solid #527076;border-radius:10px;background:#0c2631;color:#f4f4df;font:500 14px system-ui}
+header{background:linear-gradient(135deg,#112f39,#061722);border-bottom-color:#75969055}
+.card{background:linear-gradient(140deg,#193c45,#0b2331);border-color:#72918b55;box-shadow:inset 0 1px #d9edcd0c}
+.score{border-color:#94ac8466;box-shadow:0 3px 12px #0003}.score .active{outline-color:#c5ee80;color:#c5ee80}
+.shot{border-radius:12px;background:linear-gradient(155deg,#1c3c47,#0a202d);border-color:#65878066}.shot.active{background:linear-gradient(145deg,#304c40,#142d2d);outline-color:#b9ed62}
+.panel{background:linear-gradient(145deg,#193d43,#0a1d2a);box-shadow:0 24px 80px #0009,inset 0 1px #d7e9b611}
+.clubPortrait{background:radial-gradient(ellipse at 20% 100%,#668973,#254c4e 55%,#17333f)}
+</style>
 </head>
 <body>
 <div id="app">
@@ -150,7 +160,7 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.6 · Your road begins</div>
+   <div class="eyebrow">Season 0.7 · Find your rhythm</div>
    <h1 id="introTitle">Jax owns these courts.</h1>
    <div class="copy">First to 7 wins. Earn 120 XP for a win or 60 XP for a loss; every 100 XP unlocks an upgrade. Explore the career map for rivals and first-win rewards.</div>
    <div id="careerSummary" class="careerline"></div>
@@ -158,7 +168,10 @@ button:focus-visible{outline:3px solid #65d9ff;outline-offset:3px}
    <div id="practiceSummary" class="tip" role="status"></div>
    <div id="introQuote" class="rivalQuote">“Nice gear. Shame the racquet can't hit the ball for you.” — Jax</div>
    <button id="mapBtn" class="secondary">Career map · Chapters & rewards</button>
+   <label class="difficultyLabel" for="difficulty">Match difficulty</label>
+   <select id="difficulty"><option value="relaxed">Relaxed · More time to react</option><option value="standard" selected>Standard · Original challenge</option><option value="competitive">Competitive · Faster opponents</option></select>
    <button id="startBtn" class="primary">Challenge Jax</button>
+   <button id="rallyPractice" class="secondary">Rally practice · 12 feeds</button>
    <button id="practiceBtn" class="secondary">Serve practice · 10 attempts</button>
    <button id="careerBtn" class="secondary">Player upgrades</button>
    <button id="customizeBtn" class="secondary">Customize player</button>
@@ -253,6 +266,11 @@ let career=Progress.fresh(),storageOK=true;
 try{career=Progress.normalize(JSON.parse(localStorage.getItem(Progress.KEY)))}catch{storageOK=false}
 let mode='home',paused=false,pausedAt=0,matchFinished=false,bestRally=0,matchEndAt=Infinity;
 let practiceAttempts=0,practiceTotal=0,practiceNext=Infinity;
+const difficulties={relaxed:{pace:.82,movement:.8,timing:.035,buffer:.32},standard:{pace:1,movement:1,timing:0,buffer:.20},competitive:{pace:1.15,movement:1.2,timing:-.01,buffer:.14}};
+let difficulty='standard',drillFeeds=0,drillHits=0,drillNext=Infinity;
+try{const saved=localStorage.getItem('tenace.difficulty');if(Object.hasOwn(difficulties,saved))difficulty=saved}catch{}
+const difficultyEl=document.getElementById('difficulty');difficultyEl.value=difficulty;
+difficultyEl.onchange=()=>{difficulty=Object.hasOwn(difficulties,difficultyEl.value)?difficultyEl.value:'standard';try{localStorage.setItem('tenace.difficulty',difficulty)}catch{}renderCareer()};
 let fx=Progress.effects(career);
 const player={x:.5,y:.86,tx:.5},opp={x:.5,y:.16,tx:.5};
 const ball={x:.5,y:.82,vx:0,vy:0,active:false,last:'player',trail:[],bounce:false,out:false};
@@ -270,14 +288,14 @@ document.getElementById('creatorCancel').onclick=()=>{draft=null;home()};
 
 function vib(ms=20){try{navigator.vibrate?.(ms)}catch{}}
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=wrap.clientWidth;H=wrap.clientHeight;C.width=W*dpr;C.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
-court.L=W*.09;court.R=W*.91;court.T=H*.095;court.B=H*.91;court.N=(court.T+court.B)/2;
+court.L=W*.09;court.R=W*.91;court.T=H*.23;court.B=H*.91;court.N=(court.T+court.B)/2;
 backdrop.width=W*dpr;backdrop.height=H*dpr;backCtx.setTransform(dpr,0,0,dpr,0,0);Graphics.court(backCtx,W,H,court,rival.theme)}
 addEventListener('resize',resize);resize();
 
 function say(t,ms=850){toast.textContent=t;toast.classList.add('show');clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove('show'),ms)}
 function saveCareer(){try{localStorage.setItem(Progress.KEY,JSON.stringify(career));storageOK=true}catch{storageOK=false}renderCareer()}
 function renderCareer(){
- fx=Progress.effects(career);iq=35+career.stats.iq*5;
+ fx=Progress.effects(career);fx.timing+=difficulties[difficulty].timing;iq=35+career.stats.iq*5;
  const available=Progress.points(career),level=1+Math.floor(career.xp/100);
  const stats=`Power ${career.stats.power} · Control ${career.stats.control} · Speed ${career.stats.speed} · IQ ${career.stats.iq}`;
  document.getElementById('levelLabel').textContent='Lv '+level;
@@ -312,18 +330,18 @@ function resetSession(nextMode){
  mode=nextMode;paused=false;matchFinished=false;point=false;ball.active=false;servePending=false;swipe=null;
  playerSwing=oppSwing=celebration=0;impact=null;
  faults=0;bufferedHit=null;bounceMark=null;player.y=.86;opp.y=.16;
- nextPoint=matchEndAt=practiceNext=Infinity;bestRally=0;pScore=oScore=0;pStam=oStam=100;
+ nextPoint=matchEndAt=practiceNext=drillNext=Infinity;bestRally=0;pScore=oScore=0;pStam=oStam=100;
  pScoreEl.textContent=oScoreEl.textContent='0';player.x=player.tx=opp.x=opp.tx=.5;
  server='player';ball.trail=[];serveUI.classList.remove('show');
  document.querySelectorAll('.modal').forEach(el=>el.classList.remove('show'));
  document.getElementById('pauseBtn').disabled=nextMode==='home';
- document.getElementById('rallyLabel').textContent=nextMode==='practice'?'Serve lab · 10 attempts':'First to 7 · Swipe to hit';
+ document.getElementById('rallyLabel').textContent=nextMode==='practice'?'Serve lab · 10 attempts':nextMode==='rally'?'Rally lab · 12 feeds':'First to 7 · Swipe to hit';
  renderCareer();
 }
 function home(){resetSession('home');document.getElementById('intro').classList.add('show')}
 function startMatch(){Sound.unlock();resetSession('match');nextPoint=performance.now()+400}
 function pauseGame(){if(mode==='home'||matchFinished||paused)return;paused=true;pausedAt=performance.now();swipe=null;bufferedHit=null;document.getElementById('paused').classList.add('show')}
-function resumeGame(){if(!paused)return;const delay=performance.now()-pausedAt;nextPoint+=delay;matchEndAt+=delay;practiceNext+=delay;paused=false;last=performance.now();document.getElementById('paused').classList.remove('show')}
+function resumeGame(){if(!paused)return;const delay=performance.now()-pausedAt;nextPoint+=delay;matchEndAt+=delay;practiceNext+=delay;drillNext+=delay;paused=false;last=performance.now();document.getElementById('paused').classList.remove('show')}
 document.getElementById('pauseBtn').onclick=pauseGame;
 document.getElementById('resumeBtn').onclick=resumeGame;
 document.getElementById('leaveBtn').onclick=home;
@@ -334,8 +352,19 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame()
 function practiceServe(){servePending=true;servePhase=0;serveUI.classList.add('show');document.getElementById('rallyLabel').textContent=`Serve lab · Attempt ${practiceAttempts+1}/10`}
 document.getElementById('practiceBtn').onclick=()=>{Sound.unlock();resetSession('practice');practiceAttempts=practiceTotal=0;practiceServe()};
 document.getElementById('mapPractice').onclick=()=>document.getElementById('practiceBtn').onclick();
+document.getElementById('rallyPractice').onclick=()=>{Sound.unlock();resetSession('rally');drillFeeds=drillHits=0;drillNext=performance.now()+600;say('12 feeds · Bounce, then swipe or use arrow keys',1800)};
+function feedBall(){
+ drillFeeds++;point=true;ball.x=.5;ball.y=.16;ball.last='opp';ball.trail=[];bufferedHit=null;player.x=player.tx=.5;player.y=.86;
+ Physics.launch(ball,{x:[.5,.32,.68][(drillFeeds-1)%3],y:.76,time:1.4,z:.14});oppSwing=1;
+ document.getElementById('rallyLabel').textContent=`Feed ${drillFeeds}/12 · ${drillHits} returns`;
+}
+function finishFeed(hit){
+ if(!point)return;point=false;ball.active=false;bufferedHit=null;if(hit)drillHits++;
+ if(drillFeeds===12){const score=drillHits;home();document.getElementById('practiceSummary').textContent=`Rally drill complete: ${score}/12 returns. Repeat the feeds to improve your timing. No XP awarded.`}
+ else{drillNext=performance.now()+1000;say(hit?'Return made · Next feed':'Missed · Wait for one bounce, then swing',950)}
+}
 function updateBars(){pStamBar.style.width=pStam+'%';oStamBar.style.width=oStam+'%';pIqBar.style.width=iq+'%'}
-function px(v){return court.L+v*(court.R-court.L)} function py(v){return court.T+v*(court.B-court.T)}
+function px(v,y=.5){return (court.L+court.R)/2+(v-.5)*(court.R-court.L)*(.58+.42*y)} function py(v){return court.T+v*(court.B-court.T)}
 function beginPoint(){
   rally=0;point=true;ball.trail=[];ball.bounce=false;ball.out=false;bufferedHit=null;serviceSide=Math.floor((pScore+oScore)/2)%2===0?'left':'right';
   player.x=player.tx=serviceSide==='left'?.62:.38;opp.x=opp.tx=serviceSide==='left'?.38:.62;player.y=.86;opp.y=.16;
@@ -349,7 +378,7 @@ function beginPoint(){
     servePending=false;serveUI.classList.remove('show');ball.active=true;ball.last='opp';
     ball.x=opp.x;ball.y=.1;
     const target=Physics.serveTarget(['wide','body','t'][Math.floor(Math.random()*3)],serviceSide==='left'?'right':'left');
-    Physics.launch(ball,{x:target.x,y:1-target.y,time:rival.id==='mira'?1.25:1.15,z:.18,serve:true,serviceSide:serviceSide==='left'?'right':'left'});oppSwing=1;Sound.play('hit');say(rival.short+' serves');
+    Physics.launch(ball,{x:target.x,y:1-target.y,time:(rival.id==='mira'?1.25:1.15)/difficulties[difficulty].pace,z:.18,serve:true,serviceSide:serviceSide==='left'?'right':'left'});oppSwing=1;Sound.play('hit');say(rival.short+' serves');
   }
 }
 function setVelocity(tx,ty,speed){Physics.launch(ball,{x:tx,y:ty,time:Math.max(.85,Math.min(1.6,Math.hypot(tx-ball.x,ty-ball.y)/speed)),z:Math.max(.08,ball.z||.12),kind:selected})}
@@ -389,7 +418,7 @@ function serve(){
  let q=err<fx.serveWindow?'ACE TIMING':err<fx.serveWindow+.10?'GOOD SERVE':'OFF-TIMING';
  const speed=(q==='ACE TIMING'?.72:q==='GOOD SERVE'?.62:.52)*fx.power;
  const risk=(q==='ACE TIMING'?.03:q==='GOOD SERVE'?.07:.16)*fx.risk;
- playerSwing=1;swingSide=1;impact={x:px(player.x)+12,y:py(player.y)-32,life:1,color:'#fff5ad'};
+ playerSwing=1;swingSide=1;impact={x:px(player.x,player.y)+12,y:py(player.y)-32,life:1,color:'#fff5ad'};
  if(mode==='practice'){
    const accuracy=Math.round((1-err*2)*100);practiceTotal+=accuracy;practiceAttempts++;
    servePending=false;serveUI.classList.remove('show');say(`${q} · ${accuracy}%`,1200);
@@ -411,17 +440,18 @@ C.onpointercancel=()=>{swipe=null};
 C.onpointerup=e=>{if(!swipe||!point||servePending||paused)return;const b=pos(e),dx=b.x-swipe.x,dy=b.y-swipe.y,d=Math.hypot(dx,dy),dur=b.t-swipe.t;swipe=null;if(d<.045)return say('Swipe toward target');playerHit(dx,dy,d,dur)}
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){paused?resumeGame():pauseGame();return}
- if(mode!=='match'||paused||matchFinished||servePending||!point||!['ArrowLeft','ArrowUp','ArrowRight'].includes(e.key))return;
+ if(!['match','rally'].includes(mode)||paused||matchFinished||servePending||!point||!['ArrowLeft','ArrowUp','ArrowRight'].includes(e.key))return;
  e.preventDefault();playerHit(e.key==='ArrowLeft'?-.3:e.key==='ArrowRight'?.3:0,-.3,.3,180);
 });
 
 function playerHit(dx,dy,dist,dur){
  if(ball.last!=='opp'||!ball.active)return say('Wait for the return');
- if(!Physics.canHit(ball,'player')||ball.y<player.y-.19){bufferedHit={dx,dy,dist,dur,until:animTime+.20};return say(ball.bounces===0?'Let it bounce · Swing queued':'Swing queued',350)}
+ if(!Physics.canHit(ball,'player')||ball.y<player.y-.19){bufferedHit={dx,dy,dist,dur,until:animTime+difficulties[difficulty].buffer};return say(ball.bounces===0?'Early · Let it bounce · Swing queued':'Wait for the hitting zone · Swing queued',350)}
  const prox=Math.hypot((ball.x-player.x)*1.15,(ball.y-player.y)*1.15); if(prox>.23){bufferedHit=null;return say('Out of reach')}
  bufferedHit=null;Sound.play('hit');
- const err=Math.abs(ball.y-(player.y-.06)),q=err<fx.timing?'PERFECT':err<fx.timing+.07?'GOOD':'LATE';
- playerSwing=1;swingSide=ball.x<player.x?-1:1;impact={x:px(ball.x),y:py(ball.y),life:1,color:q==='PERFECT'?'#f9ffbc':'#98ede3'};
+ const err=Math.abs(ball.y-(player.y-.06)),q=err<fx.timing?'PERFECT':err<fx.timing+.07?'GOOD':ball.y<player.y-.06?'EARLY':'LATE';
+ playerSwing=1;swingSide=ball.x<player.x?-1:1;impact={x:px(ball.x,ball.y),y:py(ball.y)-ball.z*H*.5,life:1,color:q==='PERFECT'?'#f9ffbc':'#98ede3'};
+ if(mode==='rally'){setVelocity(Math.max(.24,Math.min(.76,.5+dx*.9)),.25,.6);ball.last='player';say(q+' · '+selected.toUpperCase(),700);return;}
  const m={topspin:{s:.61,r:.045,st:3},flat:{s:.75,r:.14,st:5},slice:{s:.50,r:.03,st:2},lob:{s:.43,r:.055,st:3}}[selected];
  let tx=Math.max(.23,Math.min(.77,.5+dx*.9)),ty=selected==='lob'?.16:selected==='slice'?.32:.23;
  if(Math.random()<(m.r*.45+(q==='LATE'?.10:0))*fx.risk){if(Math.random()<.55)tx=Math.random()<.5?.12:.88;else ty=-.06}
@@ -431,10 +461,10 @@ function oppHit(){
  if(!Physics.canHit(ball,'opp')||ball.y>opp.y+.16)return;
  const prox=Math.hypot((ball.x-opp.x)*1.15,ball.y-opp.y);if(prox>.22)return;
  Sound.play('hit');
- oppSwing=1;impact={x:px(ball.x),y:py(ball.y),life:1,color:'#ffc0a1'};
+ oppSwing=1;impact={x:px(ball.x,ball.y),y:py(ball.y)-ball.z*H*.5,life:1,color:'#ffc0a1'};
  let tx=rally>3?(player.x<.5?.70:.30):(.32+Math.random()*.36),ty=rival.id==='mira'?.77+Math.random()*.05:.72+Math.random()*.06;
  if(Math.random()<rival.error+Math.max(0,prox-.12)*.4+(100-oStam)*.0004)tx=tx<.5?.12:.88;
- setVelocity(tx,ty,rival.pace+Math.random()*.045);if(rival.id==='mira')ball.kind='lob';ball.last='opp';rally++;bestRally=Math.max(bestRally,rally);oStam=Math.max(16,oStam-(rival.id==='mira'?1.5:2.4));updateBars()
+ setVelocity(tx,ty,(rival.pace+Math.random()*.045)*difficulties[difficulty].pace);if(rival.id==='mira')ball.kind='lob';ball.last='opp';rally++;bestRally=Math.max(bestRally,rally);oStam=Math.max(16,oStam-(rival.id==='mira'?1.5:2.4));updateBars()
 }
 
 function update(dt,t){
@@ -442,6 +472,7 @@ function update(dt,t){
  if(mode==='home')return;
  if(t>=matchEndAt)endMatch();
  if(t>=practiceNext){practiceNext=Infinity;practiceServe()}
+ if(t>=drillNext){drillNext=Infinity;feedBall()}
  servePhase+=dt*5.3;needle.style.left=((Math.sin(servePhase)+1)/2*96)+'%';
  if(!point&&t>=nextPoint&&pScore<target&&oScore<target){nextPoint=Infinity;beginPoint()}
  if(!ball.active)return;
@@ -457,46 +488,46 @@ function update(dt,t){
  if(ball.last==='player')player.tx=.5;
  player.x+=(player.tx-player.x)*Math.min(1,fx.movement*(.9+fx.anticipation)*dt);
  if(ball.last==='opp')opp.tx=.5;
- opp.x+=(opp.tx-opp.x)*Math.min(1,rival.movement*dt);
+ opp.x+=(opp.tx-opp.x)*Math.min(1,rival.movement*difficulties[difficulty].movement*dt);
  if(animTime-footstep>.23&&Math.abs(player.tx-player.x)>.025){Sound.play('step');footstep=animTime;}
  for(const event of Physics.step(ball,dt)){
-  if(event.type==='bounce'){bounceMark={x:event.x,y:event.y,life:1};Sound.play('bounce');if(ball.last==='opp')say('One bounce · Hit now',450);}
+  if(event.type==='bounce'){bounceMark={x:event.x,y:event.y,life:1};Sound.play('bounce');if(mode==='rally'&&ball.last==='player'){finishFeed(true);return;}if(ball.last==='opp')say('One bounce · Hit now',450);}
+  else if(mode==='rally'){finishFeed(false);return;}
   else if(event.fault&&server==='player'&&faults===0){faults=1;point=false;ball.active=false;nextPoint=t+1200;bufferedHit=null;Sound.play('net');say('FAULT · Second serve',1200);return;}
   else {Sound.play(event.reason==='net'?'net':'bounce');award(event.winner,event.fault&&faults?'double fault':event.reason);return;}
  }
  ball.trail.push({x:ball.x,y:ball.y,z:ball.z});if(ball.trail.length>11)ball.trail.shift();
- if(bufferedHit){if(animTime>bufferedHit.until)bufferedHit=null;else if(Physics.canHit(ball,'player')&&ball.y>=player.y-.19){const hit=bufferedHit;playerHit(hit.dx,hit.dy,hit.dist,hit.dur);}}
- oppHit();
+ if(bufferedHit){if(animTime>bufferedHit.until){bufferedHit=null;say('Too early · Swing closer to the bounce',500)}else if(Physics.canHit(ball,'player')&&ball.y>=player.y-.19){const hit=bufferedHit;playerHit(hit.dx,hit.dy,hit.dist,hit.dur);}}
+ if(mode!=='rally')oppHit();
 }
 function drawCourt(){
  ctx.clearRect(0,0,W,H);ctx.drawImage(backdrop,0,0,W,H);
  const {L,R,T,B}=court;
- const contact=player.y-.06;ctx.fillStyle=Physics.canHit(ball,'player')&&Math.abs(ball.y-contact)<fx.timing?'#ceff7b55':'#ceff7b13';ctx.fillRect(px(.18),py(contact-fx.timing),(R-L)*.64,(B-T)*fx.timing*2);
- if(servePending&&mode==='match'){const target=Physics.serveTarget(serveAim,serviceSide);ctx.strokeStyle='#f5ffb6';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(px(target.x),py(target.y),10,5,0,0,7);ctx.stroke();}
- Graphics.net(ctx,court);
+ const contact=player.y-.06;ctx.fillStyle=Physics.canHit(ball,'player')&&Math.abs(ball.y-contact)<fx.timing?'#ceff7b55':'#ceff7b13';ctx.beginPath();[[.18,contact-fx.timing],[.82,contact-fx.timing],[.82,contact+fx.timing],[.18,contact+fx.timing]].forEach(([x,y],i)=>i?ctx.lineTo(px(x,y),py(y)):ctx.moveTo(px(x,y),py(y)));ctx.closePath();ctx.fill();
+ if(servePending&&mode==='match'){const target=Physics.serveTarget(serveAim,serviceSide);ctx.strokeStyle='#f5ffb6';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(px(target.x,target.y),py(target.y),10,5,0,0,7);ctx.stroke();}
 }
 function drawPlayer(p,you){
- const size=Math.min(.72,W/550)*(you?1:.87);
- Graphics.person(ctx,px(p.x),py(p.y)+8,size,you?career.character:rivalLook,{time:animTime,run:ball.active?Math.min(1,Math.abs(p.tx-p.x)*12):0,swing:you?playerSwing:oppSwing,side:you?swingSide:-1,serve:you&&servePending,celebrate:you&&celebration>0});
+ const size=Math.min(.92,W/460)*(.64+.36*p.y);
+ Graphics.person(ctx,px(p.x,p.y),py(p.y)+8,size,you?career.character:rivalLook,{time:animTime,run:ball.active?Math.min(1,Math.abs(p.tx-p.x)*12):0,swing:you?playerSwing:oppSwing,side:you?swingSide:-1,shot:you?selected:ball.kind,back:you&&celebration<=0,windup:you&&!!bufferedHit,ready:ball.active&&ball.last===(you?'opp':'player'),serve:you&&servePending,celebrate:you&&celebration>0});
 }
 function drawBall(){
- if(servePending){const x=px(player.x)-14,y=py(player.y)-45-Math.abs(Math.sin(animTime*3))*15;ctx.fillStyle='#edff76';ctx.beginPath();ctx.arc(x,y,3.7,0,7);ctx.fill();return}
+ if(servePending){const x=px(player.x,player.y)-14,y=py(player.y)-45-Math.abs(Math.sin(animTime*3))*15;ctx.fillStyle='#edff76';ctx.beginPath();ctx.arc(x,y,3.7,0,7);ctx.fill();return}
  if(!ball.active)return;
- const color={flat:'#ffce8a',slice:'#96e9ec',lob:'#d5b5ff',topspin:'#e1ff8c'}[selected];
- ball.trail.forEach((p,i)=>{ctx.globalAlpha=i/ball.trail.length*.32;ctx.fillStyle=color;ctx.beginPath();ctx.arc(px(p.x),py(p.y)-(p.z||0)*H*.5,1.5+i*.17,0,7);ctx.fill()});ctx.globalAlpha=1;
- const x=px(ball.x),y=py(ball.y),lift=Math.max(0,ball.z||0)*H*.5;
+ const color={flat:'#ffce8a',slice:'#96e9ec',lob:'#d5b5ff',topspin:'#e1ff8c'}[ball.kind||selected];
+ ball.trail.forEach((p,i)=>{ctx.globalAlpha=i/ball.trail.length*.32;ctx.fillStyle=color;ctx.beginPath();ctx.arc(px(p.x,p.y),py(p.y)-(p.z||0)*H*.5,1.5+i*.17,0,7);ctx.fill()});ctx.globalAlpha=1;
+ const x=px(ball.x,ball.y),y=py(ball.y),lift=Math.max(0,ball.z||0)*H*.5;
  ctx.fillStyle='#092b3c55';ctx.beginPath();ctx.ellipse(x+4,y+7,5,2.5,0,0,7);ctx.fill();
  ctx.fillStyle='#efff7f';ctx.beginPath();ctx.arc(x,y-lift,4.5,0,7);ctx.fill();ctx.strokeStyle='#ffffe5';ctx.lineWidth=1;ctx.beginPath();ctx.arc(x-1,y-lift,2.4,-1,1.2);ctx.stroke();
 }
 function drawEffects(){
- if(bounceMark){ctx.save();ctx.globalAlpha=bounceMark.life;ctx.strokeStyle='#f0ffd0';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(px(bounceMark.x),py(bounceMark.y),5+(1-bounceMark.life)*16,3+(1-bounceMark.life)*6,0,0,7);ctx.stroke();ctx.restore();}
+ if(bounceMark){ctx.save();ctx.globalAlpha=bounceMark.life;ctx.strokeStyle='#f0ffd0';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(px(bounceMark.x,bounceMark.y),py(bounceMark.y),5+(1-bounceMark.life)*16,3+(1-bounceMark.life)*6,0,0,7);ctx.stroke();ctx.restore();}
  if(impact){ctx.save();ctx.globalAlpha=impact.life;ctx.strokeStyle=impact.color;ctx.lineWidth=2;const radius=5+(1-impact.life)*22;for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(impact.x+Math.cos(a)*radius,impact.y+Math.sin(a)*radius);ctx.lineTo(impact.x+Math.cos(a)*(radius+6),impact.y+Math.sin(a)*(radius+6));ctx.stroke()}ctx.restore()}
  if(celebration>0){ctx.save();ctx.globalAlpha=Math.min(1,celebration);for(let i=0;i<18;i++){ctx.fillStyle=i%2?'#b9ed62':'#f8daa1';const x=W*.5+Math.sin(i*13)*(1.8-celebration)*W*.45,y=H*.3+(1.8-celebration)*H*.22+Math.cos(i*9)*30;ctx.fillRect(x,y,3,6)}ctx.restore()}
 }
 function drawPortrait(id,look,large){const canvas=document.getElementById(id),c=canvas.getContext('2d'),w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;const ratio=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio)}c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);Graphics.person(c,w*.48,h*.88,large?h/110:h/96,look,{time:animTime,run:0});}
 function loop(t){const dt=Math.min(.033,(t-last)/1000);last=t;
  if(!paused){animTime+=dt;playerSwing=Math.max(0,playerSwing-dt*3);oppSwing=Math.max(0,oppSwing-dt*3);celebration=Math.max(0,celebration-dt);if(impact){impact.life-=dt*4;if(impact.life<=0)impact=null}if(bounceMark){bounceMark.life-=dt*2;if(bounceMark.life<=0)bounceMark=null}}
- update(dt,t);drawCourt();drawPlayer(opp,false);drawPlayer(player,true);drawBall();drawEffects();
+ update(dt,t);drawCourt();drawPlayer(opp,false);Graphics.net(ctx,court);drawPlayer(player,true);drawBall();drawEffects();
  if(mode==='home'){if(draft)drawPortrait('characterPreview',draft,true);else drawPortrait('clubPreview',career.character,false)}
  requestAnimationFrame(loop)}
 renderCareer();requestAnimationFrame(loop);
