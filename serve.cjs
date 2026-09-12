@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const files = {
+  '/assets/club-scenery-v08.png': ['assets/club-scenery-v08.png', 'image/png'],
   '/': ['index.html', 'text/html; charset=utf-8'],
   '/index.html': ['index.html', 'text/html; charset=utf-8'],
   '/tenaceiq-logo.png': ['tenaceiq-logo.png', 'image/png'],

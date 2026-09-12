@@ -2,6 +2,16 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.8 — Illustrated clubhouse
+
+- Reference-inspired illustrated clubhouse, foliage, spectators, and navy windscreen art with a procedural fallback when the asset is unavailable. The court and line calls remain independent of the scenery.
+- Deeper blue Riverdale surface, green surrounds, branded courtside boxes, a finer net mesh, and a lower court composition. Solstice retains a warm terracotta surface.
+- Rebuilt athletic player proportions with longer limbs, bent knees, outlined clothing, headbands, detailed racket strings, and animated front/back poses. All existing character choices are retained; HUD portraits reflect them.
+- Portrait scorecards and circular, color-coded shot buttons. Serve controls now sit above the court to keep the near player visible.
+- This is an interpretation of the user's reference, with simpler animated characters and existing first-to-seven scoring.
+
+Validation: 27 automated tests passed, including image-loaded/fallback rendering and all character silhouettes. Native Canvas renders of both themes were inspected. The browser loaded the new UI, but automated browser clicks timed out, so full browser interaction verification was unavailable for this release.
+
 ## 0.7 — Court depth and rally training
 
 - Rebuilt both courts with a receding perspective, sky, layered trees and skyline, textured surfaces, fencing, spectator benches, floodlights, and directional shading. Players, ball trails, bounce markers, service targets, and hitting zones follow the court projection.

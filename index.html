@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.7</title>
+<title>TenAce — Road to #1 · 0.8</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -110,6 +110,18 @@ header{background:linear-gradient(135deg,#112f39,#061722);border-bottom-color:#7
 .panel{background:linear-gradient(145deg,#193d43,#0a1d2a);box-shadow:0 24px 80px #0009,inset 0 1px #d7e9b611}
 .clubPortrait{background:radial-gradient(ellipse at 20% 100%,#668973,#254c4e 55%,#17333f)}
 </style>
+<style>
+header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-bottom:0}
+.brandrow{height:56px;justify-content:center;position:relative}.brandrow img{height:51px;max-width:62%;object-position:center}.story{position:absolute;right:0;top:7px;width:65px;font-size:6px;letter-spacing:.05em}.story b{font-size:8px}
+.hud{grid-template-columns:1fr 58px 1fr;gap:6px;margin-top:5px}.card,.card.r{position:relative;text-align:left;min-height:68px;padding:7px 5px 6px 43px;border-radius:7px;background:linear-gradient(130deg,#09253e,#031426);border:1px solid #7693ad;box-shadow:0 2px 6px #0007,inset 0 0 0 2px #28496055;overflow:hidden}
+.hudPortrait{position:absolute;left:0;bottom:0;width:42px;height:64px;background:transparent}.namerow,.r .namerow{font-size:10px;flex-direction:row;gap:3px}.namerow #youName{max-width:55px}.namerow span:last-child{font-size:8px;color:#89a2bc;white-space:nowrap}#rivalName{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sub{font-size:6px;letter-spacing:0;height:8px;overflow:hidden}.meter{height:7px;margin-top:5px;border-color:#56718d}.meter span{background:linear-gradient(#a5ff62,#54db21)}.meter.iq span{background:linear-gradient(#6be9ff,#21a9e6)}
+.score{grid-template-columns:23px 23px;grid-template-rows:27px 20px;padding:3px;border-radius:5px;gap:2px;background:#010c19}.score div{font-size:16px;background:#031a30}.score div:nth-child(n+3){font-size:10px}.score .active{outline-width:1.5px}
+.toolbar{margin-top:5px;font-size:9px;gap:6px}.toolbar button{min-height:30px;padding:4px 7px;background:#102d47;border-color:#55748c;border-radius:6px;font-size:9px}
+.controls{height:104px;min-height:92px;gap:8px;padding:8px 12px max(8px,env(safe-area-inset-bottom));background:linear-gradient(#071d30,#020c17);border-top:1px solid #416179;align-items:center}
+.shot{aspect-ratio:1;border-radius:50%;height:auto;max-height:88px;background:radial-gradient(circle at 40% 20%,#153c52,#03101d 70%);border:2px solid #607b99;box-shadow:0 0 0 3px #031321, inset 0 0 0 3px #142b41,0 5px 12px #0008;font-size:10px;gap:3px}.shot .i{font-size:32px;line-height:1;font-weight:900}.shot small{display:none}.shot[data-shot="slice"] .i{color:#30d6f9}.shot[data-shot="topspin"] .i{color:#82ee42}.shot[data-shot="flat"] .i{color:#fbe45b}.shot[data-shot="lob"] .i{color:#9c6afc}.shot.active{outline:0;border-color:#b6f05a;background:radial-gradient(circle at 40% 20%,#1c463e,#03101d 75%)}
+.servebox{padding:8px 12px;border-radius:12px;background:#05192eef;border-color:#7893ad}.serveTitle{font-size:10px}#serveUI{align-items:flex-start;padding-top:8px;background:transparent}.servebox .aimRow{margin:5px 0}.aimRow button{min-height:30px}#tapServe{padding:8px;margin-top:5px}.tossbar{margin:5px 0}.toast{top:8px}
+@media(max-height:700px){.brandrow{height:42px}.brandrow img{height:39px}.card,.card.r{min-height:60px;padding-top:5px}.hudPortrait{height:57px}.controls{height:88px;min-height:82px}.shot .i{font-size:27px}.shot{max-height:72px}.toolbar button{min-height:27px}}
+</style>
 </head>
 <body>
 <div id="app">
@@ -120,6 +132,7 @@ header{background:linear-gradient(135deg,#112f39,#061722);border-bottom-color:#7
   </div>
   <div class="hud">
     <div class="card">
+      <canvas id="youPortrait" class="hudPortrait" aria-label="Your player portrait"></canvas>
       <div class="namerow"><span id="youName">You</span><span id="levelLabel">Lv 1</span></div>
       <div class="sub">The Unknown</div>
       <div class="meter"><span id="pStamBar" style="width:100%"></span></div>
@@ -130,6 +143,7 @@ header{background:linear-gradient(135deg,#112f39,#061722);border-bottom-color:#7
       <div>7</div><div>PTS</div>
     </div>
     <div class="card r">
+      <canvas id="rivalPortrait" class="hudPortrait" aria-label="Rival portrait"></canvas>
       <div class="namerow"><span id="rivalName">Jax Mercer</span><span id="rivalLevel">Lv 2</span></div>
       <div id="rivalTitle" class="sub">Local Court King</div>
       <div class="meter"><span id="oStamBar" style="width:100%"></span></div>
@@ -160,7 +174,7 @@ header{background:linear-gradient(135deg,#112f39,#061722);border-bottom-color:#7
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.7 · Find your rhythm</div>
+   <div class="eyebrow">Season 0.8 · Welcome to the club</div>
    <h1 id="introTitle">Jax owns these courts.</h1>
    <div class="copy">First to 7 wins. Earn 120 XP for a win or 60 XP for a loss; every 100 XP unlocks an upgrade. Explore the career map for rivals and first-win rewards.</div>
    <div id="careerSummary" class="careerline"></div>
@@ -288,9 +302,10 @@ document.getElementById('creatorCancel').onclick=()=>{draft=null;home()};
 
 function vib(ms=20){try{navigator.vibrate?.(ms)}catch{}}
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=wrap.clientWidth;H=wrap.clientHeight;C.width=W*dpr;C.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
-court.L=W*.09;court.R=W*.91;court.T=H*.23;court.B=H*.91;court.N=(court.T+court.B)/2;
+court.L=W*.055;court.R=W*.945;court.T=H*.36;court.B=H*.92;court.N=(court.T+court.B)/2;
 backdrop.width=W*dpr;backdrop.height=H*dpr;backCtx.setTransform(dpr,0,0,dpr,0,0);Graphics.court(backCtx,W,H,court,rival.theme)}
 addEventListener('resize',resize);resize();
+Graphics.onReady?.(()=>{resize();drawVenuePreviews()});
 
 function say(t,ms=850){toast.textContent=t;toast.classList.add('show');clearTimeout(say.t);say.t=setTimeout(()=>toast.classList.remove('show'),ms)}
 function saveCareer(){try{localStorage.setItem(Progress.KEY,JSON.stringify(career));storageOK=true}catch{storageOK=false}renderCareer()}
@@ -320,9 +335,10 @@ function renderMap(){
  document.getElementById('miraMilestone').textContent=career.victories.mira?`Defeated · ${career.victories.mira} win(s). Champion gold shirt unlocked.`:'First win: +100 bonus XP and the Champion gold shirt.';
  document.getElementById('nextMilestone').textContent=career.victories.mira?'Local circuit complete. Rematch either rival, refine your serve, or equip Champion gold in Customize player.':unlocked?'Next milestone: beat Mira at Solstice Terrace.':'Next milestone: defeat Jax to earn your terrace invitation.';
 }
-function openMap(){home();document.getElementById('intro').classList.remove('show');document.getElementById('journey').classList.add('show');document.querySelector('.journeyPanel').scrollTop=0;
- for(const [id,theme] of [['parkMap','park'],['terraceMap','terrace']]){const c=document.getElementById(id),g=c.getContext('2d');Graphics.court(g,640,280,{L:130,R:510,T:70,B:265,N:167.5},theme);Graphics.net(g,{L:130,R:510,N:167.5});Graphics.person(g,525,265,1.8,theme==='park'?Rivals.jax.look:Rivals.mira.look,{time:0});}
+function drawVenuePreviews(){
+ for(const [id,theme] of [['parkMap','park'],['terraceMap','terrace']]){const c=document.getElementById(id),g=c.getContext('2d'),bounds={L:130,R:510,T:105,B:265,N:185};Graphics.court(g,640,280,bounds,theme);Graphics.net(g,bounds);Graphics.person(g,525,265,1.6,theme==='park'?Rivals.jax.look:Rivals.mira.look,{time:0});}
 }
+function openMap(){home();document.getElementById('intro').classList.remove('show');document.getElementById('journey').classList.add('show');document.querySelector('.journeyPanel').scrollTop=0;drawVenuePreviews()}
 function selectRival(id){if(!Progress.unlocked(career,id))return;rival=Rivals[id];rivalLook=rival.look;home();resize();document.getElementById('introTitle').textContent=id==='jax'?'Jax owns these courts.':'Meet the Baseline Wall.';document.getElementById('introQuote').textContent=rival.intro+' '+rival.tip;document.getElementById('startBtn').textContent='Challenge '+rival.short;document.getElementById('again').textContent='Rematch '+rival.short;document.getElementById('rivalName').textContent=rival.name;document.getElementById('rivalTitle').textContent=rival.title;document.getElementById('rivalLevel').textContent='Lv '+rival.level;document.getElementById('venueLabel').textContent=(id==='jax'?'Chapter 1 · ':'Chapter 2 · ')+rival.court;}
 document.getElementById('mapBtn').onclick=openMap;document.getElementById('resultMap').onclick=openMap;document.getElementById('mapHome').onclick=home;
 document.getElementById('chooseJax').onclick=()=>selectRival('jax');document.getElementById('chooseMira').onclick=()=>selectRival('mira');
@@ -507,7 +523,7 @@ function drawCourt(){
  if(servePending&&mode==='match'){const target=Physics.serveTarget(serveAim,serviceSide);ctx.strokeStyle='#f5ffb6';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(px(target.x,target.y),py(target.y),10,5,0,0,7);ctx.stroke();}
 }
 function drawPlayer(p,you){
- const size=Math.min(.92,W/460)*(.64+.36*p.y);
+ const size=Math.min(1.15,W/350,H/430)*(.43+.57*p.y);
  Graphics.person(ctx,px(p.x,p.y),py(p.y)+8,size,you?career.character:rivalLook,{time:animTime,run:ball.active?Math.min(1,Math.abs(p.tx-p.x)*12):0,swing:you?playerSwing:oppSwing,side:you?swingSide:-1,shot:you?selected:ball.kind,back:you&&celebration<=0,windup:you&&!!bufferedHit,ready:ball.active&&ball.last===(you?'opp':'player'),serve:you&&servePending,celebrate:you&&celebration>0});
 }
 function drawBall(){
@@ -524,10 +540,12 @@ function drawEffects(){
  if(impact){ctx.save();ctx.globalAlpha=impact.life;ctx.strokeStyle=impact.color;ctx.lineWidth=2;const radius=5+(1-impact.life)*22;for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(impact.x+Math.cos(a)*radius,impact.y+Math.sin(a)*radius);ctx.lineTo(impact.x+Math.cos(a)*(radius+6),impact.y+Math.sin(a)*(radius+6));ctx.stroke()}ctx.restore()}
  if(celebration>0){ctx.save();ctx.globalAlpha=Math.min(1,celebration);for(let i=0;i<18;i++){ctx.fillStyle=i%2?'#b9ed62':'#f8daa1';const x=W*.5+Math.sin(i*13)*(1.8-celebration)*W*.45,y=H*.3+(1.8-celebration)*H*.22+Math.cos(i*9)*30;ctx.fillRect(x,y,3,6)}ctx.restore()}
 }
-function drawPortrait(id,look,large){const canvas=document.getElementById(id),c=canvas.getContext('2d'),w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;const ratio=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio)}c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);Graphics.person(c,w*.48,h*.88,large?h/110:h/96,look,{time:animTime,run:0});}
+function drawPortrait(id,look,large){const canvas=document.getElementById(id),c=canvas.getContext('2d'),w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;const ratio=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio)}c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);Graphics.person(c,w*.48,h*.92,large?h/126:h/122,look,{time:animTime,run:0});}
+function hudPortrait(id,look){const canvas=document.getElementById(id),w=canvas.clientWidth,h=canvas.clientHeight,ratio=Math.min(devicePixelRatio||1,2),key=JSON.stringify(look)+w+':'+h+':'+ratio;if(!w||!h||canvas.dataset.drawn===key)return;canvas.dataset.drawn=key;canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio);const c=canvas.getContext('2d');c.setTransform(ratio,0,0,ratio,0,0);Graphics.person(c,w*.5,h*1.78,h/66,look,{time:0});}
 function loop(t){const dt=Math.min(.033,(t-last)/1000);last=t;
  if(!paused){animTime+=dt;playerSwing=Math.max(0,playerSwing-dt*3);oppSwing=Math.max(0,oppSwing-dt*3);celebration=Math.max(0,celebration-dt);if(impact){impact.life-=dt*4;if(impact.life<=0)impact=null}if(bounceMark){bounceMark.life-=dt*2;if(bounceMark.life<=0)bounceMark=null}}
  update(dt,t);drawCourt();drawPlayer(opp,false);Graphics.net(ctx,court);drawPlayer(player,true);drawBall();drawEffects();
+ hudPortrait('youPortrait',career.character);hudPortrait('rivalPortrait',rivalLook);
  if(mode==='home'){if(draft)drawPortrait('characterPreview',draft,true);else drawPortrait('clubPreview',career.character,false)}
  requestAnimationFrame(loop)}
 renderCareer();requestAnimationFrame(loop);
