@@ -8,7 +8,7 @@ const html = fs.readFileSync('index.html', 'utf8');
 
 // Run the shipped game loop with a deterministic clock and a small DOM adapter.
 // No test-only entry points or cheats are added to the production game.
-function boot(storage = new Map(), blocked = false, random = .5) {
+function boot(storage = new Map(), blocked = false, random = .5, engine = null) {
   let now = 0, frame;
   const context2d = new Proxy({}, { get: () => () => {} });
   function element(classes = '') {
@@ -17,7 +17,7 @@ function boot(storage = new Map(), blocked = false, random = .5) {
       classList: { add: x => list.add(x), remove: x => list.delete(x), contains: x => list.has(x),
         toggle: (x, on) => on ? list.add(x) : list.delete(x) },
       querySelector: () => ({ textContent: '' }), clientWidth: 390, clientHeight: 500,
-      getContext: () => context2d, setPointerCapture() {} };
+      getContext: () => context2d, setPointerCapture() {},getBoundingClientRect:()=>({left:0,top:0,width:390,height:500}) };
   }
   const ids = {};
   for (const match of html.matchAll(/id="([^"]+)"/g)) ids[match[1]] = element();
@@ -35,7 +35,7 @@ function boot(storage = new Map(), blocked = false, random = .5) {
     addEventListener(name,fn) {listeners[name]=fn;} };
   const math = Object.create(Math); math.random = () => random;
   vm.runInNewContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], {
-    document, window: { TenAceProgression: Progress, TenAceRivals:require('./rivals.js'),TenAceCharacter: Character, TenAcePhysics:require('./physics.js'),TenAceSound:{enabled:false,unlock(){},set(){},play(){}}, TenAceGraphics: {person(){},court(){},net(){}} }, Math: math,
+    document, window: {TenAce3D:engine, TenAceProgression: Progress, TenAceRivals:require('./rivals.js'),TenAceCharacter: Character, TenAcePhysics:require('./physics.js'),TenAceSound:{enabled:false,unlock(){},set(){},play(){}}, TenAceGraphics: {person(){},court(){},net(){}} }, Math: math,
     localStorage: { getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => { if (blocked) throw Error('storage blocked'); storage.set(key, value); } },
     performance: { now: () => now }, navigator: {}, devicePixelRatio: 1,
@@ -57,6 +57,23 @@ function loseMatch(game) {
     return game.ids.result.classList.contains('show');
   });
 }
+test('3D receives live aiming and pause state; view switches preserve the active drill',()=>{
+ let state,disposed=0;
+ const engine={create:()=>({resize(){},render(s){state=s},contact(){},dispose(){disposed++}})};
+ const game=boot(new Map(),false,.5,engine);assert.equal(game.ids.renderStatus.textContent,'3D court');
+ game.ids.rallyPractice.onclick();game.runUntil(()=>game.ids.rallyLabel.textContent.includes('Feed 1/12'));
+ game.ids.game.onpointerdown({pointerId:1,clientX:150,clientY:400});game.ids.game.onpointermove({clientX:240,clientY:300});game.tick();
+ assert.ok(state.aim.x>.5&&state.aim.x<=.77);assert.equal(state.aim.y,.23);
+ game.ids.pauseBtn.onclick();game.tick();const time=state.time;game.tick(10000);assert.equal(state.time,time);assert.equal(state.aim,null);
+ game.ids.viewBtn.onclick();assert.equal(disposed,1);assert.equal(game.ids.renderStatus.textContent,'2D court');
+ game.ids.viewBtn.onclick();assert.equal(game.ids.renderStatus.textContent,'3D court');assert.ok(game.ids.paused.classList.contains('show'));
+});
+test('WebGL initialization failure and later render failure retain playable fallback',()=>{
+ for(const engine of [{create(){throw Error('unsupported')}},{create(){return {resize(){},render(){throw Error('context lost')},dispose(){}}}}]){
+  const game=boot(new Map(),false,.5,engine);game.tick();assert.match(game.ids.renderStatus.textContent,/2D/);
+  loseMatch(game);assert.equal(JSON.parse(game.storage.get(Progress.KEY)).matches,1);
+ }
+});
 test('rally drill counts returns, finishes twelve feeds, and awards no career XP',()=>{
  const game=boot();game.ids.rallyPractice.onclick();
  let peak=0;

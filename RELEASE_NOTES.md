@@ -2,6 +2,16 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.9 — First playable 3D court (local verification build)
+
+- Added a Three.js WebGL renderer with a perspective camera, lit court materials, directional shadows, a 3D net, trees, clubhouse, crowd, and courtside furniture. The illustrated club asset remains a distant backdrop.
+- Procedural 3D athletes retain saved skin, hair, clothing, and racket choices. Articulated arms/legs animate footwork, preparation, shots, serves, and celebrations. Racket contact uses the actual physics contact position.
+- Incoming landing markers and drag-to-aim targets; slice, topspin, flat, lob, and serve sounds now differ. Optional sound remains off by default.
+- The 2D view remains available through the toolbar and is selected automatically when WebGL creation or rendering fails. View changes preserve the current match; pause stops both simulation and 3D animation.
+- Career data, scoring, rival unlocks, and practice rules are unchanged. These are procedural character models, not motion-captured or externally modeled assets. Replays and a broader presentation overhaul are future work.
+
+Validation: 32 automated tests pass. Tests exercise the real Three.js scene graph, all appearance silhouettes, racket/ball contact alignment, live aiming state, pause/view changes, failure fallback, and existing game rules. Camera framing was inspected using a software projection of the same scene. Live WebGL rendering remains unverified because the browser connector is unavailable; this build is not yet published.
+
 ## 0.8 — Illustrated clubhouse
 
 - Reference-inspired illustrated clubhouse, foliage, spectators, and navy windscreen art with a procedural fallback when the asset is unavailable. The court and line calls remain independent of the scenery.

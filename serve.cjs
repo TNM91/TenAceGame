@@ -3,6 +3,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const files = {
+  '/court3d.js': ['court3d.js', 'text/javascript; charset=utf-8'],
+  '/vendor/three.module.min.js': ['vendor/three.module.min.js', 'text/javascript; charset=utf-8'],
+  '/vendor/three.core.min.js': ['vendor/three.core.min.js', 'text/javascript; charset=utf-8'],
   '/assets/club-scenery-v08.png': ['assets/club-scenery-v08.png', 'image/png'],
   '/': ['index.html', 'text/html; charset=utf-8'],
   '/index.html': ['index.html', 'text/html; charset=utf-8'],
