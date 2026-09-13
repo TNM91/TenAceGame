@@ -7,7 +7,14 @@ const material=color=>new T.MeshStandardMaterial({color,roughness:.78});
 function mesh(parent,geometry,mat,x=0,y=0,z=0){const m=new T.Mesh(geometry,mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
 function box(parent,w,h,d,mat,x,y,z){return mesh(parent,new T.BoxGeometry(w,h,d),mat,x,y,z);}
 function ellipsoid(parent,mat,x,y,z,sx,sy,sz){const m=mesh(parent,new T.SphereGeometry(1,20,16),mat,x,y,z);m.scale.set(sx,sy,sz);return m;}
-function bone(parent,mat,r){return mesh(parent,new T.CylinderGeometry(r*.85,r,1,14),mat);}
+// Authored cross-sections give the body a waist, shoulders and jaw instead of scaled balls.
+function contour(sections,segments=24){
+ const vertices=[],indices=[];
+ for(const [y,rx,rz,offset=0] of sections)for(let j=0;j<=segments;j++){const a=j/segments*Math.PI*2;vertices.push(Math.cos(a)*rx,y,Math.sin(a)*rz+offset);}
+ for(let i=0;i<sections.length-1;i++)for(let j=0;j<segments;j++){const a=i*(segments+1)+j,b=a+segments+1;indices.push(a,b,a+1,b,b+1,a+1);}
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();return g;
+}
+function bone(parent,mat,r){return mesh(parent,contour([[-.5,r*.68,r*.68],[-.40,r*.85,r*.78],[-.15,r*1.04,r*.91],[.17,r,r*.88],[.42,r*.78,r*.72],[.5,r*.65,r*.65]],16),mat);}
 function connect(m,a,b){m.position.copy(a).add(b).multiplyScalar(.5);const delta=b.clone().sub(a);m.scale.y=delta.length();m.quaternion.setFromUnitVectors(UP,delta.normalize());}
 function label(text,bg='#08253c',fg='#dff8b3',w=512,h=128){const c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.fillStyle=bg;g.fillRect(0,0,w,h);g.fillStyle=fg;g.textAlign='center';g.font='italic 800 '+Math.floor(Math.min(h*.46,w*.88/(text.length*.57)))+'px system-ui';g.fillText(text,w/2,h*.67);const tx=new T.CanvasTexture(c);tx.colorSpace=T.SRGBColorSpace;return new T.MeshStandardMaterial({map:tx,roughness:.9,side:T.DoubleSide});}
 function surfaceTexture(base,light,dark){const c=document.createElement('canvas');c.width=c.height=256;const g=c.getContext('2d');g.fillStyle=base;g.fillRect(0,0,256,256);for(let i=0;i<7000;i++){g.fillStyle=i%2?light:dark;g.fillRect(i*73%256,i*131%251,1+(i%3),1);}const tx=new T.CanvasTexture(c);tx.colorSpace=T.SRGBColorSpace;tx.wrapS=tx.wrapT=T.RepeatWrapping;tx.repeat.set(4,6);return tx;}
@@ -15,10 +22,10 @@ function surfaceTexture(base,light,dark){const c=document.createElement('canvas'
 export function athlete(look){
  const root=new T.Group(),skin=material(look.skin),shirt=material(look.shirt),hair=material(look.hair),shorts=material(look.shorts),white=material('#f0f2e5'),dark=material('#102333');
  const body=new T.Group();root.add(body);
- const torso=mesh(body,new T.LatheGeometry([[.22,0],[.24,.10],[.27,.30],[.34,.48],[.30,.56],[.13,.62]].map(([x,y])=>new T.Vector2(x,y)),24),shirt,0,1.02,0);torso.scale.z=.68;
+ const torso=mesh(body,contour([[0,.215,.14],[.08,.22,.14],[.22,.225,.15],[.37,.275,.18],[.49,.325,.175],[.56,.27,.14],[.62,.12,.105]]),shirt,0,1.02,0);
  const collar=mesh(body,new T.TorusGeometry(.12,.018,6,20),white,0,1.65,0);collar.rotation.x=Math.PI/2;
  ellipsoid(body,skin,0,1.73,0,.12,.16,.12);
- const head=ellipsoid(body,skin,0,1.97,0,.18,.225,.175);
+ const head=mesh(body,contour([[-.22,.065,.07,.015],[-.17,.12,.12,.015],[-.08,.164,.15],[.03,.177,.163],[.12,.169,.15],[.20,.125,.12],[.235,.01,.01]]),skin,0,1.97,0);
  ellipsoid(body,skin,-.178,1.98,0,.028,.056,.032);ellipsoid(body,skin,.178,1.98,0,.028,.056,.032);
  // All players face local +z; the near player rotates toward the opponent.
  for(const x of [-.075,.075]){ellipsoid(body,white,x,2.01,.176,.032,.018,.008);ellipsoid(body,dark,x,2.01,.188,.012,.015,.007);}
@@ -55,10 +62,15 @@ export function athlete(look){
   if(p.celebrate){hand.set(.50,2.22,0);left.set(-.5,2.22,0);}
   if(p.ready&&!swinging)hand.set(.37,1.24,.42);
   if(load&&!swinging){hand.set(.46+load*.1,1.18+load*.12,.2-load*.55);left.set(-.37,1.27,.25+load*.22);}
-  if(event&&time-event.time<.10){root.updateMatrixWorld(true);body.updateMatrixWorld(true);hand=body.worldToLocal(event.point.clone());hand.y-=.34;}
+  if(event&&time-event.time<.8){
+   root.updateMatrixWorld(true);body.updateMatrixWorld(true);const contactHand=body.worldToLocal(event.point.clone());contactHand.y-=.34;
+   const u=Math.max(0,Math.min(1,(time-event.time-.10)/.38)),ease=u*u*(3-2*u);
+   const finish=p.shot==='lob'?new T.Vector3(-.10,2.0,.45):p.shot==='slice'?new T.Vector3(-.42,.85,.45):p.shot==='flat'?new T.Vector3(-.5,1.25,.48):new T.Vector3(-.42,1.75,.4);
+   const recovery=Math.max(0,Math.min(1,(time-event.time-.48)/.32)),relax=recovery*recovery*(3-2*recovery);hand=contactHand.lerp(finish,ease).lerp(hand,relax);
+  }
   for(const a of arms){const end=a.side===1?hand:left,shoulder=new T.Vector3(a.side*.27,1.52,0),elbow=shoulder.clone().lerp(end,.5).add(new T.Vector3(a.side*.10,-.10,0));connect(a.upper,shoulder,elbow);connect(a.fore,elbow,end);a.hand.position.copy(end);}
   racket.position.copy(hand);racket.rotation.set(0,0,swinging?Math.sin(phase*Math.PI)*-.6:0);
-  if(event&&time-event.time<.10)racket.rotation.set(0,0,0);
+  if(event&&time-event.time<.8){const age=time-event.time,u=Math.max(0,Math.min(1,(age-.1)/.38)),r=Math.max(0,Math.min(1,(age-.48)/.32));racket.rotation.set(0,0,u*(1-r*r*(3-2*r))*(p.shot==='slice'?.4:-.6));}
   if(tail)tail.rotation.x=step*.3;
  }
  return {root,pose};

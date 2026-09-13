@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.12</title>
+<title>TenAce — Road to #1 · 0.13</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -189,7 +189,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.12 · Build your game</div>
+   <div class="eyebrow">Season 0.13 · Build your game</div>
    <h1 id="introTitle">Jax owns these courts.</h1>
    <div class="copy">First to 7. Build your attributes, unlock rivals, and choose your specialization at level 3.</div>
    <div id="careerSummary" class="careerline"></div>
@@ -425,7 +425,7 @@ document.getElementById('rallyPractice').onclick=()=>{Sound.unlock();resetSessio
 document.getElementById('learnBtn').onclick=()=>{document.getElementById('rallyPractice').onclick();guided=true;say('Hold to load power · Swipe when the return reaches you',2000)};
 function feedBall(){
  drillFeeds++;point=true;ball.x=.5;ball.y=.16;ball.last='opp';ball.trail=[];bufferedHit=null;player.x=player.tx=.5;player.y=.86;
- Physics.launch(ball,{x:[.5,.32,.68][(drillFeeds-1)%3],y:.76,time:1.4,z:.14});oppSwing=1;
+ Physics.launchShot(ball,{x:[.5,.32,.68][(drillFeeds-1)%3],y:.76,time:1.1,z:.10});oppSwing=1;
  document.getElementById('rallyLabel').textContent=`Feed ${drillFeeds}/12 · ${drillHits} returns`;
 }
 function finishFeed(hit){
@@ -448,10 +448,10 @@ function beginPoint(){
     servePending=false;serveUI.classList.remove('show');ball.active=true;ball.last='opp';
     ball.x=opp.x;ball.y=.1;
     const target=Physics.serveTarget(['wide','body','t'][Math.floor(Math.random()*3)],serviceSide==='left'?'right':'left');
-    Physics.launch(ball,{x:target.x,y:1-target.y,time:(rival.id==='mira'?1.25:1.15)/difficulties[difficulty].pace,z:.18,serve:true,serviceSide:serviceSide==='left'?'right':'left'});oppSwing=1;Sound.play('hit');say(rival.short+' serves');
+    Physics.launchShot(ball,{x:target.x,y:1-target.y,time:(rival.id==='mira'?1.25:1.15)/difficulties[difficulty].pace,z:.18,serve:true,serviceSide:serviceSide==='left'?'right':'left'});oppSwing=1;Sound.play('hit');say(rival.short+' serves');
   }
 }
-function setVelocity(tx,ty,speed){Physics.launch(ball,{x:tx,y:ty,time:Math.max(.85,Math.min(1.6,Math.hypot(tx-ball.x,ty-ball.y)/speed)),z:Math.max(.08,ball.z||.12),kind:selected})}
+function setVelocity(tx,ty,speed,kind=selected){const lob=kind==='lob';Physics.launchShot(ball,{x:tx,y:ty,time:Math.max(lob?1.1:.50,Math.min(lob?1.7:1.15,Math.hypot(tx-ball.x,ty-ball.y)/(speed*1.15))),z:Math.max(.012,ball.z||.08),kind})}
 function schedulePoint(){faults=0;server=server==='player'?'opp':'player';nextPoint=performance.now()+1050}
 function award(who,reason){
  if(!point)return;point=false;ball.active=false;swipe=null;aimPreview=null;serveUI.classList.remove('show');
@@ -503,7 +503,7 @@ function serve(){
  const target=Physics.serveTarget(serveAim,serviceSide);
  const spread=(Math.random()-.5)*err*.22*fx.risk;target.x+=spread;
  if(Math.random()<risk)target.y=.13;
- Physics.launch(ball,{...target,time:Math.max(.85,1.2/speed*.6),z:.18,serve:true,serviceSide});pStam=Math.max(20,pStam-4);updateBars();say(q,700);vib(q==='ACE TIMING'?35:18);
+ Physics.launchShot(ball,{...target,time:Math.max(.85,1.2/speed*.6),z:.18,serve:true,serviceSide});pStam=Math.max(20,pStam-4);updateBars();say(q,700);vib(q==='ACE TIMING'?35:18);
 }
 document.getElementById('tapServe').onclick=serve;
 
@@ -538,11 +538,11 @@ function oppHit(){
  if(!Physics.canHit(ball,'opp')||ball.y>opp.y+.16)return;
  const prox=Math.hypot((ball.x-opp.x)*1.15,ball.y-opp.y);if(prox>.22)return;
  Sound.play('hit');
- view3D?.contact('opp',ball,rival.id==='mira'?'lob':'topspin',animTime);
+ view3D?.contact('opp',ball,rival.id==='mira'&&rally%5===4?'lob':'topspin',animTime);
  oppSwing=1;impact={x:px(ball.x,ball.y),y:py(ball.y)-ball.z*H*.5,life:1,color:'#ffc0a1'};
  let tx=rally>3?(player.x<.5?.70:.30):(.32+Math.random()*.36),ty=rival.id==='mira'?.77+Math.random()*.05:.72+Math.random()*.06;
  if(Math.random()<rival.error+Math.max(0,prox-.12)*.4+(100-oStam)*.0004)tx=tx<.5?.12:.88;
- setVelocity(tx,ty,(rival.pace+Math.random()*.045)*difficulties[difficulty].pace);if(rival.id==='mira')ball.kind='lob';ball.last='opp';rally++;bestRally=Math.max(bestRally,rally);oStam=Math.max(16,oStam-(rival.id==='mira'?1.5:2.4));updateBars()
+ setVelocity(tx,ty,(rival.pace+Math.random()*.045)*difficulties[difficulty].pace,rival.id==='mira'&&rally%5===4?'lob':'topspin');ball.last='opp';rally++;bestRally=Math.max(bestRally,rally);oStam=Math.max(16,oStam-(rival.id==='mira'?1.5:2.4));updateBars()
 }
 
 function update(dt,t){
@@ -621,7 +621,7 @@ function loop(t){const elapsed=Math.max(0,(t-last)/1000);last=t;
  if(!paused){const steps=Math.max(1,Math.ceil(dt/.016));for(let i=0;i<steps;i++)update(dt/steps,t-dt*1000+(i+1)*dt/steps*1000);}
  // Render menu previews at 10 fps instead of running a full-rate hidden match.
  if((paused||mode==='home'||matchFinished)&&t-lastPaint<100){requestAnimationFrame(loop);return;}lastPaint=t;
- if(view3D){ctx.clearRect(0,0,W,H);try{view3D.render({time:animTime,dt,theme:rival.theme,ball,serving:servePending,aim:aimPreview||(servePending?Physics.serveTarget(serveAim,serviceSide):null),landing:ball.active?Physics.landing(ball):null,celebration,player:{...player,look:career.character,near:true,swing:playerSwing,side:swingSide,shot:selected,charge:swipe?Math.min(1,(t-swipe.t)/900):0,serve:servePending,ready:ball.active&&ball.last==='opp',celebrate:celebration>0},opp:{...opp,look:rivalLook,swing:oppSwing,shot:rival.id==='mira'?'lob':'topspin',ready:ball.active&&ball.last==='player'}});}catch{fallback3D();}}
+ if(view3D){ctx.clearRect(0,0,W,H);try{view3D.render({time:animTime,dt,theme:rival.theme,ball,serving:servePending,aim:aimPreview||(servePending?Physics.serveTarget(serveAim,serviceSide):null),landing:ball.active?Physics.landing(ball):null,celebration,player:{...player,look:career.character,near:true,swing:playerSwing,side:swingSide,shot:selected,charge:swipe?Math.min(1,(t-swipe.t)/900):0,serve:servePending,ready:ball.active&&ball.last==='opp',celebrate:celebration>0},opp:{...opp,look:rivalLook,swing:oppSwing,shot:ball.last==='opp'?ball.kind:'topspin',ready:ball.active&&ball.last==='player'}});}catch{fallback3D();}}
  else{drawCourt();drawPlayer(opp,false);Graphics.net(ctx,court);drawPlayer(player,true);drawBall();drawEffects();}
  document.getElementById('aimHint').textContent=paused||mode==='home'||servePending?'':aimPreview?'Swipe toward the target · Release at contact':ball.active&&ball.last==='opp'?(view3D?'Landing ring · Let it bounce, then swing':'Let it bounce, then swing'):'Recover to center · Prepare for the return';
  document.getElementById('contactCue').textContent=paused||!ball.active||ball.last!=='opp'?'':Physics.canHit(ball,'player')&&ball.y>=player.y-.19?'RELEASE · Swing now':guided?(swipe?'POWER LOADING · Swipe at contact':'HOLD TO LOAD · Wait for the bounce'):'PREPARE · Wait for the bounce';

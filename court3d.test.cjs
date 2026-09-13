@@ -39,3 +39,17 @@ test('graphics presets change the real renderer resolution and shadow state with
  court.setQuality('high');assert.equal(ratio,1.5);assert.equal(renderer.shadowMap.enabled,true);
  court.dispose();assert.equal(disposed,true);delete global.devicePixelRatio;
 });
+
+test('authored body contours have finite positions and normals',async()=>{
+ const {athlete}=await import('./court3d.js');const rig=athlete(Character.fresh());let contours=0;
+ rig.root.traverse(o=>{if(o.geometry?.type==='BufferGeometry'&&o.isMesh){contours++;assert.ok(Array.from(o.geometry.attributes.position.array).every(Number.isFinite));assert.ok(Array.from(o.geometry.attributes.normal.array).every(Number.isFinite));}});
+ assert.ok(contours>=10,'head, torso and limbs use body contours');
+});
+test('racket follow-through does not snap when contact lock ends or recovery finishes',async()=>{
+ const {athlete,world}=await import('./court3d.js');
+ for(const shot of ['flat','topspin','slice','lob']){
+  const rig=athlete(Character.fresh()),event={point:world(.55,.84,.10),time:2,shot};
+  function at(age){rig.pose({x:.5,y:.84,tx:.5,near:true,swing:Math.max(0,1-age*3),shot,ready:true},2+age,.001,event);rig.root.updateMatrixWorld(true);let rim;rig.root.traverse(o=>{if(o.geometry?.type==='TorusGeometry')rim=o});return rim.getWorldPosition(world(0,0));}
+  for(const boundary of [.1,.48,.8])assert.ok(at(boundary-.0001).distanceTo(at(boundary+.0001))<.02,shot+' has a continuous racket path');
+ }
+});

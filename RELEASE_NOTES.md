@@ -2,6 +2,15 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.13 — Distinct shot flight and continuous follow-through
+
+- Shot height is now independent of horizontal flight duration. Arcade profiles give flat a low drive, slice a lower flight and skidding bounce, topspin more clearance and kick, and lob a deliberately high arc. Their nominal peaks from a low contact are 0.105, 0.085, 0.17 and 0.43 court-height units respectively. Contact above a nominal peak raises it just above the contact point.
+- Separate per-flight vertical acceleration retains analytic net and landing checks. This is a controlled arcade trajectory model, not a real-world aerodynamic spin simulation. Slowing a drive no longer increases its apex. Bounce profiles reset vertical acceleration and control skid/kick independently.
+- Removed the universal 0.85-second minimum for rally shots. Serves and practice feeds use the corrected trajectory system too. Opponent shots have their own explicit type; Mira uses occasional defensive lobs instead of labeling every return a lob.
+- Replaced the sphere head, lathed torso and cylinder limbs with authored contour geometry. Added distinct continuous shot follow-through and recovery paths so the racket does not snap away when contact lock ends. Existing clothing, hair and racket personalization remains available. Character art is still procedural, with production-quality models and animation remaining an art gap.
+
+Validation: 51 automated tests passed, including apex ordering, net clearance, bounce profiles, slower shots retaining their height, landing prediction, frame-size consistency, contour validity and racket continuity. Live phone-sized browser gestures produced clean flat and topspin contacts with 3D active and no console errors. These checks do not substitute for physical-device playtesting or an artistic quality review.
+
 ## 0.12 — Hold, load, swipe
 
 - Removed the rally shot-selection buttons. Press anywhere on court to load power (capped at 900 ms), then swipe and release at contact. Idle time between touches does not build power.
