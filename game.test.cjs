@@ -65,7 +65,7 @@ test('3D receives live aiming and pause state; view switches preserve the active
  const game=boot(new Map(),false,.5,engine);assert.equal(game.ids.renderStatus.textContent,'3D court');
  game.ids.rallyPractice.onclick();game.runUntil(()=>game.ids.rallyLabel.textContent.includes('Feed 1/12'));
  game.ids.game.onpointerdown({pointerId:1,clientX:150,clientY:400});game.ids.game.onpointermove({clientX:240,clientY:300});game.tick();
- assert.ok(state.aim.x>.5&&state.aim.x<=.77);assert.equal(state.aim.y,.23);
+ assert.ok(state.aim.x>.5&&state.aim.x<=.77);assert.ok(Math.abs(state.aim.y-.23)<1e-9);
  game.ids.pauseBtn.onclick();game.tick();const time=state.time;game.tick(10000);assert.equal(state.time,time);assert.equal(state.aim,null);
  game.ids.viewBtn.onclick();assert.equal(disposed,1);assert.equal(game.ids.renderStatus.textContent,'2D court');
  game.ids.viewBtn.onclick();assert.equal(game.ids.renderStatus.textContent,'3D court');assert.ok(game.ids.paused.classList.contains('show'));
@@ -221,8 +221,8 @@ test('auto graphics reduce rendering cost after sustained delays; manual selecti
  const game=boot(new Map(),false,.5,engine);assert.equal(quality,'high');game.ids.rallyPractice.onclick();for(let i=0;i<95;i++)game.tick(34);assert.equal(quality,'low');
  game.ids.graphicsQuality.onchange({target:{value:'high'}});assert.equal(quality,'high');for(let i=0;i<100;i++)game.tick(34);assert.equal(quality,'high');
  assert.equal(boot(game.storage,false,.5,engine).ids.graphicsQuality.value,'high');
- game.ids.haptics.onchange({target:{checked:false}});game.ids.advancedShots.onchange({target:{checked:true}});
- const reload=boot(game.storage);assert.equal(reload.ids.haptics.checked,false);assert.equal(reload.ids.advancedShots.checked,true);
+ game.ids.haptics.onchange({target:{checked:false}});
+ const reload=boot(game.storage);assert.equal(reload.ids.haptics.checked,false);
 });
 test('menus render less often and a long active-frame stall pauses safely',()=>{
  let renders=0;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(){renders++},dispose(){}})});
@@ -232,4 +232,34 @@ test('menus render less often and a long active-frame stall pauses safely',()=>{
 test('ball travel remains consistent at 60 and 30 fps',()=>{
  function sample(ms){let state;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(s){state={x:s.ball.x,y:s.ball.y}},dispose(){}})});game.ids.rallyPractice.onclick();for(let t=0;t<1280;t+=ms)game.tick(ms);return state;}
  const fast=sample(16),slow=sample(32);assert.ok(Math.abs(fast.x-slow.x)<.015);assert.ok(Math.abs(fast.y-slow.y)<.025);
+});
+
+test('held touch gestures load power and select rally shots without buttons',()=>{
+ for(const [dx,dy,kind] of [[90,-140,'topspin'],[160,0,'flat'],[-70,120,'slice']]){
+  let state;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(s){state=s},contact(){},dispose(){}})});
+  game.ids.rallyPractice.onclick();game.runUntil(()=>state?.ball.active);
+  game.ids.game.onpointerdown({pointerId:1,clientX:180,clientY:300});
+  game.runUntil(()=>state.ball.bounces===1&&state.ball.y>=state.player.y-.13);
+  assert.equal(game.ids.chargeValue.textContent,'100%');
+  game.ids.game.onpointermove({pointerId:1,clientX:180+dx,clientY:300+dy});
+  game.ids.game.onpointerup({pointerId:1,clientX:180+dx,clientY:300+dy});
+  assert.equal(state.ball.last,'player');assert.equal(state.ball.kind,kind);
+  assert.match(game.ids.toast.textContent,new RegExp(kind.toUpperCase()));
+ }
+});
+test('lifting a held touch without swiping cancels without hitting or spending a shot',()=>{
+ let state;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(s){state=s},dispose(){}})});
+ game.ids.rallyPractice.onclick();game.runUntil(()=>state?.ball.active);
+ game.ids.game.onpointerdown({pointerId:1,clientX:180,clientY:300});
+ game.runUntil(()=>state.ball.bounces===1&&state.ball.y>=state.player.y-.13);
+ game.ids.game.onpointerup({pointerId:1,clientX:180,clientY:300});assert.equal(state.ball.last,'opp');assert.match(game.ids.toast.textContent,/cancelled/);
+});
+
+test('an early swipe keeps its shot shape through the contact buffer',()=>{
+ let state;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(s){state=s},contact(){},dispose(){}})});
+ game.ids.rallyPractice.onclick();game.runUntil(()=>state?.ball.active);
+ game.ids.game.onpointerdown({pointerId:1,clientX:180,clientY:300});
+ game.runUntil(()=>state.ball.bounces===1&&state.ball.y>=state.player.y-.21);
+ game.ids.game.onpointerup({pointerId:1,clientX:240,clientY:420});
+ game.runUntil(()=>state.ball.last==='player');assert.equal(state.ball.kind,'slice');assert.match(game.ids.toast.textContent,/SLICE/);
 });

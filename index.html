@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.11</title>
+<title>TenAce — Road to #1 · 0.12</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -133,6 +133,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 .playSettings{margin-top:14px;border-top:1px solid #426079;padding-top:12px}.playSettings summary{min-height:44px;display:flex;align-items:center;font-size:13px;font-weight:750;cursor:pointer}.playSettings label{display:block;font-size:12px;margin:10px 0}.playSettings select{width:100%;min-height:44px;background:#102c40;color:#f8fbff;border:1px solid #668879;border-radius:9px;padding:8px;font:inherit}
 #resumeCue{display:none;position:absolute;inset:0;z-index:8;place-content:center;text-align:center;background:#03162666;color:#edffca;font-size:64px;font-weight:900;pointer-events:auto}#resumeCue.show{display:grid}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+.swingDock{flex:none;padding:12px 18px max(12px,env(safe-area-inset-bottom));background:#071b27;border-top:1px solid #365466}.swingDock>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:12px}.swingDock small{display:block;margin-top:8px;font-size:10px;color:#a9c1cf}.chargeTrack{height:5px;background:#1f3d4e;margin-top:9px;border-radius:6px;overflow:hidden}.chargeTrack span{display:block;height:100%;width:0;background:linear-gradient(90deg,#5cdbc6,#dcf58e)}
 </style>
 </head>
 <body>
@@ -162,7 +163,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
       <div class="meter iq"><span style="width:42%"></span></div>
     </div>
   </div>
-  <div class="toolbar"><span id="rallyLabel">First to 7 · Swipe to hit</span><span id="renderStatus" role="status">Loading 3D</span><button id="viewBtn" aria-label="Switch court view">2D view</button><button id="soundBtn" aria-pressed="false">Sound off</button><button id="pauseBtn" aria-label="Pause game" disabled>Pause</button></div>
+  <div class="toolbar"><span id="rallyLabel">First to 7 · Hold, then swipe</span><span id="renderStatus" role="status">Loading 3D</span><button id="viewBtn" aria-label="Switch court view">2D view</button><button id="soundBtn" aria-pressed="false">Sound off</button><button id="pauseBtn" aria-label="Pause game" disabled>Pause</button></div>
 </header>
 <main id="gameWrap">
   <div id="resumeCue" role="status" aria-live="polite"></div><canvas id="court3d" aria-label="3D tennis court"></canvas>
@@ -180,16 +181,15 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
     </div>
   </div>
 </main>
-<section id="shotControls" class="controls">
-  <button class="shot" data-shot="slice"><span class="i">↘</span>SLICE<small>safe + low</small></button>
-  <button class="shot active" data-shot="topspin"><span class="i">↗</span>TOPSPIN<small>heavy + deep</small></button>
-  <button class="shot" data-shot="flat"><span class="i">━</span>FLAT<small>fast + risky</small></button>
-  <button class="shot" data-shot="lob"><span class="i">⌒</span>LOB<small>reset point</small></button>
+<section id="shotControls" class="swingDock" aria-label="Swing feedback">
+ <div><b id="swingReadout">Hold to load · Swipe to swing</b><span id="chargeValue">0%</span></div>
+ <div class="chargeTrack"><span id="chargeFill"></span></div>
+ <small>↑ Topspin · ↔ Flat · ↓ Slice · Long, slow ↑ Lob</small>
 </section>
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.11 · Build your game</div>
+   <div class="eyebrow">Season 0.12 · Build your game</div>
    <h1 id="introTitle">Jax owns these courts.</h1>
    <div class="copy">First to 7. Build your attributes, unlock rivals, and choose your specialization at level 3.</div>
    <div id="careerSummary" class="careerline"></div>
@@ -202,15 +202,14 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
    <button id="mapBtn" class="secondary">Career map · Chapters & rewards</button>
    <label class="difficultyLabel" for="difficulty">Match difficulty</label>
    <select id="difficulty"><option value="relaxed">Relaxed · More time to react</option><option value="standard" selected>Standard · Original challenge</option><option value="competitive">Competitive · Faster opponents</option></select>
-   <details class="playSettings"><summary>Practice & shot controls</summary>
+   <details class="playSettings"><summary>Practice & swing guide</summary>
    <button id="rallyPractice" class="secondary">Rally practice · 12 feeds</button>
-   <button id="learnBtn" class="secondary">Learn touch controls · Guided drill</button>
-   <label class="optionLine"><input id="advancedShots" type="checkbox">Enable flat shot · Advanced risk</label>
+   <button id="learnBtn" class="secondary">Learn the swing · Guided drill</button>
    <button id="practiceBtn" class="secondary">Serve practice · 10 attempts</button>
    </details>
    <button id="careerBtn" class="secondary">Player upgrades</button>
    <button id="customizeBtn" class="secondary">Customize player</button>
-   <div class="tip">Choose your serve placement, then tap in the green. Let the return bounce once, then swipe toward your target when it enters your hitting zone. Drag or use ← ↑ → on desktop. Two serve faults lose the point.</div>
+   <div class="tip">Choose your serve placement, then tap in the green. Hold anywhere on court to load power, then swipe as the bounced return reaches you. Swipe up for topspin, sideways for flat, down for slice, or long and slowly up for a lob. Angle left or right to aim. Release without a swipe to cancel. Arrow keys are a desktop fallback. Two serve faults lose the point.</div>
    <details class="playSettings"><summary>Display & feel</summary>
    <label for="graphicsQuality">Graphics</label><select id="graphicsQuality"><option value="auto">Auto · Adapt for smoother play</option><option value="high">Quality · Detailed shadows</option><option value="low">Performance · Reduced detail</option></select><p id="qualityNote" class="tip"></p>
    <label class="optionLine"><input id="haptics" type="checkbox" checked>Touch feedback · Where supported</label></details>
@@ -376,8 +375,6 @@ function renderCareer(){
  renderMap();
 }
 document.getElementById('careerPath').onchange=e=>{if(Progress.choosePath(career,e.target.value))saveCareer()};
-document.getElementById('advancedShots').onchange=e=>{try{localStorage.setItem('tenace.advanced',String(e.target.checked))}catch{}document.getElementById('shotControls').classList.toggle('advanced',e.target.checked);if(!e.target.checked&&selected==='flat'){selected='topspin';document.querySelectorAll('.shot').forEach(b=>b.classList.toggle('active',b.dataset.shot===selected));}};
-try{const advanced=localStorage.getItem('tenace.advanced')==='true';document.getElementById('advancedShots').checked=advanced;document.getElementById('shotControls').classList.toggle('advanced',advanced)}catch{}
 function renderMap(){
  const unlocked=Progress.unlocked(career,'mira');
  document.getElementById('chooseMira').disabled=!unlocked;document.getElementById('chooseMira').textContent=unlocked?'Meet Mira Sol':'Beat Jax to unlock';
@@ -396,7 +393,7 @@ function selectRival(id){if(!Progress.unlocked(career,id))return;rival=Rivals[id
 document.getElementById('mapBtn').onclick=openMap;document.getElementById('resultMap').onclick=openMap;document.getElementById('mapHome').onclick=home;
 document.getElementById('chooseJax').onclick=()=>selectRival('jax');document.getElementById('chooseMira').onclick=()=>selectRival('mira');
 function resetSession(nextMode){
- mode=nextMode;resumeUntil=0;document.getElementById('resumeCue').classList.remove('show');lastPaint=-Infinity;paused=false;matchFinished=false;point=false;ball.active=false;servePending=false;swipe=null;aimPreview=null;
+ mode=nextMode;resumeUntil=0;document.getElementById('resumeCue').classList.remove('show');lastPaint=-Infinity;paused=false;matchFinished=false;point=false;ball.active=false;swipe=null;aimPreview=null;servePending=false;swipe=null;aimPreview=null;
  playerSwing=oppSwing=celebration=0;impact=null;cleanContacts=0;guided=false;
  faults=0;bufferedHit=null;bounceMark=null;player.y=.86;opp.y=.16;
  nextPoint=matchEndAt=practiceNext=drillNext=Infinity;bestRally=0;pScore=oScore=0;pStam=oStam=100;
@@ -404,7 +401,7 @@ function resetSession(nextMode){
  server='player';ball.trail=[];serveUI.classList.remove('show');
  document.querySelectorAll('.modal').forEach(el=>el.classList.remove('show'));
  document.getElementById('pauseBtn').disabled=nextMode==='home';
- document.getElementById('rallyLabel').textContent=nextMode==='practice'?'Serve lab · 10 attempts':nextMode==='rally'?'Rally lab · 12 feeds':'First to 7 · Swipe to hit';
+ document.getElementById('rallyLabel').textContent=nextMode==='practice'?'Serve lab · 10 attempts':nextMode==='rally'?'Rally lab · 12 feeds':'First to 7 · Hold, then swipe';
  renderCareer();
 }
 function home(){resetSession('home');document.getElementById('intro').classList.add('show')}
@@ -424,15 +421,15 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame()
 function practiceServe(){servePending=true;servePhase=0;serveUI.classList.add('show');document.getElementById('rallyLabel').textContent=`Serve lab · Attempt ${practiceAttempts+1}/10`}
 document.getElementById('practiceBtn').onclick=()=>{Sound.unlock();resetSession('practice');practiceAttempts=practiceTotal=0;practiceServe()};
 document.getElementById('mapPractice').onclick=()=>document.getElementById('practiceBtn').onclick();
-document.getElementById('rallyPractice').onclick=()=>{Sound.unlock();resetSession('rally');drillFeeds=drillHits=0;drillNext=performance.now()+600;say('12 feeds · Bounce, then swipe or use arrow keys',1800)};
-document.getElementById('learnBtn').onclick=()=>{document.getElementById('rallyPractice').onclick();guided=true;say('Step 1 · Touch the court and drag toward a target',2000)};
+document.getElementById('rallyPractice').onclick=()=>{Sound.unlock();resetSession('rally');drillFeeds=drillHits=0;drillNext=performance.now()+600;say('Hold to load · Swipe through the bounce',1800)};
+document.getElementById('learnBtn').onclick=()=>{document.getElementById('rallyPractice').onclick();guided=true;say('Hold to load power · Swipe when the return reaches you',2000)};
 function feedBall(){
  drillFeeds++;point=true;ball.x=.5;ball.y=.16;ball.last='opp';ball.trail=[];bufferedHit=null;player.x=player.tx=.5;player.y=.86;
  Physics.launch(ball,{x:[.5,.32,.68][(drillFeeds-1)%3],y:.76,time:1.4,z:.14});oppSwing=1;
  document.getElementById('rallyLabel').textContent=`Feed ${drillFeeds}/12 · ${drillHits} returns`;
 }
 function finishFeed(hit){
- if(!point)return;point=false;ball.active=false;bufferedHit=null;if(hit)drillHits++;
+ if(!point)return;point=false;ball.active=false;swipe=null;aimPreview=null;bufferedHit=null;if(hit)drillHits++;
  if(drillFeeds===12){const score=drillHits;home();document.getElementById('practiceSummary').textContent=`Rally drill complete: ${score}/12 returns. Repeat the feeds to improve your timing. No XP awarded.`}
  else{drillNext=performance.now()+1000;say(hit?'Return made · Next feed':'Missed · Wait for one bounce, then swing',950)}
 }
@@ -457,7 +454,7 @@ function beginPoint(){
 function setVelocity(tx,ty,speed){Physics.launch(ball,{x:tx,y:ty,time:Math.max(.85,Math.min(1.6,Math.hypot(tx-ball.x,ty-ball.y)/speed)),z:Math.max(.08,ball.z||.12),kind:selected})}
 function schedulePoint(){faults=0;server=server==='player'?'opp':'player';nextPoint=performance.now()+1050}
 function award(who,reason){
- if(!point)return;point=false;ball.active=false;serveUI.classList.remove('show');
+ if(!point)return;point=false;ball.active=false;swipe=null;aimPreview=null;serveUI.classList.remove('show');
  bufferedHit=null;Sound.play(who==='player'?'point':'bounce');
  if(who==='player')pScore++;else oScore++;
  celebration=who==='player'?1.8:0;
@@ -483,7 +480,7 @@ function endMatch(){
 document.getElementById('startBtn').onclick=startMatch;
 document.getElementById('again').onclick=startMatch;
 document.querySelectorAll('.stat').forEach(b=>b.onclick=()=>{if(Progress.upgrade(career,b.dataset.up)){saveCareer();say('Upgrade applied')}});
-document.querySelectorAll('.shot').forEach(b=>b.onclick=e=>{e.stopPropagation();selected=b.dataset.shot;document.querySelectorAll('.shot').forEach(x=>x.classList.toggle('active',x===b));})
+
 
 function serve(){
  if(!servePending||paused)return;
@@ -511,30 +508,31 @@ function serve(){
 document.getElementById('tapServe').onclick=serve;
 
 function pos(e){const r=C.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height,t:performance.now()}}
-C.onpointerdown=e=>{if(swipe||e.isPrimary===false||e.button>0)return;if(point&&!servePending&&!paused){C.setPointerCapture(e.pointerId);swipe={...pos(e),id:e.pointerId};aimPreview=Technique.aim(0,selected)}};
+function readSwing(b){const dx=b.x-swipe.x,dy=b.y-swipe.y;return Technique.gesture({dx,dy,heldMs:b.t-swipe.t,swipeMs:Math.max(1,b.t-(swipe.motionAt??b.t))});}
+C.onpointerdown=e=>{if(swipe||e.isPrimary===false||e.button>0)return;if(point&&!servePending&&!paused){C.setPointerCapture(e.pointerId);bufferedHit=null;swipe={...pos(e),id:e.pointerId,motionAt:null};aimPreview=null;}};
 function ownsSwipe(e){return swipe&&(e.pointerId===undefined||e.pointerId===swipe.id)}
-C.onpointermove=e=>{if(!ownsSwipe(e)||paused)return;const b=pos(e);aimPreview=Technique.aim(b.x-swipe.x,selected);};
+C.onpointermove=e=>{if(!ownsSwipe(e)||paused)return;const b=pos(e);if(swipe.motionAt===null&&Math.hypot(b.x-swipe.x,b.y-swipe.y)>.02)swipe.motionAt=b.t;const g=readSwing(b);swipe.preview=g;aimPreview=g.valid?g.target:null;};
 C.onpointercancel=e=>{if(ownsSwipe(e)){swipe=null;aimPreview=null;bufferedHit=null}};
 C.onlostpointercapture=C.onpointercancel;
-C.onpointerup=e=>{if(!ownsSwipe(e))return;const origin=swipe;swipe=null;aimPreview=null;if(!point||servePending||paused)return;const b=pos(e),dx=b.x-origin.x,dy=b.y-origin.y;playerHit(dx,dy,Math.hypot(dx,dy),b.t-origin.t)};
+C.onpointerup=e=>{if(!ownsSwipe(e))return;const b=pos(e),g=readSwing(b);swipe=null;aimPreview=null;if(!point||servePending||paused)return;if(!g.valid){bufferedHit=null;return say('Swing cancelled · Swipe to hit',500);}playerHit(g.dx,g.dy,Math.hypot(g.dx,g.dy),g.charge*900,g);};
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){paused?resumeGame():pauseGame();return}
  if(!['match','rally'].includes(mode)||paused||matchFinished||servePending||!point||!['ArrowLeft','ArrowUp','ArrowRight'].includes(e.key))return;
  e.preventDefault();playerHit(e.key==='ArrowLeft'?-.3:e.key==='ArrowRight'?.3:0,-.3,.3,180);
 });
 
-function playerHit(dx,dy,dist,dur){
+function playerHit(dx,dy,dist,dur,gesture={shot:'topspin',charge:.5}){
  if(ball.last!=='opp'||!ball.active)return say('Wait for the return');
- if(!Physics.canHit(ball,'player')||ball.y<player.y-.19){bufferedHit={dx,dy,dist,dur,until:animTime+difficulties[difficulty].buffer};return say(ball.bounces===0?'Early · Let it bounce · Swing queued':'Wait for the hitting zone · Swing queued',350)}
+ if(!Physics.canHit(ball,'player')||ball.y<player.y-.19){bufferedHit={dx,dy,dist,dur,gesture,until:animTime+difficulties[difficulty].buffer};return say(ball.bounces===0?'Early · Let it bounce · Swing queued':'Wait for the hitting zone · Swing queued',350)}
  const prox=Math.hypot((ball.x-player.x)*1.15,(ball.y-player.y)*1.15); if(prox>.23){bufferedHit=null;return say('Out of reach')}
- bufferedHit=null;Sound.play(selected);view3D?.contact('player',ball,selected,animTime);
+ bufferedHit=null;selected=gesture.shot;Sound.play(selected);view3D?.contact('player',ball,selected,animTime);
  const err=Math.abs(ball.y-(player.y-.06)),q=err<fx.timing?'PERFECT':err<fx.timing+.07?'GOOD':ball.y<player.y-.06?'EARLY':'LATE';
  playerSwing=1;swingSide=ball.x<player.x?-1:1;impact={x:px(ball.x,ball.y),y:py(ball.y)-ball.z*H*.5,life:1,color:q==='PERFECT'?'#f9ffbc':'#98ede3'};
- const shot=Technique.resolve({dx,shot:selected,error:err,timing:fx.timing,reach:prox,stamina:pStam,power:fx.power,control:career.stats.control});
+ const shot=Technique.resolve({dx,shot:selected,error:err,timing:fx.timing,reach:prox,stamina:pStam,power:fx.power,control:career.stats.control,charge:gesture.charge,targetY:gesture.target?.y});
  setVelocity(shot.x,shot.y,shot.speed);ball.last='player';
- if(mode==='rally'){say(shot.feedback,700);return;}
+ if(mode==='rally'){say(selected.toUpperCase()+' · '+shot.feedback,900);return;}
  if(shot.clean)cleanContacts++;
- rally++;bestRally=Math.max(bestRally,rally);document.getElementById('rallyLabel').textContent=`Rally ${rally} · ${q}`;pStam=Math.max(14,pStam-shot.cost*fx.staminaCost);updateBars();say(shot.feedback,700);vib(shot.clean?28:12)
+ rally++;bestRally=Math.max(bestRally,rally);document.getElementById('rallyLabel').textContent=`Rally ${rally} · ${q}`;pStam=Math.max(14,pStam-shot.cost*fx.staminaCost);updateBars();say(selected.toUpperCase()+' · '+shot.feedback,900);vib(shot.clean?28:12)
 }
 function oppHit(){
  if(!Physics.canHit(ball,'opp')||ball.y>opp.y+.16)return;
@@ -573,11 +571,11 @@ function update(dt,t){
  for(const event of Physics.step(ball,dt)){
   if(event.type==='bounce'){bounceMark={x:event.x,y:event.y,life:1};Sound.play('bounce');if(mode==='rally'&&ball.last==='player'){finishFeed(true);return;}if(ball.last==='opp')say('One bounce · Hit now',450);}
   else if(mode==='rally'){finishFeed(false);return;}
-  else if(event.fault&&server==='player'&&faults===0){faults=1;point=false;ball.active=false;nextPoint=t+1200;bufferedHit=null;Sound.play('net');say('FAULT · Second serve',1200);return;}
+  else if(event.fault&&server==='player'&&faults===0){faults=1;point=false;ball.active=false;swipe=null;aimPreview=null;nextPoint=t+1200;bufferedHit=null;Sound.play('net');say('FAULT · Second serve',1200);return;}
   else {Sound.play(event.reason==='net'?'net':'bounce');award(event.winner,event.fault&&faults?'double fault':event.reason);return;}
  }
  ball.trail.push({x:ball.x,y:ball.y,z:ball.z});if(ball.trail.length>11)ball.trail.shift();
- if(bufferedHit){if(animTime>bufferedHit.until){bufferedHit=null;say('Too early · Swing closer to the bounce',500)}else if(Physics.canHit(ball,'player')&&ball.y>=player.y-.19){const hit=bufferedHit;playerHit(hit.dx,hit.dy,hit.dist,hit.dur);}}
+ if(bufferedHit){if(animTime>bufferedHit.until){bufferedHit=null;say('Too early · Swing closer to the bounce',500)}else if(Physics.canHit(ball,'player')&&ball.y>=player.y-.19){const hit=bufferedHit;playerHit(hit.dx,hit.dy,hit.dist,hit.dur,hit.gesture);}}
  if(mode!=='rally')oppHit();
 }
 function drawCourt(){
@@ -589,7 +587,7 @@ function drawCourt(){
 }
 function drawPlayer(p,you){
  const size=Math.min(1.15,W/350,H/430)*(.43+.57*p.y);
- Graphics.person(ctx,px(p.x,p.y),py(p.y)+8,size,you?career.character:rivalLook,{time:animTime,run:ball.active?Math.min(1,Math.abs(p.tx-p.x)*12):0,swing:you?playerSwing:oppSwing,side:you?swingSide:-1,shot:you?selected:ball.kind,back:you&&celebration<=0,windup:you&&!!bufferedHit,ready:ball.active&&ball.last===(you?'opp':'player'),serve:you&&servePending,celebrate:you&&celebration>0});
+ Graphics.person(ctx,px(p.x,p.y),py(p.y)+8,size,you?career.character:rivalLook,{time:animTime,run:ball.active?Math.min(1,Math.abs(p.tx-p.x)*12):0,swing:you?playerSwing:oppSwing,side:you?swingSide:-1,shot:you?selected:ball.kind,back:you&&celebration<=0,windup:you&&(!!bufferedHit||!!swipe),ready:ball.active&&ball.last===(you?'opp':'player'),serve:you&&servePending,celebrate:you&&celebration>0});
 }
 function drawBall(){
  if(servePending){const x=px(player.x,player.y)-14,y=py(player.y)-45-Math.abs(Math.sin(animTime*3))*15;ctx.fillStyle='#edff76';ctx.beginPath();ctx.arc(x,y,3.7,0,7);ctx.fill();return}
@@ -623,10 +621,13 @@ function loop(t){const elapsed=Math.max(0,(t-last)/1000);last=t;
  if(!paused){const steps=Math.max(1,Math.ceil(dt/.016));for(let i=0;i<steps;i++)update(dt/steps,t-dt*1000+(i+1)*dt/steps*1000);}
  // Render menu previews at 10 fps instead of running a full-rate hidden match.
  if((paused||mode==='home'||matchFinished)&&t-lastPaint<100){requestAnimationFrame(loop);return;}lastPaint=t;
- if(view3D){ctx.clearRect(0,0,W,H);try{view3D.render({time:animTime,dt,theme:rival.theme,ball,serving:servePending,aim:aimPreview||(servePending?Physics.serveTarget(serveAim,serviceSide):null),landing:ball.active?Physics.landing(ball):null,celebration,player:{...player,look:career.character,near:true,swing:playerSwing,side:swingSide,shot:selected,serve:servePending,ready:ball.active&&ball.last==='opp',celebrate:celebration>0},opp:{...opp,look:rivalLook,swing:oppSwing,shot:rival.id==='mira'?'lob':'topspin',ready:ball.active&&ball.last==='player'}});}catch{fallback3D();}}
+ if(view3D){ctx.clearRect(0,0,W,H);try{view3D.render({time:animTime,dt,theme:rival.theme,ball,serving:servePending,aim:aimPreview||(servePending?Physics.serveTarget(serveAim,serviceSide):null),landing:ball.active?Physics.landing(ball):null,celebration,player:{...player,look:career.character,near:true,swing:playerSwing,side:swingSide,shot:selected,charge:swipe?Math.min(1,(t-swipe.t)/900):0,serve:servePending,ready:ball.active&&ball.last==='opp',celebrate:celebration>0},opp:{...opp,look:rivalLook,swing:oppSwing,shot:rival.id==='mira'?'lob':'topspin',ready:ball.active&&ball.last==='player'}});}catch{fallback3D();}}
  else{drawCourt();drawPlayer(opp,false);Graphics.net(ctx,court);drawPlayer(player,true);drawBall();drawEffects();}
- document.getElementById('aimHint').textContent=paused||mode==='home'||servePending?'':aimPreview?'Release to hit toward the green target':ball.active&&ball.last==='opp'?(view3D?'Landing ring · Let it bounce, then swing':'Let it bounce, then swing'):'Recover to center · Prepare for the return';
- document.getElementById('contactCue').textContent=paused||!ball.active||ball.last!=='opp'?'':Physics.canHit(ball,'player')&&ball.y>=player.y-.19?'RELEASE · Swing now':guided?(swipe?'Step 2 · Hold until the ball bounces':'Step 1 · Drag anywhere to aim'):'PREPARE · Wait for the bounce';
+ document.getElementById('aimHint').textContent=paused||mode==='home'||servePending?'':aimPreview?'Swipe toward the target · Release at contact':ball.active&&ball.last==='opp'?(view3D?'Landing ring · Let it bounce, then swing':'Let it bounce, then swing'):'Recover to center · Prepare for the return';
+ document.getElementById('contactCue').textContent=paused||!ball.active||ball.last!=='opp'?'':Physics.canHit(ball,'player')&&ball.y>=player.y-.19?'RELEASE · Swing now':guided?(swipe?'POWER LOADING · Swipe at contact':'HOLD TO LOAD · Wait for the bounce'):'PREPARE · Wait for the bounce';
+ const charge=swipe?Math.min(1,(t-swipe.t)/900):0;
+ document.getElementById('chargeFill').style.width=(charge*100)+'%';document.getElementById('chargeValue').textContent=Math.round(charge*100)+'%';
+ document.getElementById('swingReadout').textContent=paused?'Paused · Your point is safe':swipe?(swipe.preview?.valid?swipe.preview.shot.toUpperCase()+' · Release at contact':charge>=1?'Fully loaded · Time your swipe':'Loading swing · Swipe to aim'):servePending?'Serve first · Tap in the green':'Hold to load · Swipe to swing';
  hudPortrait('youPortrait',career.character);hudPortrait('rivalPortrait',rivalLook);
  if(mode==='home'){if(draft)drawPortrait('characterPreview',draft,true);else drawPortrait('clubPreview',career.character,false)}
  requestAnimationFrame(loop)}

@@ -22,3 +22,18 @@ test('technique rewards are capped and stack with first-win rewards without a se
  const rematch=P.rewardMatch(s,false,2,'jax',2);assert.equal(rematch.technique,6);assert.equal(rematch.earned,66);
  assert.equal(P.rewardMatch(P.fresh(),true,20,'mira',50).earned,0);
 });
+
+test('swipe shape selects all four shots while horizontal angle determines aim',()=>{
+ for(const [dy,swipeMs,expected] of [[-.18,120,'topspin'],[.18,120,'slice'],[0,120,'flat'],[-.35,400,'lob']]){
+  const left=S.gesture({dx:-.12,dy,swipeMs,heldMs:900}),right=S.gesture({dx:.12,dy,swipeMs,heldMs:900});
+  assert.equal(left.shot,expected);assert.equal(right.shot,expected);assert.ok(left.target.x<.5&&right.target.x>.5);
+ }
+ assert.equal(S.gesture({dx:.001,dy:0,heldMs:3000}).valid,false);
+ assert.equal(S.gesture({dy:-.35,heldMs:1800,swipeMs:120}).shot,'topspin','long hold followed by quick swipe is not a lob');
+});
+test('hold duration loads bounded power without replacing timing and positioning',()=>{
+ const quick=S.gesture({dx:.2,heldMs:100}),loaded=S.gesture({dx:.2,heldMs:900}),over=S.gesture({dx:.2,heldMs:9000});
+ assert.ok(loaded.charge>quick.charge);assert.equal(over.charge,1);
+ const weak=S.resolve({...base,charge:quick.charge}),strong=S.resolve({...base,charge:loaded.charge});assert.ok(strong.speed>weak.speed);assert.ok(strong.cost>weak.cost);
+ const forced=S.resolve({...base,charge:1,error:.2,reach:.23,stamina:14});assert.ok(forced.speed<strong.speed);assert.ok(forced.pressure>strong.pressure);
+});

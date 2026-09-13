@@ -2,6 +2,16 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.12 — Hold, load, swipe
+
+- Removed the rally shot-selection buttons. Press anywhere on court to load power (capped at 900 ms), then swipe and release at contact. Idle time between touches does not build power.
+- Upward strokes choose topspin, sideways strokes flat, downward strokes slice, and a long slow upward stroke chooses lob. Horizontal angle sets placement; upward stroke length also affects drive depth. Holding before a quick upward flick does not turn it into a lob.
+- Charge increases pace and stamina cost. Timing, fatigue, reach, and control still determine execution; high charge adds pressure when mistimed. The short early-input buffer retains the complete gesture. Lifting without a swipe cancels; new presses, interruptions, and point endings clear stale input.
+- Compact live power meter and gesture guide replace the button dock. Players visibly turn and load the racket while holding. Arrow keys remain a desktop fallback; the existing serve-placement and tap-timing interaction is unchanged.
+- Closer court camera, smoother player geometry, revised head proportions, wind-up/body rotation, contact shadows, simpler courtside benches, a correctly oriented sponsor sign, and removal of placeholder crowd figures. These remain procedural characters, not finished production character assets.
+
+Validation: 47 automated tests passed, including held-touch shot selection, charge/pace/stamina, cancellation, buffered shot preservation, all four gesture classifications, and existing physics/progression/pause/renderer checks. Actual browser swipes produced clean topspin and slice returns without shot selection; 3D reported no console errors. Hold duration is covered by simulated pointer tests rather than a physical phone benchmark.
+
 ## 0.11 — Phone comfort and reliable frame pacing
 
 - Match simulation uses small substeps so slower rendering does not slow ball travel. Long active-frame stalls pause safely; backgrounding or losing focus also pauses.
