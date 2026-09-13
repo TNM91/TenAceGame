@@ -5,7 +5,7 @@ test('original characters support every saved hairstyle with finite geometry and
   const rig=createOriginal({style});
   for(const preview of ['ready','run','serve'])for(let i=0;i<20;i++){
    rig.pose({x:.5+i*.001,y:.8,near:true,tx:.6,preview,charge:i/20,serve:preview==='serve'},i/60,1/60,null);rig.root.updateMatrixWorld(true);
-   rig.root.traverse(o=>{assert.ok(o.matrixWorld.elements.every(Number.isFinite));if(o.geometry)assert.ok(Array.from(o.geometry.attributes.position.array).every(Number.isFinite));});
+   rig.root.traverse(o=>{assert.ok(o.matrixWorld.elements.every(Number.isFinite));if(o.geometry){assert.ok(Array.from(o.geometry.attributes.position.array).every(Number.isFinite));if(o.geometry.attributes.normal)assert.ok(Array.from(o.geometry.attributes.normal.array).every(Number.isFinite));}});
   }
  }
 });

@@ -1,8 +1,10 @@
-# Original stylized players — 0.18
+# Original stylized players — 0.19
 
 The user chose colorful, expressive, anime-adjacent sports characters over lifelike stock models. Clash Royale is a reference for silhouette clarity and playful character appeal, not a source of copied characters or assets.
 
-`original-player.js` contains new editable Three.js geometry: sculpted head contours, large eyes and brows, tapered hair locks, sportswear, an emblem, shoes and racket. Meshes, colors and articulated transforms are created locally. No downloaded character model, paid asset or generated character bitmap is used. Three.js remains the MIT-licensed rendering dependency.
+`original-player.js` contains new editable Three.js geometry: a continuous sculpted face with integrated nose and cheeks, smaller inset eyes and brows, a unified hair cap and shallow fringe locks, sportswear, an emblem, shoes and racket. Meshes, colors and articulated transforms are created locally. No downloaded character model, paid asset or generated character bitmap is used. Three.js remains the MIT-licensed rendering dependency.
+
+Skin, fabric, hair and racket materials use different roughness values. Thinner contours and softer studio lighting reduce the plastic puppet appearance. Arms and legs now use continuous bending surfaces through elbows and knees.
 
 Movement combines a loaded stance, torso preparation, lateral steps, contact alignment and recovery. The face blinks and brows respond to load; hair reacts to motion. This is procedural character animation, not motion capture or a finished production animation set. All existing saved hairstyle, skin, clothing and racket options remain supported.
 

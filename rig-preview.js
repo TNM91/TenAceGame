@@ -7,9 +7,10 @@ function setPaused(value){paused=value;motion.textContent=paused?'Play motion':'
 motion.onclick=()=>setPaused(!paused);
 phase.oninput=()=>{setPaused(true);time=eventAt+Number(phase.value)/1000;};
 const scene=new T.Scene();scene.background=new T.Color('#bac9c9');
-scene.add(new T.HemisphereLight('#f5f7ff','#667573',2.2));
-const key=new T.DirectionalLight('#fff0d5',3);key.position.set(-3,5,4);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.normalBias=.025;Object.assign(key.shadow.camera,{near:1,far:15,left:-4,right:4,top:4,bottom:-4});scene.add(key);
-const fill=new T.DirectionalLight('#b2d8ff',1.5);fill.position.set(4,3,-2);scene.add(fill);
+scene.add(new T.HemisphereLight('#f5f7ff','#667573',1.5));
+const key=new T.DirectionalLight('#fff0d5',2.4);key.position.set(-3,5,4);key.castShadow=true;key.shadow.mapSize.set(1024,1024);key.shadow.normalBias=.025;Object.assign(key.shadow.camera,{near:1,far:15,left:-4,right:4,top:4,bottom:-4});scene.add(key);
+const fill=new T.DirectionalLight('#b2d8ff',.7);fill.position.set(4,3,-2);scene.add(fill);
+const rimLight=new T.DirectionalLight('#d3eaff',1.8);rimLight.position.set(2,3,-4);scene.add(rimLight);
 const floor=new T.Mesh(new T.PlaneGeometry(40,40),new T.MeshStandardMaterial({color:'#bac9c9',roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.015;floor.receiveShadow=true;scene.add(floor);
 const camera=new T.PerspectiveCamera(36,1,.1,60);
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}

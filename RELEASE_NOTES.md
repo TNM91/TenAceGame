@@ -2,6 +2,14 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.19 — Softer character sculpt and connected limbs
+
+- Rebuilt the face as a continuous surface with an integrated nose, cheeks and eye sockets. Smaller inset eyes, skin-colored upper lids, a closed smile and lower brows replace the oversized eyes and fixed toothy expression.
+- Simplified swept hair into a unified cap and shallow fringe, reduced head size slightly, and thinned outlines. Skin, fabric, hair and racket now have distinct material roughness; the studio uses softer key lighting and a cool rim light.
+- Replaced visible segmented arms and legs with continuous bending surfaces through elbows and knees, retaining shot contact alignment and saved appearance options.
+
+Validation: 61 tests passed, including finite geometry normals and racket contact/continuity checks. A 390 × 844 browser rally produced a clean topspin return without console errors; studio close-up and full-body poses were visually inspected. Physical-phone frame rate and thermal testing remain outstanding.
+
 ## 0.18 — Original stylized tennis characters
 
 - Replaced the stock-character preview with an original editable character: larger expressive face, animated eyes and brows, tapered hair, bold kit, side stripes, crest and chunky sneakers. Supported hairstyles include swept, curls, ponytail, bun and shaved.
