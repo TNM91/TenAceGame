@@ -2,6 +2,15 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.14 — A unified playable venue
+
+- Replaced the painted match backdrop with a modeled pavilion, timber canopy, glass frontage, tiered seating, planting, court surrounds, fences, benches and light fixtures under shared lighting. The original art remains available to the 2D fallback; 3D matches no longer combine incompatible flat and modeled backgrounds.
+- Adult-sized head assemblies, facial details and clothing panels, with slightly larger player silhouettes for phone readability. Jax now wears a navy kit and coral racket to distinguish him from the player's default outfit.
+- Footwork follows traveled distance; ready stance adds knee flex and split-step motion. Loaded swings lower the stance, serve preparation staggers the feet, and backhands use supporting-hand motion with a different follow-through direction. This remains authored procedural animation, not motion capture.
+- HUD, clubhouse and customization previews use the actual 3D player model. Previews update on appearance or size changes and restore the court framebuffer after rendering; the 2D fallback still works when WebGL is unavailable.
+
+Validation: 53 tests passed, including portrait rendering/restoration, ready/load/serve poses, contact and recovery continuity, gameplay, progression, and fallback checks. Phone-sized browser inspection verified the modeled venue, 3D portraits, clothing changes and cancellation, and a clean swipe return without console errors. A full match remains covered by game-loop tests; physical iPhone/Android playtesting and premium-art review remain outstanding. This release improves visual consistency and movement rather than claiming finished App Store quality.
+
 ## 0.13 — Distinct shot flight and continuous follow-through
 
 - Shot height is now independent of horizontal flight duration. Arcade profiles give flat a low drive, slice a lower flight and skidding bounce, topspin more clearance and kick, and lob a deliberately high arc. Their nominal peaks from a low contact are 0.105, 0.085, 0.17 and 0.43 court-height units respectively. Contact above a nominal peak raises it just above the contact point.

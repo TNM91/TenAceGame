@@ -53,3 +53,18 @@ test('racket follow-through does not snap when contact lock ends or recovery fin
   for(const boundary of [.1,.48,.8])assert.ok(at(boundary-.0001).distanceTo(at(boundary+.0001))<.02,shot+' has a continuous racket path');
  }
 });
+
+test('3D portraits use the player appearance and restore the live court render size',async()=>{
+ global.devicePixelRatio=1;const {create}=await import('./court3d.js');let dimensions=[],renders=0,copies=0;
+ const renderer={shadowMap:{},setPixelRatio(){},setSize(w,h){dimensions.push([w,h])},render(){renders++},dispose(){}};
+ const court=create({addEventListener(){},removeEventListener(){}},()=>{},()=>renderer);court.resize(390,500);
+ const target={width:200,height:240,getContext:()=>({drawImage(){copies++}})};
+ court.portrait(target,Character.fresh());court.portrait(target,{...Character.fresh(),shirt:'#778dff'},true);
+ assert.equal(copies,2);assert.equal(renders,4);assert.deepEqual(dimensions.at(-1),[390,500]);court.dispose();delete global.devicePixelRatio;
+});
+test('ready stance, loaded swing and serve poses keep every mesh transform finite',async()=>{
+ const {athlete}=await import('./court3d.js');const rig=athlete(Character.fresh());
+ for(const state of [{ready:true},{charge:1},{serve:true},{ready:true,x:.65,tx:.75}]){
+  rig.pose({x:.5,y:.8,tx:.5,near:true,...state},1,.016,null);rig.root.updateMatrixWorld(true);rig.root.traverse(o=>assert.ok(o.matrixWorld.elements.every(Number.isFinite)));
+ }
+});

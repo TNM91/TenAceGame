@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.13</title>
+<title>TenAce — Road to #1 · 0.14</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -134,6 +134,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 #resumeCue{display:none;position:absolute;inset:0;z-index:8;place-content:center;text-align:center;background:#03162666;color:#edffca;font-size:64px;font-weight:900;pointer-events:auto}#resumeCue.show{display:grid}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 .swingDock{flex:none;padding:12px 18px max(12px,env(safe-area-inset-bottom));background:#071b27;border-top:1px solid #365466}.swingDock>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:12px}.swingDock small{display:block;margin-top:8px;font-size:10px;color:#a9c1cf}.chargeTrack{height:5px;background:#1f3d4e;margin-top:9px;border-radius:6px;overflow:hidden}.chargeTrack span{display:block;height:100%;width:0;background:linear-gradient(90deg,#5cdbc6,#dcf58e)}
+.hudPortrait{border-radius:5px}.clubPortrait canvas{border-radius:12px}.creatorHead .eyebrow{letter-spacing:.12em}
 </style>
 </head>
 <body>
@@ -189,7 +190,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.13 · Build your game</div>
+   <div class="eyebrow">Season 0.14 · Build your game</div>
    <h1 id="introTitle">Jax owns these courts.</h1>
    <div class="copy">First to 7. Build your attributes, unlock rivals, and choose your specialization at level 3.</div>
    <div id="careerSummary" class="careerline"></div>
@@ -254,7 +255,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
  <button id="resumeBtn" class="primary">Resume game</button><button id="leaveBtn" class="secondary">Leave for clubhouse</button>
 </div></div>
 <div id="creator" class="modal" role="dialog" aria-label="Customize player"><div class="panel creatorPanel">
- <div class="creatorHead"><div class="eyebrow">Player studio / 0.4</div><h1>Your court. Your style.</h1></div>
+ <div class="creatorHead"><div class="eyebrow">Player studio / 0.14</div><h1>Your court. Your style.</h1></div>
  <div class="creatorStage"><span class="stageBadge">Live player preview</span><canvas id="characterPreview" width="800" height="392" aria-label="Live character preview"></canvas></div>
  <form id="creatorForm" class="creatorFields">
   <label class="wide">Player name<input id="editName" name="name" maxlength="18" autocomplete="off" placeholder="Rookie"></label>
@@ -292,7 +293,7 @@ const toast=document.getElementById('toast'),serveUI=document.getElementById('se
 const pScoreEl=document.getElementById('pScore'),oScoreEl=document.getElementById('oScore');
 const pStamBar=document.getElementById('pStamBar'),oStamBar=document.getElementById('oStamBar'),pIqBar=document.getElementById('pIqBar');
 let W=0,H=0,dpr=1,last=performance.now(),selected='topspin',swipe=null;
-let view3D=null,aimPreview=null,prefer3D=true;
+let view3D=null,aimPreview=null,prefer3D=true;let portraitVersion=0;
 let graphicsQuality='auto',effectiveQuality='high',haptics=true,slowFrames=0,lastPaint=-Infinity,resumeUntil=0;
 try{const q=localStorage.getItem('tenace.graphics');if(['auto','high','low'].includes(q))graphicsQuality=q;haptics=localStorage.getItem('tenace.haptics')!=='off'}catch{}
 effectiveQuality=graphicsQuality==='low'?'low':'high';
@@ -305,8 +306,8 @@ document.getElementById('haptics').onchange=e=>{haptics=e.target.checked;try{loc
 qualityLabel();
 const Technique=window.TenAceTechnique;let cleanContacts=0,guided=false;
 const sceneCanvas=document.getElementById('court3d'),renderStatus=document.getElementById('renderStatus');
-function fallback3D(){view3D?.dispose();view3D=null;sceneCanvas.style.display='none';C.classList.remove('threeActive');renderStatus.textContent='2D court';document.getElementById('viewBtn').textContent='Try 3D';}
-function enable3D(){if(view3D||!prefer3D||!window.TenAce3D)return;try{view3D=window.TenAce3D.create(sceneCanvas,fallback3D);view3D.resize(W,H);applyQuality();sceneCanvas.style.display='block';C.classList.add('threeActive');renderStatus.textContent='3D court';document.getElementById('viewBtn').textContent='2D view';}catch{fallback3D();renderStatus.textContent='2D · WebGL unavailable';}}
+function fallback3D(){portraitVersion++;view3D?.dispose();view3D=null;sceneCanvas.style.display='none';C.classList.remove('threeActive');renderStatus.textContent='2D court';document.getElementById('viewBtn').textContent='Try 3D';}
+function enable3D(){if(view3D||!prefer3D||!window.TenAce3D)return;try{view3D=window.TenAce3D.create(sceneCanvas,fallback3D);portraitVersion++;view3D.resize(W,H);applyQuality();sceneCanvas.style.display='block';C.classList.add('threeActive');renderStatus.textContent='3D court';document.getElementById('viewBtn').textContent='2D view';}catch{fallback3D();renderStatus.textContent='2D · WebGL unavailable';}}
 addEventListener('tenace3dready',enable3D);
 document.getElementById('rendererModule').onerror=()=>{renderStatus.textContent='2D · 3D unavailable';};
 document.getElementById('viewBtn').onclick=()=>{if(view3D){prefer3D=false;fallback3D();}else{prefer3D=true;enable3D();}};
@@ -603,8 +604,9 @@ function drawEffects(){
  if(impact){ctx.save();ctx.globalAlpha=impact.life;ctx.strokeStyle=impact.color;ctx.lineWidth=2;const radius=5+(1-impact.life)*22;for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(impact.x+Math.cos(a)*radius,impact.y+Math.sin(a)*radius);ctx.lineTo(impact.x+Math.cos(a)*(radius+6),impact.y+Math.sin(a)*(radius+6));ctx.stroke()}ctx.restore()}
  if(celebration>0){ctx.save();ctx.globalAlpha=Math.min(1,celebration);for(let i=0;i<18;i++){ctx.fillStyle=i%2?'#b9ed62':'#f8daa1';const x=W*.5+Math.sin(i*13)*(1.8-celebration)*W*.45,y=H*.3+(1.8-celebration)*H*.22+Math.cos(i*9)*30;ctx.fillRect(x,y,3,6)}ctx.restore()}
 }
-function drawPortrait(id,look,large){const canvas=document.getElementById(id),c=canvas.getContext('2d'),w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;const ratio=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio)}c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);Graphics.person(c,w*.48,h*.92,large?h/126:h/122,look,{time:animTime,run:0});}
-function hudPortrait(id,look){const canvas=document.getElementById(id),w=canvas.clientWidth,h=canvas.clientHeight,ratio=Math.min(devicePixelRatio||1,2),key=JSON.stringify(look)+w+':'+h+':'+ratio;if(!w||!h||canvas.dataset.drawn===key)return;canvas.dataset.drawn=key;canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio);const c=canvas.getContext('2d');c.setTransform(ratio,0,0,ratio,0,0);Graphics.person(c,w*.5,h*1.78,h/66,look,{time:0});}
+function drawPortrait(id,look,large){const canvas=document.getElementById(id),c=canvas.getContext('2d'),w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;const ratio=Math.min(devicePixelRatio||1,2),key=JSON.stringify(look)+w+':'+h+':'+ratio+':'+portraitVersion;if(canvas.dataset.drawn===key)return;canvas.dataset.drawn=key;canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio);if(view3D?.portrait){try{view3D.portrait(canvas,look,large);return;}catch{}}c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);Graphics.person(c,w*.48,h*.92,large?h/126:h/122,look,{time:0,run:0});}
+function hudPortrait(id,look){drawPortrait(id,look,false);}
+
 function loop(t){const elapsed=Math.max(0,(t-last)/1000);last=t;
  if(document.hidden){requestAnimationFrame(loop);return;}
  if(elapsed>.25&&mode!=='home'&&!matchFinished&&!paused)pauseGame();
