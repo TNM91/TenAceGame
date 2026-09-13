@@ -1,7 +1,7 @@
 """Prepare the CC0 Quaternius Standard downloads in .preview for TenAce.
-Preserves source topology, skin weights and images. No paid assets are used.
+Retains source skin weights and images, removes covered triangles and adds garment shells.
 """
-import copy, json, pathlib, struct, zipfile
+import copy, json, pathlib, struct, zipfile, runpy
 
 OUT = pathlib.Path('assets/rigged'); OUT.mkdir(parents=True, exist_ok=True)
 pack = zipfile.ZipFile('.preview/quaternius-base-standard.zip')
@@ -26,8 +26,7 @@ def read(index):
     offset = v.get('byteOffset', 0) + a.get('byteOffset', 0)
     return [struct.unpack_from('<' + fmt * size, data, offset + i * stride) for i in range(a['count'])]
 
-# Boundaries are assigned on existing triangles: a fitted jersey, shorts and shoes.
-# Geometry and weights are retained; these are material regions, not sculpted garments.
+# Identify covered body triangles before adding independent garment geometry.
 for name, color in [('TenAce_Jersey',[.10,.36,.43,1]), ('TenAce_Shorts',[.025,.06,.09,1]), ('TenAce_Shoes',[.83,.88,.85,1])]:
     g['materials'].append({'name':name,'doubleSided':True,'pbrMetallicRoughness':{'baseColorFactor':color,'metallicFactor':0,'roughnessFactor':.85}})
 body = g['meshes'][2]; p = body['primitives'][0]
@@ -42,7 +41,10 @@ body['primitives'] = []
 for mat, ids in groups.items():
     q = copy.deepcopy(p); q['material']=mat
     q['indices']=accessor(struct.pack('<'+'I'*len(ids),*ids),5125,len(ids),'SCALAR')
-    body['primitives'].append(q)
+    # Garment geometry replaces the old painted-on regions; keep covered skin hidden.
+    if mat not in (3,4,5):body['primitives'].append(q)
+
+runpy.run_path(str(pathlib.Path(__file__).with_name('tennis-garments.py')))['build'](g,read,accessor,p)
 
 # Merge authored hair and bind its vertices to the existing head joint.
 hairpath='Universal Base Characters[Standard]/Hairstyles/Origin at 0/glTF (Godot)/'
@@ -81,7 +83,7 @@ for m in g['materials']:
         for k,v in block.items():
             if k.endswith('Texture'):v['index']=tm[v['index']]
 g['textures']=textures;g['images']=images;g['buffers']=[{'byteLength':len(data)}]
-g['asset']['copyright']='Base mesh, hair and textures: Quaternius, CC0. Tennis material regions: TenAce.'
+g['asset']['copyright']='Base mesh, hair and textures: Quaternius, CC0. Garment shells: TenAce.'
 def glb(doc, binary, dest):
     j=json.dumps(doc,separators=(',',':')).encode();j+=b' '*(-len(j)%4);binary+=b'\0'*(-len(binary)%4)
     dest.write_bytes(struct.pack('<III',0x46546c67,2,28+len(j)+len(binary))+struct.pack('<II',len(j),0x4e4f534a)+j+struct.pack('<II',len(binary),0x004e4942)+binary)

@@ -2,6 +2,15 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.16 — Garment meshes and connected movement
+
+- Replaced painted shirt and shorts regions with separate skinned garment shells, collars, cuffs and hems. Covered body triangles and duplicate feet are removed. The reproducible asset preparation transfers base-mesh skin weights to the clothing; these are lightweight modeled surfaces, not cloth simulation.
+- Added torso preparation, rotation through contact and recovery, a lowered athletic stance and lateral steps driven by travel distance. Foot and arm targets use inverse kinematics. Follow-through now uses the contact event's shot type. Fixed paused animation losing its sampled pose.
+- Both players and their portraits use the imported model in the opt-in rally, with contrasting kits. The face and hairstyle remain shared; this is still a prototype rather than final rival character art.
+- Added pause/play and a swing-phase scrubber to the Character Studio for inspecting preparation, contact and recovery.
+
+Validation: 58 automated tests passed, including garment deformation through five shot types, torso continuity at contact/recovery and existing gameplay/progression checks. Phone-sized browser inspection covered the studio and both rally players. Physical-phone performance testing and bespoke character/garment art remain outstanding. The standard game remains available without the opt-in assets.
+
 ## 0.15 — Imported character prototype
 
 - Added a Character Studio at `rig-preview.html`: orbit the authored skinned player, inspect the face, change kit colors, and preview locomotion and tennis poses.

@@ -27,3 +27,21 @@ test('two rigged players own independent skeletons and kit materials',async()=>{
  const {createRig}=await import('./rigged-player.js'),src=await assets(),a=createRig({shirt:'#f37968'},src),b=createRig({shirt:'#163b55'},src);
  assert.notEqual(a.bones.hand_r,b.bones.hand_r);let ma,mb;a.root.traverse(o=>{if(o.material?.name==='TenAce_Jersey')ma=o.material});b.root.traverse(o=>{if(o.material?.name==='TenAce_Jersey')mb=o.material});assert.notEqual(ma,mb);assert.notEqual(ma.color.getHex(),mb.color.getHex());a.dispose();b.dispose();
 });
+
+test('garment shells deform with the skeleton and retain finite vertices through both swings',async()=>{
+ const {createRig}=await import('./rigged-player.js'),T=await import('./vendor/three.module.min.js'),src=await assets(),rig=createRig({},src);
+ const garments=[];rig.root.traverse(o=>{if(o.isSkinnedMesh&&/ShirtShell|ShortsShell|Sleeve/.test(o.name))garments.push(o)});assert.ok(garments.length>=5);
+ for(const x of [-.42,.42])for(const shot of ['topspin','slice','flat','lob','serve'])for(let frame=0;frame<55;frame++){
+  const event={time:0,point:new T.Vector3(x,1.38,.3),shot};rig.pose({x:.5,y:.5,tx:.5,near:false},frame/60,1/60,event);rig.root.updateMatrixWorld(true);
+  for(const mesh of garments){mesh.skeleton.update();const positions=mesh.geometry.attributes.position;for(let n=0;n<positions.count;n+=17){const p=new T.Vector3().fromBufferAttribute(positions,n);mesh.applyBoneTransform(n,p);assert.ok(p.toArray().every(Number.isFinite));assert.ok(p.length()<3,'garment vertex escaped the character');}}
+ }
+ rig.dispose();
+});
+
+test('loaded torso continues through contact and recovers without a snap',async()=>{
+ const {createRig}=await import('./rigged-player.js'),T=await import('./vendor/three.module.min.js'),rig=createRig({},await assets());
+ const p={x:.5,y:.5,tx:.5,near:false,charge:1};rig.pose(p,0,0,null);const loaded=rig.bones.spine_03.getWorldQuaternion(new T.Quaternion());
+ const event={time:0,point:new T.Vector3(-.42,1.38,.3),shot:'topspin'};rig.pose({...p,charge:0},0,0,event);assert.ok(loaded.angleTo(rig.bones.spine_03.getWorldQuaternion(new T.Quaternion()))<.01);
+ rig.pose({...p,charge:0},.8499,0,event);const before=rig.bones.spine_03.getWorldQuaternion(new T.Quaternion());rig.pose({...p,charge:0},.85,0,event);assert.ok(before.angleTo(rig.bones.spine_03.getWorldQuaternion(new T.Quaternion()))<.01);
+ rig.dispose();
+});
