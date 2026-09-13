@@ -3,6 +3,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const files = {
+  '/club-environment.js': ['club-environment.js', 'text/javascript'],
+  '/match-presentation.css': ['match-presentation.css', 'text/css'],
+  '/assets/club-foliage.png': ['assets/club-foliage.png', 'image/png'],
   '/rig-preview.html': ['rig-preview.html', 'text/html'],
   '/rig-preview.js': ['rig-preview.js', 'text/javascript'],
   '/rigged-player.js': ['rigged-player.js', 'text/javascript'],

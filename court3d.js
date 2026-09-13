@@ -1,4 +1,5 @@
 import * as T from './vendor/three.module.min.js';
+import {addClubEnvironment} from './club-environment.js';
 
 // Match coordinates remain owned by physics.js: x/y in court units, z is height.
 export const world=(x,y,z=0)=>new T.Vector3((x-.5)*10,z*14,(y-.5)*18);
@@ -100,6 +101,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  const grass=material('#75957b'),blue=material('#386b91'),ivory=material('#e9eddf'),navy=material('#082239');
  grass.map=surfaceTexture('#9bb085','#c0cd9b33','#49634533');blue.map=surfaceTexture('#c3d1df','#ffffff30','#34567922');
  const ground=box(scene,70,.15,75,grass,0,-.14,0);
+ if(wantsRig){grass.color.set('#739665');sun.color.set('#fff0d8');sun.intensity=2.4;}
  box(scene,15,.03,24,material('#557f7b'),0,-.04,0);
  const surface=box(scene,10,.035,18,blue,0,-.015,0);
  function courtLine(x1,z1,x2,z2){const a=world(x1,z1),b=world(x2,z2),m=box(scene,.045,.012,a.distanceTo(b),ivory,(a.x+b.x)/2,.018,(a.z+b.z)/2);m.rotation.y=Math.atan2(b.x-a.x,b.z-a.z);}
@@ -120,7 +122,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  for(const x of [-6.6,6.6])box(scene,.15,3.7,.15,wood,x,1.95,-14.5);
  for(let x=-7;x<=7;x+=.7)box(scene,.11,.13,6.2,wood,x,4.06,-17);
  const bannerMat=label('RIVERDALE  /  TENACE','#193742','#eff5db',1024,128);
- mesh(scene,new T.PlaneGeometry(11,1.0),bannerMat,0,1.05,-12.7);
+ mesh(scene,new T.PlaneGeometry(wantsRig?17:11,wantsRig?2.0:1.0),bannerMat,0,wantsRig?1.55:1.05,-12.7);
  for(const x of [-7.4,7.4]){
   box(scene,.10,1.6,24,metal,x,.8,0);
   for(let z=-12;z<=12;z+=3){box(scene,.07,2.1,.07,metal,x,1.05,z);}
@@ -140,21 +142,28 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
   for(const dx of [-.7,0,.7])box(scene,.45,.16,.35,new T.MeshStandardMaterial({color:'#f1e6bc',emissive:'#ffe7ae',emissiveIntensity:.6}),x+dx,6.94,-4.95);
  }
  const trunk=material('#73614a'),leaves=material('#4a7864');
- for(let i=0;i<10;i++){const x=-19+i*4.2,z=-23-(i%3)*2;box(scene,.35,4,.35,trunk,x,2,z);for(let j=0;j<4;j++)ellipsoid(scene,leaves,x+Math.sin(j*2.4)*1.1,4+j*.6,z+Math.cos(j*2.4),1.6,1.7,1.5);}
+ const fallbackLeaves=new T.Group();scene.add(fallbackLeaves);
+ for(let i=0;i<10;i++){const x=-19+i*4.2,z=-23-(i%3)*2;box(scene,.35,4,.35,trunk,x,2,z);for(let j=0;j<4;j++)ellipsoid(fallbackLeaves,leaves,x+Math.sin(j*2.4)*1.1,4+j*.6,z+Math.cos(j*2.4),1.6,1.7,1.5);}
+ if(wantsRig)addClubEnvironment(scene,()=>{fallbackLeaves.visible=false;});
  for(const x of [-6.3,6.3]){box(scene,.65,.10,1.9,wood,x,.55,3);for(const z of [2.35,3.65])box(scene,.48,.5,.08,metal,x,.25,z);box(scene,.06,.45,1.9,wood,x+(x<0?-.30:.30),.82,3);}
  const grounded={};
  for(const who of ['player','opp']){const group=new T.Group();scene.add(group);for(let i=0;i<3;i++){const shadow=mesh(group,new T.CircleGeometry(.28+i*.11,28),new T.MeshBasicMaterial({color:'#071c24',transparent:true,opacity:.07,depthWrite:false}),0,.031+i*.001,0);shadow.rotation.x=-Math.PI/2;shadow.scale.y=.55;shadow.castShadow=shadow.receiveShadow=false;}grounded[who]=group;}
 
  const orb=mesh(scene,new T.SphereGeometry(.10,14,10),new T.MeshStandardMaterial({color:'#dfff29',emissive:'#4e5905',roughness:.65}));
+ const ballShadow=mesh(scene,new T.CircleGeometry(.11,24),new T.MeshBasicMaterial({color:'#071b23',transparent:true,opacity:.32,depthWrite:false}));ballShadow.rotation.x=-Math.PI/2;ballShadow.castShadow=false;ballShadow.receiveShadow=false;
+ const seamPoints=[];for(let i=0;i<=64;i++){const a=i/64*Math.PI*2;seamPoints.push(new T.Vector3(Math.cos(a)*.101,Math.sin(a)*.077,Math.sin(a*2)*.045));}
+ const ballSeam=new T.Line(new T.BufferGeometry().setFromPoints(seamPoints),new T.LineBasicMaterial({color:'#f6ffcc',transparent:true,opacity:.8}));orb.add(ballSeam);
+ const flightGeometry=new T.BufferGeometry();flightGeometry.setAttribute('position',new T.Float32BufferAttribute(new Float32Array(30),3));
+ const flightLine=new T.Line(flightGeometry,new T.LineBasicMaterial({color:'#f3ffb0',transparent:true,opacity:.4,depthWrite:false}));flightLine.frustumCulled=false;scene.add(flightLine);
  const trail=Array.from({length:10},()=>{const m=mesh(scene,new T.SphereGeometry(.065,8,6),new T.MeshBasicMaterial({color:'#e6fb8c',transparent:true,opacity:.2}));m.castShadow=false;return m;});
  const target=mesh(scene,new T.RingGeometry(.27,.34,32),new T.MeshBasicMaterial({color:'#b7ff63',side:T.DoubleSide,transparent:true,opacity:.9}));target.rotation.x=-Math.PI/2;target.position.y=.04;
  const landing=target.clone();landing.material=target.material.clone();landing.material.color.set('#fff2ba');scene.add(landing);
  const contactRing=mesh(scene,new T.RingGeometry(.12,.16,24),new T.MeshBasicMaterial({color:'#f5ff9c',side:T.DoubleSide,transparent:true}));
  const rigs={},keys={},events={};let previousTheme='',viewWidth=390,viewHeight=500,portraitRig=null,portraitKey='';
  const portraitScene=new T.Scene();portraitScene.background=new T.Color('#102e3b');portraitScene.add(new T.HemisphereLight('#e8f2ff','#657467',2.6));const portraitLight=new T.DirectionalLight('#ffe9cf',2.4);portraitLight.position.set(-3,5,4);portraitScene.add(portraitLight);const portraitCamera=new T.PerspectiveCamera(34,1,.1,20);
- function disposeObject(root){root.userData.release?.();const geometries=new Set(),materials=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of [o.material].flat().filter(Boolean))materials.add(m)});geometries.forEach(g=>g.dispose());materials.forEach(m=>{for(const key of ["map","normalMap","roughnessMap"])m[key]?.dispose();m.dispose()});}
+ function disposeObject(root){const geometries=new Set(),materials=new Set();root.traverse(o=>{o.userData.release?.();if(o.geometry)geometries.add(o.geometry);for(const m of [o.material].flat().filter(Boolean))materials.add(m)});geometries.forEach(g=>g.dispose());materials.forEach(m=>{for(const key of ["map","normalMap","roughnessMap"])m[key]?.dispose();m.dispose()});}
  function setQuality(quality){renderer.setPixelRatio(Math.min(devicePixelRatio||1,quality==='low'?1:1.5));renderer.shadowMap.enabled=quality!=='low';scene.traverse(o=>{if(o.material)for(const m of [o.material].flat())m.needsUpdate=true;});}
- function resize(w,h){viewWidth=w;viewHeight=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.position.set(0,11.5,20+Math.max(0,.72-camera.aspect)*10);camera.lookAt(0,.2,1.2);camera.updateProjectionMatrix();}
+ function resize(w,h){viewWidth=w;viewHeight=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.position.set(0,wantsRig?9.4:11.5,(wantsRig?18.6:20)+Math.max(0,.72-camera.aspect)*10);camera.lookAt(0,.2,wantsRig?.1:1.2);camera.updateProjectionMatrix();}
  function portrait(target,look,full=false){
   const useRig=riggedFactory,key=JSON.stringify(look)+(useRig?'rigged':'standard');if(key!==portraitKey){if(portraitRig){portraitScene.remove(portraitRig.root);disposeObject(portraitRig.root);}portraitRig=useRig?riggedFactory(look):athlete(look);portraitScene.add(portraitRig.root);portraitKey=key;}
   portraitRig.pose({x:.5,y:.5,tx:.5,near:false,ready:false},0,0,null);
@@ -167,7 +176,10 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
   for(const who of ['player','opp']){grounded[who].position.copy(world(s[who].x,s[who].y));const look=s[who].look,key=JSON.stringify(look)+(riggedFactory?'rigged':'standard');if(keys[who]!==key){if(rigs[who]){scene.remove(rigs[who].root);disposeObject(rigs[who].root);}rigs[who]=riggedFactory?riggedFactory(look):athlete(look);scene.add(rigs[who].root);keys[who]=key;}rigs[who].pose(s[who],s.time,s.dt,events[who]);}
   orb.visible=s.ball.active||s.serving;
   orb.position.copy(s.serving?world(s.player.x,s.player.y, .17+Math.abs(Math.sin(s.time*3))*.035):world(s.ball.x,s.ball.y,s.ball.z||0));
-  for(let i=0;i<trail.length;i++){const p=s.ball.trail?.[i];trail[i].visible=!!p&&s.ball.active;if(p){trail[i].position.copy(world(p.x,p.y,p.z||0));trail[i].material.opacity=i/trail.length*.24;}}
+  orb.rotation.set(s.time*5,s.time*3,0);ballShadow.visible=orb.visible;ballShadow.position.set(orb.position.x,.034,orb.position.z);ballShadow.material.opacity=.38/(1+orb.position.y*.6);ballShadow.scale.setScalar(1+orb.position.y*.15);
+  const flightPoints=(s.ball.trail||[]).slice(-10);flightLine.visible=wantsRig&&s.ball.active&&flightPoints.length>1;flightGeometry.setDrawRange(0,flightPoints.length);
+  for(let i=0;i<flightPoints.length;i++){const p=flightPoints[i],pos=world(p.x,p.y,p.z||0);flightGeometry.attributes.position.setXYZ(i,pos.x,pos.y,pos.z);}flightGeometry.attributes.position.needsUpdate=true;
+  for(let i=0;i<trail.length;i++){const p=s.ball.trail?.[i];trail[i].visible=!wantsRig&&!!p&&s.ball.active;if(p){trail[i].position.copy(world(p.x,p.y,p.z||0));trail[i].material.opacity=i/trail.length*.24;}}
   target.visible=!!s.aim;if(s.aim)target.position.copy(world(s.aim.x,s.aim.y)).y=.04;
   landing.visible=s.ball.active&&s.ball.last==='opp'&&s.landing?.y<1&&s.landing?.y>.5;if(landing.visible)landing.position.copy(world(s.landing.x,s.landing.y)).y=.035;
   const event=Object.values(events).sort((a,b)=>b.time-a.time)[0],age=event?s.time-event.time:1;contactRing.visible=age>=0&&age<.22;if(contactRing.visible){contactRing.position.copy(event.point);contactRing.quaternion.copy(camera.quaternion);contactRing.scale.setScalar(1+age*5);contactRing.material.opacity=1-age/.22;}

@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.16</title>
+<title>TenAce — Road to #1 · 0.17</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -136,6 +136,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 .swingDock{flex:none;padding:12px 18px max(12px,env(safe-area-inset-bottom));background:#071b27;border-top:1px solid #365466}.swingDock>div:first-child{display:flex;justify-content:space-between;gap:10px;font-size:12px}.swingDock small{display:block;margin-top:8px;font-size:10px;color:#a9c1cf}.chargeTrack{height:5px;background:#1f3d4e;margin-top:9px;border-radius:6px;overflow:hidden}.chargeTrack span{display:block;height:100%;width:0;background:linear-gradient(90deg,#5cdbc6,#dcf58e)}
 .hudPortrait{border-radius:5px}.clubPortrait canvas{border-radius:12px}.creatorHead .eyebrow{letter-spacing:.12em}
 </style>
+<link rel="stylesheet" href="./match-presentation.css"/>
 </head>
 <body>
 <div id="app">
@@ -190,7 +191,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.16 · Build your game</div>
+   <div class="eyebrow">Season 0.17 · Build your game</div>
    <h1 id="introTitle">Jax owns these courts.</h1>
    <div class="copy">First to 7. Build your attributes, unlock rivals, and choose your specialization at level 3.</div>
    <div id="careerSummary" class="careerline"></div>
@@ -256,7 +257,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
  <button id="resumeBtn" class="primary">Resume game</button><button id="leaveBtn" class="secondary">Leave for clubhouse</button>
 </div></div>
 <div id="creator" class="modal" role="dialog" aria-label="Customize player"><div class="panel creatorPanel">
- <div class="creatorHead"><div class="eyebrow">Player studio / 0.16</div><h1>Your court. Your style.</h1></div>
+ <div class="creatorHead"><div class="eyebrow">Player studio / 0.17</div><h1>Your court. Your style.</h1></div>
  <div class="creatorStage"><span class="stageBadge">Live player preview</span><canvas id="characterPreview" width="800" height="392" aria-label="Live character preview"></canvas></div>
  <form id="creatorForm" class="creatorFields">
   <label class="wide">Player name<input id="editName" name="name" maxlength="18" autocomplete="off" placeholder="Rookie"></label>

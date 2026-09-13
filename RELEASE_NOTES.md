@@ -2,6 +2,15 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.17 — Phone presentation and club environment
+
+- More compact scoreboard, larger score numerals, simplified meters and revised control surfaces, while preserving 44-pixel toolbar targets and the existing touch handlers.
+- The opt-in court uses a closer, lower camera, warmer sunlight, a larger windscreen and a back fence. Generated transparent foliage replaces rounded canopy meshes after it loads; 120 cards share one instanced mesh. The original canopy remains if loading fails.
+- Added ball seams and a ground shadow that fades with height. The opt-in court uses a continuous flight trace instead of a chain of ghost spheres. Shot physics and progression are unchanged.
+- Nested scene disposal now invokes character/environment release hooks, including when switching out of 3D while textures are still loading.
+
+Validation: 58 automated tests passed. A phone-sized browser rally produced a clean topspin swipe return without console errors. This is a presentation release, not a finished character replacement. The asset review records a $50 candidate character and the unverified animation/licensing questions. No paid assets were purchased; physical-device performance testing remains outstanding.
+
 ## 0.16 — Garment meshes and connected movement
 
 - Replaced painted shirt and shorts regions with separate skinned garment shells, collars, cuffs and hems. Covered body triangles and duplicate feet are removed. The reproducible asset preparation transfers base-mesh skin weights to the clothing; these are lightweight modeled surfaces, not cloth simulation.
