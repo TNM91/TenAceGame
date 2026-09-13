@@ -1,4 +1,4 @@
-# Original stylized players — 0.19
+# Original stylized players — 0.20
 
 The user chose colorful, expressive, anime-adjacent sports characters over lifelike stock models. Clash Royale is a reference for silhouette clarity and playful character appeal, not a source of copied characters or assets.
 
@@ -11,3 +11,11 @@ Movement combines a loaded stance, torso preparation, lateral steps, contact ali
 This is now the default 3D character in matches, portraits and customization, with the original-character studio at `rig-preview.html`. `?classic=1` retains the previous lightweight procedural player for comparison. The old imported mesh and its CC0 licenses remain in source history/files, but the default game and studio no longer download those character assets.
 
 Next art refinements should be judged against this direction: more distinctive face shapes, more expressive winning/losing reactions and improved hand/foot articulation. Phone frame-rate and thermal testing still require physical devices; browser viewport tests do not establish App Store performance.
+
+## 0.20 silhouette and movement
+
+The player now has a broader, tapered jersey built from smoothed cross-sections, a connected shorts waistband, shaped sleeves, collar piping and shoe detailing. Palms, four curled fingers and an opposing thumb replace spherical hands. Gentle vertex color shading shapes the face and cloth without external textures; a smaller nose and stronger brows retain the cartoon direction. The racket no longer casts a distracting stripe over the face and chest.
+
+The stance is wider and lower. Stroke follow-through transfers torso weight while stationary feet remain planted. During travel, the support foot holds its court position and the other foot swings to its next placement. A fist-pump celebration raises the free hand, with a head tilt, brow change and wider smile; it can be inspected in the studio and uses the existing match celebration signal.
+
+This remains locally authored procedural geometry and animation. It is a concrete improvement to the playable character, not a replacement with a production sculpt/rig asset or a claim of Clash Royale parity. A bespoke production asset and more expressive animation remain the largest outstanding art needs.

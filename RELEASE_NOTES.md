@@ -2,6 +2,15 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.20 — Athletic silhouette, hands and planted movement
+
+- Rebuilt jersey and sleeves with smooth shaped surfaces, connected the shorts waistband, and added collar piping and shoe details. Shaped palms, fingers and thumbs replace spherical hands; the ready pose supports the racket with both hands.
+- Added subtle face/fabric vertex shading, a smaller nose and stronger brows. Removed distracting racket self-shadows and balanced the studio lights.
+- Added a deeper load, torso weight transfer and court-space support-foot planting during travel. Run cycles alternate their airborne foot. Existing ball/racket contact and swipe controls remain intact.
+- Added a free-hand fist-pump celebration with face/head response, wired to the existing match celebration and a new studio preview button.
+
+Validation: 64 tests passed, including support-foot planting during travel, swing stance and celebration, plus existing shot-contact/continuity checks. At 390 × 844, a guided swipe produced a clean topspin return without browser errors; studio and active-rally screenshots were inspected. This remains a procedural character improvement, not a finished production sculpt or measured physical-phone performance.
+
 ## 0.19 — Softer character sculpt and connected limbs
 
 - Rebuilt the face as a continuous surface with an integrated nose, cheeks and eye sockets. Smaller inset eyes, skin-colored upper lids, a closed smile and lower brows replace the oversized eyes and fixed toothy expression.
