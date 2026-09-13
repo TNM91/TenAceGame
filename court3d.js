@@ -90,7 +90,10 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
  renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
  const scene=new T.Scene();scene.background=new T.Color('#a9c3cc');scene.fog=new T.Fog('#a9c3cc',32,72);
- let disposed=false;
+ let disposed=false,riggedFactory=null;
+ const wantsRig=typeof location!=='undefined'&&new URLSearchParams(location.search).get('rigged')==='1';
+ if(wantsRig){import('./rigged-player.js').then(async module=>{await module.loadRigAssets();if(disposed)return;riggedFactory=module.createRig;document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Rigged player ready'}));}).catch(()=>{if(!disposed)document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Character preview unavailable · Standard player active'}));});}
+
  const camera=new T.PerspectiveCamera(48,1,.1,100);
  scene.add(new T.HemisphereLight('#d4e8ff','#425b52',1.8));
  const sun=new T.DirectionalLight('#ffe3b8',3.0);sun.position.set(-10,20,9);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);Object.assign(sun.shadow.camera,{left:-16,right:16,top:20,bottom:-20,near:1,far:60});sun.shadow.normalBias=.03;scene.add(sun);
@@ -149,11 +152,11 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  const contactRing=mesh(scene,new T.RingGeometry(.12,.16,24),new T.MeshBasicMaterial({color:'#f5ff9c',side:T.DoubleSide,transparent:true}));
  const rigs={},keys={},events={};let previousTheme='',viewWidth=390,viewHeight=500,portraitRig=null,portraitKey='';
  const portraitScene=new T.Scene();portraitScene.background=new T.Color('#102e3b');portraitScene.add(new T.HemisphereLight('#e8f2ff','#657467',2.6));const portraitLight=new T.DirectionalLight('#ffe9cf',2.4);portraitLight.position.set(-3,5,4);portraitScene.add(portraitLight);const portraitCamera=new T.PerspectiveCamera(34,1,.1,20);
- function disposeObject(root){const geometries=new Set(),materials=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of [o.material].flat().filter(Boolean))materials.add(m)});geometries.forEach(g=>g.dispose());materials.forEach(m=>{m.map?.dispose();m.dispose()});}
+ function disposeObject(root){root.userData.release?.();const geometries=new Set(),materials=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of [o.material].flat().filter(Boolean))materials.add(m)});geometries.forEach(g=>g.dispose());materials.forEach(m=>{for(const key of ["map","normalMap","roughnessMap"])m[key]?.dispose();m.dispose()});}
  function setQuality(quality){renderer.setPixelRatio(Math.min(devicePixelRatio||1,quality==='low'?1:1.5));renderer.shadowMap.enabled=quality!=='low';scene.traverse(o=>{if(o.material)for(const m of [o.material].flat())m.needsUpdate=true;});}
  function resize(w,h){viewWidth=w;viewHeight=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.position.set(0,11.5,20+Math.max(0,.72-camera.aspect)*10);camera.lookAt(0,.2,1.2);camera.updateProjectionMatrix();}
  function portrait(target,look,full=false){
-  const key=JSON.stringify(look);if(key!==portraitKey){if(portraitRig){portraitScene.remove(portraitRig.root);disposeObject(portraitRig.root);}portraitRig=athlete(look);portraitScene.add(portraitRig.root);portraitKey=key;}
+  const useRig=riggedFactory&&target.id!=='rivalPortrait',key=JSON.stringify(look)+(useRig?'rigged':'standard');if(key!==portraitKey){if(portraitRig){portraitScene.remove(portraitRig.root);disposeObject(portraitRig.root);}portraitRig=useRig?riggedFactory(look):athlete(look);portraitScene.add(portraitRig.root);portraitKey=key;}
   portraitRig.pose({x:.5,y:.5,tx:.5,near:false,ready:false},0,0,null);
   const w=target.width||240,h=target.height||240;portraitCamera.aspect=w/h;portraitCamera.fov=full?38:26;portraitCamera.position.set(full?.3:0,full?1.4:1.75,full?3.7:2.45);portraitCamera.lookAt(0,full?1.16:1.72,0);portraitCamera.updateProjectionMatrix();
   try{renderer.setSize(w,h,false);renderer.render(portraitScene,portraitCamera);target.getContext('2d').drawImage(canvas,0,0,w,h);}finally{renderer.setSize(viewWidth,viewHeight,false);renderer.render(scene,camera);}
@@ -161,7 +164,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  function contact(who,b,shot,time){events[who]={point:world(b.x,b.y,b.z||.12),shot,time};}
  function render(s){
   if(previousTheme!==s.theme){blue.color.set(s.theme==='terrace'?'#bd775c':'#386b91');scene.background.set(s.theme==='terrace'?'#cfbfb3':'#a9c3cc');scene.fog.color.copy(scene.background);bannerMat.map?.dispose();const replacement=label(s.theme==='terrace'?'SOLSTICE  /  TENACE':'RIVERDALE  /  TENACE','#193742','#eff5db',1024,128);bannerMat.map=replacement.map;replacement.dispose();bannerMat.needsUpdate=true;previousTheme=s.theme;}
-  for(const who of ['player','opp']){grounded[who].position.copy(world(s[who].x,s[who].y));const look=s[who].look,key=JSON.stringify(look);if(keys[who]!==key){if(rigs[who]){scene.remove(rigs[who].root);disposeObject(rigs[who].root);}rigs[who]=athlete(look);scene.add(rigs[who].root);keys[who]=key;}rigs[who].pose(s[who],s.time,s.dt,events[who]);}
+  for(const who of ['player','opp']){grounded[who].position.copy(world(s[who].x,s[who].y));const look=s[who].look,key=JSON.stringify(look)+(riggedFactory&&who==='player'?'rigged':'standard');if(keys[who]!==key){if(rigs[who]){scene.remove(rigs[who].root);disposeObject(rigs[who].root);}rigs[who]=riggedFactory&&who==='player'?riggedFactory(look):athlete(look);scene.add(rigs[who].root);keys[who]=key;}rigs[who].pose(s[who],s.time,s.dt,events[who]);}
   orb.visible=s.ball.active||s.serving;
   orb.position.copy(s.serving?world(s.player.x,s.player.y, .17+Math.abs(Math.sin(s.time*3))*.035):world(s.ball.x,s.ball.y,s.ball.z||0));
   for(let i=0;i<trail.length;i++){const p=s.ball.trail?.[i];trail[i].visible=!!p&&s.ball.active;if(p){trail[i].position.copy(world(p.x,p.y,p.z||0));trail[i].material.opacity=i/trail.length*.24;}}

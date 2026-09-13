@@ -3,6 +3,14 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const files = {
+  '/rig-preview.html': ['rig-preview.html', 'text/html'],
+  '/rig-preview.js': ['rig-preview.js', 'text/javascript'],
+  '/rigged-player.js': ['rigged-player.js', 'text/javascript'],
+  '/vendor/GLTFLoader.js': ['vendor/GLTFLoader.js', 'text/javascript'],
+  '/vendor/SkeletonUtils.js': ['vendor/SkeletonUtils.js', 'text/javascript'],
+  '/vendor/BufferGeometryUtils.js': ['vendor/BufferGeometryUtils.js', 'text/javascript'],
+  '/assets/rigged/tenace-athlete.glb': ['assets/rigged/tenace-athlete.glb', 'model/gltf-binary'],
+  '/assets/rigged/locomotion.glb': ['assets/rigged/locomotion.glb', 'model/gltf-binary'],
   '/technique.js': ['technique.js', 'text/javascript; charset=utf-8'],
   '/court3d.js': ['court3d.js', 'text/javascript; charset=utf-8'],
   '/vendor/three.module.min.js': ['vendor/three.module.min.js', 'text/javascript; charset=utf-8'],
@@ -28,4 +36,4 @@ http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': file[1], 'Cache-Control': 'no-store' });
     res.end(data);
   });
-}).listen(8080, '127.0.0.1', () => console.log('TenAce: http://127.0.0.1:8080'));
+}).listen(Number(process.env.PORT)||8080, '127.0.0.1', () => console.log('TenAce: http://127.0.0.1:'+(Number(process.env.PORT)||8080)));

@@ -2,6 +2,16 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.15 — Imported character prototype
+
+- Added a Character Studio at `rig-preview.html`: orbit the authored skinned player, inspect the face, change kit colors, and preview locomotion and tennis poses.
+- Imported Quaternius CC0 character, hair, textures and idle/jog clips. Tennis arm targets use inverse kinematics on the real skeleton, with a hand-attached racket and added shoes. Credits and original license notices accompany the assets.
+- Try the character in a match using `index.html?rigged=1`. The player and player portraits switch after loading; the opponent retains the standard model. Loading failure keeps the standard player. Saved appearance choices remain intact.
+- This is an opt-in art prototype with approximately 8.7 MB of character assets, one fixed face and hairstyle, and fitted clothing material regions. Bespoke garments, tennis animation polish and physical-device performance work remain outstanding.
+
+
+Validation: 56 automated tests passed, including asset skin weights, imported animation transforms, independent skeletons and existing gameplay/progression. Browser checks verified textured loading, pose controls and a clean guided swipe return. Physical-phone frame rate and thermal testing remain outstanding.
+
 ## 0.14 — A unified playable venue
 
 - Replaced the painted match backdrop with a modeled pavilion, timber canopy, glass frontage, tiered seating, planting, court surrounds, fences, benches and light fixtures under shared lighting. The original art remains available to the 2D fallback; 3D matches no longer combine incompatible flat and modeled backgrounds.

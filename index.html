@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.14</title>
+<title>TenAce — Road to #1 · 0.15</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
@@ -190,7 +190,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.14 · Build your game</div>
+   <div class="eyebrow">Season 0.15 · Build your game</div>
    <h1 id="introTitle">Jax owns these courts.</h1>
    <div class="copy">First to 7. Build your attributes, unlock rivals, and choose your specialization at level 3.</div>
    <div id="careerSummary" class="careerline"></div>
@@ -210,6 +210,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
    </details>
    <button id="careerBtn" class="secondary">Player upgrades</button>
    <button id="customizeBtn" class="secondary">Customize player</button>
+   <a class="secondary" style="display:block;text-align:center;text-decoration:none" href="./rig-preview.html">New rigged player · Preview & play</a>
    <div class="tip">Choose your serve placement, then tap in the green. Hold anywhere on court to load power, then swipe as the bounced return reaches you. Swipe up for topspin, sideways for flat, down for slice, or long and slowly up for a lob. Angle left or right to aim. Release without a swipe to cancel. Arrow keys are a desktop fallback. Two serve faults lose the point.</div>
    <details class="playSettings"><summary>Display & feel</summary>
    <label for="graphicsQuality">Graphics</label><select id="graphicsQuality"><option value="auto">Auto · Adapt for smoother play</option><option value="high">Quality · Detailed shadows</option><option value="low">Performance · Reduced detail</option></select><p id="qualityNote" class="tip"></p>
@@ -255,7 +256,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
  <button id="resumeBtn" class="primary">Resume game</button><button id="leaveBtn" class="secondary">Leave for clubhouse</button>
 </div></div>
 <div id="creator" class="modal" role="dialog" aria-label="Customize player"><div class="panel creatorPanel">
- <div class="creatorHead"><div class="eyebrow">Player studio / 0.14</div><h1>Your court. Your style.</h1></div>
+ <div class="creatorHead"><div class="eyebrow">Player studio / 0.15</div><h1>Your court. Your style.</h1></div>
  <div class="creatorStage"><span class="stageBadge">Live player preview</span><canvas id="characterPreview" width="800" height="392" aria-label="Live character preview"></canvas></div>
  <form id="creatorForm" class="creatorFields">
   <label class="wide">Player name<input id="editName" name="name" maxlength="18" autocomplete="off" placeholder="Rookie"></label>
@@ -309,6 +310,7 @@ const sceneCanvas=document.getElementById('court3d'),renderStatus=document.getEl
 function fallback3D(){portraitVersion++;view3D?.dispose();view3D=null;sceneCanvas.style.display='none';C.classList.remove('threeActive');renderStatus.textContent='2D court';document.getElementById('viewBtn').textContent='Try 3D';}
 function enable3D(){if(view3D||!prefer3D||!window.TenAce3D)return;try{view3D=window.TenAce3D.create(sceneCanvas,fallback3D);portraitVersion++;view3D.resize(W,H);applyQuality();sceneCanvas.style.display='block';C.classList.add('threeActive');renderStatus.textContent='3D court';document.getElementById('viewBtn').textContent='2D view';}catch{fallback3D();renderStatus.textContent='2D · WebGL unavailable';}}
 addEventListener('tenace3dready',enable3D);
+document.addEventListener('tenacerigstatus',e=>{portraitVersion++;renderStatus.textContent=e.detail;});
 document.getElementById('rendererModule').onerror=()=>{renderStatus.textContent='2D · 3D unavailable';};
 document.getElementById('viewBtn').onclick=()=>{if(view3D){prefer3D=false;fallback3D();}else{prefer3D=true;enable3D();}};
 let pScore=0,oScore=0,target=7,rally=0,pStam=100,oStam=100,iq=35;
