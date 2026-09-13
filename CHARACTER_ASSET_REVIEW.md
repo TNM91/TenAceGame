@@ -1,5 +1,7 @@
 # Tennis character replacement — 2026-09-12
 
+Superseded by the user’s decision to use original stylized characters in 0.18. No paid character or animation purchase is needed for this direction. The candidates below are historical research only.
+
 The generic Quaternius character remains a prototype. Release 0.17 improves presentation but does not replace the character or deliver a new tennis animation set. No paid asset has been purchased.
 
 ## Candidate character

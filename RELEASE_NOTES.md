@@ -2,6 +2,15 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.18 — Original stylized tennis characters
+
+- Replaced the stock-character preview with an original editable character: larger expressive face, animated eyes and brows, tapered hair, bold kit, side stripes, crest and chunky sneakers. Supported hairstyles include swept, curls, ponytail, bun and shaved.
+- Made the new characters the default 3D match and portrait models. Saved skin, hair, clothing and racket choices apply again; rivals use their existing contrasting looks. `?classic=1` retains the older procedural model for comparison.
+- Studio now has hairstyle and skin-tone controls alongside kit colors, shot previews and the animation scrubber. Default character loading no longer requests the approximately 8.8 MB imported mesh/animation bundle.
+- Character movement includes anticipation, torso rotation, lateral stepping, hair response and continuous racket follow-through. Contact alignment is tested for five shot types on both ends of the court.
+
+Validation: 61 tests passed. Phone-sized browser testing produced a clean topspin return with the original characters; studio loading and personalization were inspected. This establishes the original cartoon art direction, not finished Clash Royale production quality or measured physical-phone performance. Paid asset research is superseded by the user's new direction.
+
 ## 0.17 — Phone presentation and club environment
 
 - More compact scoreboard, larger score numerals, simplified meters and revised control surfaces, while preserving 44-pixel toolbar targets and the existing touch handlers.

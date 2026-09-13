@@ -92,8 +92,8 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1;
  const scene=new T.Scene();scene.background=new T.Color('#a9c3cc');scene.fog=new T.Fog('#a9c3cc',32,72);
  let disposed=false,riggedFactory=null;
- const wantsRig=typeof location!=='undefined'&&new URLSearchParams(location.search).get('rigged')==='1';
- if(wantsRig){import('./rigged-player.js').then(async module=>{await module.loadRigAssets();if(disposed)return;riggedFactory=module.createRig;document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Rigged player ready'}));}).catch(()=>{if(!disposed)document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Character preview unavailable · Standard player active'}));});}
+ const wantsRig=typeof location!=='undefined'&&new URLSearchParams(location.search).get('classic')!=='1';
+ if(wantsRig){import('./original-player.js').then(module=>{if(disposed)return;riggedFactory=module.createOriginal;document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Toon players ready'}));}).catch(()=>{if(!disposed)document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Character preview unavailable · Standard player active'}));});}
 
  const camera=new T.PerspectiveCamera(48,1,.1,100);
  scene.add(new T.HemisphereLight('#d4e8ff','#425b52',1.8));
@@ -167,7 +167,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  function portrait(target,look,full=false){
   const useRig=riggedFactory,key=JSON.stringify(look)+(useRig?'rigged':'standard');if(key!==portraitKey){if(portraitRig){portraitScene.remove(portraitRig.root);disposeObject(portraitRig.root);}portraitRig=useRig?riggedFactory(look):athlete(look);portraitScene.add(portraitRig.root);portraitKey=key;}
   portraitRig.pose({x:.5,y:.5,tx:.5,near:false,ready:false},0,0,null);
-  const w=target.width||240,h=target.height||240;portraitCamera.aspect=w/h;portraitCamera.fov=full?38:26;portraitCamera.position.set(full?.3:0,full?1.4:1.75,full?3.7:2.45);portraitCamera.lookAt(0,full?1.16:1.72,0);portraitCamera.updateProjectionMatrix();
+  const w=target.width||240,h=target.height||240;portraitCamera.aspect=w/h;portraitCamera.fov=full?38:26;portraitCamera.position.set(full?.3:0,full?1.5:useRig?2.08:1.75,full?4.2:2.45);portraitCamera.lookAt(0,full?1.24:useRig?2.04:1.72,0);portraitCamera.updateProjectionMatrix();
   try{renderer.setSize(w,h,false);renderer.render(portraitScene,portraitCamera);target.getContext('2d').drawImage(canvas,0,0,w,h);}finally{renderer.setSize(viewWidth,viewHeight,false);renderer.render(scene,camera);}
  }
  function contact(who,b,shot,time){events[who]={point:world(b.x,b.y,b.z||.12),shot,time};}
