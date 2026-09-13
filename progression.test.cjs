@@ -38,3 +38,8 @@ test('all four upgrades change their intended gameplay effects and cap at ten', 
   assert.ok(upgraded.serveWindow > base.serveWindow);
   assert.equal(career.upgrade(save, 'unknown'), false);
 });
+
+test('new serve landing record is separate from legacy timing scores',()=>{
+ const P=require('./progression.js'),legacy=P.normalize({...P.fresh(),bestServe:95});assert.equal(legacy.bestServe,95);assert.equal(legacy.bestServeIn,0);
+ assert.equal(P.normalize({...legacy,bestServeIn:80}).bestServeIn,80);assert.equal(P.normalize({...legacy,bestServeIn:150}).bestServeIn,100);
+});

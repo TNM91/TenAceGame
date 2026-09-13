@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import {loadCharacterCandidate,createTennisPlayer} from './meshy-tennis.js';
+import {loadCharacterCandidate,createTennisPlayer} from './meshy-tennis.js?v=0.21';
 const canvas=document.getElementById('stage'),status=document.getElementById('status');
 const scene=new T.Scene();scene.background=new T.Color('#203844');
 scene.add(new T.HemisphereLight('#f5f7ff','#657770',2.1));
@@ -24,5 +24,5 @@ try{
  document.getElementById('face').onclick=e=>{close=!close;e.currentTarget.setAttribute('aria-pressed',String(close));cameraPose();};
  document.getElementById('skeleton').onclick=e=>{skeleton.visible=!skeleton.visible;e.currentTarget.setAttribute('aria-pressed',String(skeleton.visible));};
  document.querySelectorAll('.tools button').forEach(b=>b.disabled=false);status.textContent='Rig ready · Drag to inspect';
- function frame(now){const dt=last?Math.min(.05,(now-last)/1000):0;last=now;if(!document.hidden){const step=paused?0:dt;time+=step;if(!paused)phase.value=Math.round(time*1000);if(time>2.2){time=0;event=null;}if(['forehand','backhand','serve'].includes(mode)&&!event)event={time:.55,point:new T.Vector3(mode==='backhand'?.42:-.42,mode==='serve'?2.05:1.38,.3),shot:mode==='serve'?'serve':'topspin'};rig.pose({x:.5,y:.5,tx:.5,near:false,preview:mode,charge:event&&time<.55?Math.min(1,time/.4):0,serve:mode==='serve'&&time<.55},time,step,event);renderer.render(scene,camera);}requestAnimationFrame(frame);}requestAnimationFrame(frame);
+ function frame(now){const dt=last?Math.min(.05,(now-last)/1000):0;last=now;if(!document.hidden){const step=paused?0:dt;time+=step;if(!paused)phase.value=Math.round(time*1000);if(time>2.2){time=0;event=null;}if(['forehand','backhand','serve'].includes(mode)&&!event)event={time:.55,point:new T.Vector3(mode==='backhand'?.42:-.42,mode==='serve'?2.05:1.38,.3),shot:mode==='serve'?'serve':'topspin'};rig.pose({x:.5,y:.5,tx:.5,near:false,preview:mode,charge:event&&time<.55?Math.min(1,time/.4):0,serve:mode==='serve'&&time<.55,serveProgress:Math.min(1,time/.55)},time,step,event);renderer.render(scene,camera);}requestAnimationFrame(frame);}requestAnimationFrame(frame);
 }catch(error){status.textContent='Character preview could not load. Reload to retry.';console.error(error);}

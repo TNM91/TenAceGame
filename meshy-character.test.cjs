@@ -60,3 +60,12 @@ test('swing recovery is continuous and paused poses remain stable',async()=>{
  }
  rig.dispose();
 });
+
+test('serve windup meets the same overhead contact used at ball launch',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js'),rig=createTennisPlayer({},await assets()),p={x:.62,y:.86,tx:.62,near:true};
+ for(let i=0;i<=60;i++)rig.pose({...p,serve:true,serveProgress:i/60},i/100,1/100,null);
+ const before=rig.root.getObjectByName('RacketContact').getWorldPosition(new T.Vector3());
+ const event={time:.6,shot:'serve',point:new T.Vector3((p.x+.025-.5)*10,.158*14,(p.y-.015-.5)*18)};
+ rig.pose(p,.6,0,event);const contact=rig.root.getObjectByName('RacketContact').getWorldPosition(new T.Vector3());
+ assert.ok(contact.distanceTo(event.point)<.025);assert.ok(before.distanceTo(contact)<.005,'serve snapped at release');rig.dispose();
+});

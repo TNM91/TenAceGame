@@ -136,12 +136,9 @@ test('keyboard returns sustain a rally under the shipped physics and opponent mo
 });
 test('first service fault replays without scoring and second fault awards the receiver',()=>{
  const game=boot(new Map(),false,0);game.ids.startBtn.onclick();
- game.runUntil(()=>game.ids.serveUI.classList.contains('show'));game.ids.tapServe.onclick();
- game.runUntil(()=>game.ids.toast.textContent.includes('FAULT'));
- assert.equal(Number(game.ids.oScore.textContent),0);
- game.runUntil(()=>game.ids.serveUI.classList.contains('show'));game.ids.tapServe.onclick();
- game.runUntil(()=>Number(game.ids.oScore.textContent)===1);
- assert.match(game.ids.toast.textContent,/double fault/);
+ function longServe(){game.runUntil(()=>game.ids.serveUI.classList.contains('show'));game.ids.game.onpointerdown({pointerId:1,clientX:190,clientY:450});game.tick(80);game.ids.game.onpointerup({pointerId:1,clientX:190,clientY:120});}
+ longServe();game.runUntil(()=>game.ids.toast.textContent.includes('FAULT'));assert.equal(Number(game.ids.oScore.textContent),0);
+ longServe();game.runUntil(()=>Number(game.ids.oScore.textContent)===1);assert.match(game.ids.toast.textContent,/double fault/);
 });
 test('pause freezes serve input, leave cancels the session, and practice saves its record without XP', () => {
   const game = boot();
@@ -159,11 +156,11 @@ test('pause freezes serve input, leave cancels the session, and practice saves i
     game.runUntil(() => game.ids.serveUI.classList.contains('show'));
     game.ids.tapServe.onclick();
   }
-  assert.ok(game.ids.intro.classList.contains('show'));
+  game.runUntil(()=>game.ids.intro.classList.contains('show'));
   const save = JSON.parse(game.storage.get(Progress.KEY));
   assert.equal(save.xp, 0);
   assert.equal(save.matches, 0);
-  assert.ok(save.bestServe > 0);
+  assert.ok(save.bestServeIn > 0);
 });
 test('corrupt and unavailable storage do not prevent play', () => {
   const game = boot(new Map([[Progress.KEY, '{broken']]), true);
@@ -262,4 +259,15 @@ test('an early swipe keeps its shot shape through the contact buffer',()=>{
  game.runUntil(()=>state.ball.bounces===1&&state.ball.y>=state.player.y-.21);
  game.ids.game.onpointerup({pointerId:1,clientX:240,clientY:420});
  game.runUntil(()=>state.ball.last==='player');assert.equal(state.ball.kind,'slice');assert.match(game.ids.toast.textContent,/SLICE/);
+});
+
+test('serve swipe previews intent, cancels safely and launches once after a pausable toss',()=>{
+ let state,contacts=0;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(s){state=s},contact(){contacts++},dispose(){}})});
+ game.ids.practiceBtn.onclick();game.tick();
+ game.ids.game.onpointerdown({pointerId:1,clientX:190,clientY:400});game.ids.game.onpointerup({pointerId:1,clientX:190,clientY:400});game.tick();assert.ok(game.ids.serveUI.classList.contains('show'));assert.equal(contacts,0);
+ game.ids.game.onpointerdown({pointerId:1,clientX:190,clientY:400});game.tick(80);game.ids.game.onpointermove({pointerId:1,clientX:170,clientY:290});game.tick(32);assert.ok(state.aim.inBox);const target={...state.aim};
+ game.ids.game.onpointerup({pointerId:1,clientX:170,clientY:290});game.tick(100);assert.equal(contacts,0);assert.ok(state.serving);assert.equal(state.ball.active,false);
+ game.ids.pauseBtn.onclick();const progress=state.serveProgress;game.tick(1000);assert.equal(state.serveProgress,progress);game.ids.resumeBtn.onclick();for(let i=0;i<200;i++)game.tick();
+ game.runUntil(()=>contacts===1);assert.ok(state.ball.active);const landing=require('./physics.js').landing(state.ball);assert.ok(Math.abs(landing.x-target.x)<1e-6);assert.ok(Math.abs(landing.y-target.y)<1e-6);
+ game.ids.leaveBtn.onclick();for(let i=0;i<200;i++)game.tick();assert.equal(contacts,1);
 });

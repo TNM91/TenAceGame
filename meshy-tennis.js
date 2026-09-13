@@ -79,7 +79,14 @@ export function createTennisPlayer(look={},source){
 
   }
   let target=v(-.22,1.05,.30).lerp(v(-.45,1.18,-.12),load),left=v(.23,1.1,.3),direction=v(0,1,0);
-  if(p.serve){target=v(-.18,1.4,-.10);left=v(.15,1.6,.15);}
+  if(p.serve){
+   const t=clamp(p.serveProgress??load,0,1),lift=ease(t/.45),drive=ease((t-.65)/.35);
+   target.lerp(v(-.22,1.36,-.16),lift);left.lerp(v(.15,1.64,.16),lift).lerp(v(.23,1.1,.3),drive);
+   // Authored trophy pose flows into the same overhead contact used by the ball.
+   const overhead=v(-.025*10/1.22,.158*14/1.22,.015*18/1.22),shoulder=root.worldToLocal(bones.RightArm.getWorldPosition(v()));
+   const hitDirection=overhead.clone().sub(shoulder).normalize();
+   target.lerp(overhead.addScaledVector(hitDirection,-.38),drive);direction.lerp(hitDirection,drive).normalize();
+  }
   if(active){
    const shoulder=root.worldToLocal(bones.RightArm.getWorldPosition(v()));
    direction.copy(point).sub(shoulder).normalize();

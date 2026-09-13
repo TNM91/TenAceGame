@@ -1,3 +1,10 @@
+## 0.21 - Swipe serving
+
+- Replaced the moving timing bar and placement buttons with an upward court swipe. Angle sets placement, length sets depth and swipe speed sets pace. The landing target warns about out-of-box intent; no random fault roll is added.
+- Highlighted the diagonal service box and added a toss-to-contact sequence before launch. Safe serve remains an accessible button/Space shortcut.
+- Serve practice now follows real ball flight and counts in-box landings across ten attempts. First/second faults, pause/resume and cancellation are covered by integration tests.
+- Adapted the sculpted player's trophy pose into overhead contact. A dedicated generated motion candidate is saved in Meshy, awaiting a usable local export; closed finger grip is not yet complete.
+
 ## Sculpted player movement refinement
 
 - Lower, wider ready stance and planted support feet during lateral movement; feet settle smoothly after stopping.

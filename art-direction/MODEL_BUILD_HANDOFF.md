@@ -61,3 +61,12 @@ Using the approved TenAce concept board as the visual identity reference, create
 `index.html?player=meshy` loads the sculpted character for court and portraits. The preview now includes ready, lateral steps, forehand, backhand and serve. Two-bone arm solving targets the ball and keeps the racket anchored at the wrist; contact is tested on both court sides. Unreachable targets clamp to the arm's actual reach instead of detaching the racket.
 
 This is an opt-in fixed-appearance playtest. Existing appearance saves are preserved, but hair/skin/kit choices are not represented by this fused asset. The base game retains the original customizable player. Finger articulation, closed grip, refined lateral footwork and mobile device performance certification remain outstanding. The tennis motion is procedural over the real skeleton, not authored tennis motion capture.
+
+
+## Dedicated serve motion candidate - September 13, 2026
+
+Generated in Meshy Text to Motion using Motion Prime, 3 seconds, named `TenAce serve candidate`. Quoted/used 10 existing credits (observed balance 1,170 to 1,160); no purchase. Added to the rigged character and inspected in the viewer. Current-motion GLB download was requested, but no new local animation file was returned by the available browser export path. The candidate remains in Meshy's AI Motions library and is not included in game assets. Do not describe it as integrated or as a completed authored animation library.
+
+Prompt: Athletic right-handed tennis serve. Start sideways in a balanced stance, toss ball with left hand, bend knees into trophy pose, drop right racket arm behind head, extend legs and right arm to strike overhead, follow through across body, land on front foot and recover to ready. One smooth grounded serve, no spinning or walking away. Right hand holds a racket grip throughout.
+
+Version 0.21 ships deterministic swipe serving with a synchronized 0.6-second toss/strike using the existing skeleton and pose system. Closed finger grip and the full authored tennis animation set are still outstanding.

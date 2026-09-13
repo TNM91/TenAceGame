@@ -21,5 +21,15 @@
    cost:({topspin:3,slice:2,lob:3,flat:5}[shot]||3)*(1+stretch*.5)*(.8+clamp(charge,0,1)*.4),
    feedback:miss?'Forced flat · Too stretched':clean?'Clean contact':pressure>.45?'Defensive return · Recover':'Controlled return'};
  }
- return {aim,resolve,gesture};
+ // Serve intent is deterministic: angle places it, length sets depth, speed sets pace.
+ // Normalized court coordinates keep the gesture consistent across screen sizes.
+ function serveGesture({dx=0,dy=0,swipeMs=180,side='left',power=1}={}){
+  const up=-dy,distance=Math.hypot(dx,dy),valid=up>=.055&&up>Math.abs(dx)*.45;
+  const pace=clamp(distance/Math.max(.08,swipeMs/1000)/2,0,1);
+  const target={x:clamp((side==='left'?.34:.66)+dx/Math.max(.055,up)*.22,.10,.90),y:clamp(.46-up*.65,.08,.46)};
+  const inBox=target.x>=(side==='left'?.18:.5)&&target.x<=(side==='left'?.5:.82)&&target.y>=.21;
+  target.inBox=inBox;
+  return {valid,shot:'serve',target,pace,charge:pace,time:clamp((1.35-pace*.5)/Math.max(.5,power),.68,1.6),inBox};
+ }
+ return {aim,resolve,gesture,serveGesture};
 });

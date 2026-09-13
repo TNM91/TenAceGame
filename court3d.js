@@ -93,7 +93,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  const scene=new T.Scene();scene.background=new T.Color('#a9c3cc');scene.fog=new T.Fog('#a9c3cc',32,72);
  let disposed=false,riggedFactory=null;
  const wantsRig=typeof location!=='undefined'&&new URLSearchParams(location.search).get('classic')!=='1';
- if(wantsRig){(new URLSearchParams(location.search).get('player')==='meshy'?import('./meshy-tennis.js').then(async module=>{const source=await module.loadCharacterCandidate();return {createOriginal:look=>module.createTennisPlayer(look,source)};}):import('./original-player.js')).then(module=>{if(disposed)return;riggedFactory=module.createOriginal;document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:new URLSearchParams(location.search).get('player')==='meshy'?'Sculpted player playtest':'Toon players ready'}));}).catch(()=>{if(!disposed)document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Character preview unavailable · Standard player active'}));});}
+ if(wantsRig){(new URLSearchParams(location.search).get('player')==='meshy'?import('./meshy-tennis.js?v=0.21').then(async module=>{const source=await module.loadCharacterCandidate();return {createOriginal:look=>module.createTennisPlayer(look,source)};}):import('./original-player.js')).then(module=>{if(disposed)return;riggedFactory=module.createOriginal;document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:new URLSearchParams(location.search).get('player')==='meshy'?'Sculpted player playtest':'Toon players ready'}));}).catch(()=>{if(!disposed)document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Character preview unavailable · Standard player active'}));});}
 
  const camera=new T.PerspectiveCamera(48,1,.1,100);
  scene.add(new T.HemisphereLight('#d4e8ff','#425b52',1.8));
@@ -157,6 +157,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  const flightLine=new T.Line(flightGeometry,new T.LineBasicMaterial({color:'#f3ffb0',transparent:true,opacity:.4,depthWrite:false}));flightLine.frustumCulled=false;scene.add(flightLine);
  const trail=Array.from({length:10},()=>{const m=mesh(scene,new T.SphereGeometry(.065,8,6),new T.MeshBasicMaterial({color:'#e6fb8c',transparent:true,opacity:.2}));m.castShadow=false;return m;});
  const target=mesh(scene,new T.RingGeometry(.27,.34,32),new T.MeshBasicMaterial({color:'#b7ff63',side:T.DoubleSide,transparent:true,opacity:.9}));target.rotation.x=-Math.PI/2;target.position.y=.04;
+ const serviceBox=mesh(scene,new T.PlaneGeometry(3.2,5.22),new T.MeshBasicMaterial({color:'#c9ed76',transparent:true,opacity:.12,depthWrite:false}));serviceBox.rotation.x=-Math.PI/2;serviceBox.position.y=.023;serviceBox.visible=false;
  const landing=target.clone();landing.material=target.material.clone();landing.material.color.set('#fff2ba');scene.add(landing);
  const contactRing=mesh(scene,new T.RingGeometry(.12,.16,24),new T.MeshBasicMaterial({color:'#f5ff9c',side:T.DoubleSide,transparent:true}));
  const rigs={},keys={},events={};let previousTheme='',viewWidth=390,viewHeight=500,portraitRig=null,portraitKey='';
@@ -175,11 +176,13 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
   if(previousTheme!==s.theme){blue.color.set(s.theme==='terrace'?'#bd775c':'#386b91');scene.background.set(s.theme==='terrace'?'#cfbfb3':'#a9c3cc');scene.fog.color.copy(scene.background);bannerMat.map?.dispose();const replacement=label(s.theme==='terrace'?'SOLSTICE  /  TENACE':'RIVERDALE  /  TENACE','#193742','#eff5db',1024,128);bannerMat.map=replacement.map;replacement.dispose();bannerMat.needsUpdate=true;previousTheme=s.theme;}
   for(const who of ['player','opp']){grounded[who].position.copy(world(s[who].x,s[who].y));const look=s[who].look,key=JSON.stringify(look)+(riggedFactory?'rigged':'standard');if(keys[who]!==key){if(rigs[who]){scene.remove(rigs[who].root);disposeObject(rigs[who].root);}rigs[who]=riggedFactory?riggedFactory(look):athlete(look);scene.add(rigs[who].root);keys[who]=key;}rigs[who].pose(s[who],s.time,s.dt,events[who]);}
   orb.visible=s.ball.active||s.serving;
-  orb.position.copy(s.serving?world(s.player.x,s.player.y, .17+Math.abs(Math.sin(s.time*3))*.035):world(s.ball.x,s.ball.y,s.ball.z||0));
+  orb.position.copy(s.serving?world(s.player.x-.02+.045*(s.serveProgress||0),s.player.y-.015, .09+Math.sin((s.serveProgress||0)*Math.PI*.65)*.076):world(s.ball.x,s.ball.y,s.ball.z||0));
   orb.rotation.set(s.time*5,s.time*3,0);ballShadow.visible=orb.visible;ballShadow.position.set(orb.position.x,.034,orb.position.z);ballShadow.material.opacity=.38/(1+orb.position.y*.6);ballShadow.scale.setScalar(1+orb.position.y*.15);
   const flightPoints=(s.ball.trail||[]).slice(-10);flightLine.visible=wantsRig&&s.ball.active&&flightPoints.length>1;flightGeometry.setDrawRange(0,flightPoints.length);
   for(let i=0;i<flightPoints.length;i++){const p=flightPoints[i],pos=world(p.x,p.y,p.z||0);flightGeometry.attributes.position.setXYZ(i,pos.x,pos.y,pos.z);}flightGeometry.attributes.position.needsUpdate=true;
   for(let i=0;i<trail.length;i++){const p=s.ball.trail?.[i];trail[i].visible=!wantsRig&&!!p&&s.ball.active;if(p){trail[i].position.copy(world(p.x,p.y,p.z||0));trail[i].material.opacity=i/trail.length*.24;}}
+  serviceBox.visible=!!s.serving;serviceBox.position.x=s.player.x>.5?-1.6:1.6;serviceBox.position.z=-2.61;
+  target.material.color.set(s.aim?.inBox===false?'#ff8e70':'#b7ff63');
   target.visible=!!s.aim;if(s.aim)target.position.copy(world(s.aim.x,s.aim.y)).y=.04;
   landing.visible=s.ball.active&&s.ball.last==='opp'&&s.landing?.y<1&&s.landing?.y>.5;if(landing.visible)landing.position.copy(world(s.landing.x,s.landing.y)).y=.035;
   const event=Object.values(events).sort((a,b)=>b.time-a.time)[0],age=event?s.time-event.time:1;contactRing.visible=age>=0&&age<.22;if(contactRing.visible){contactRing.position.copy(event.point);contactRing.quaternion.copy(camera.quaternion);contactRing.scale.setScalar(1+age*5);contactRing.material.opacity=1-age/.22;}

@@ -8,19 +8,20 @@
   const names = ['power', 'control', 'speed', 'iq'];
   const integer = (n, max = 1000000) => Number.isSafeInteger(n) && n >= 0 ? Math.min(n, max) : 0;
   function fresh() {
-    return { version: 1, xp: 0, matches: 0, wins: 0, bestRally: 0, bestServe: 0, path:'balanced', victories: {jax:0,mira:0}, character: Character.fresh(), stats: { power: 0, control: 0, speed: 0, iq: 0 } };
+    return { version: 1, xp: 0, matches: 0, wins: 0, bestRally: 0, bestServe: 0, bestServeIn: 0, path:'balanced', victories: {jax:0,mira:0}, character: Character.fresh(), stats: { power: 0, control: 0, speed: 0, iq: 0 } };
   }
   function normalize(value) {
     const data = fresh();
     if (!value || value.version !== 1) return data;
     data.character = Character.normalize(value.character);
-    for (const key of ['xp', 'matches', 'wins', 'bestRally', 'bestServe']) data[key] = integer(value[key]);
+    for (const key of ['xp', 'matches', 'wins', 'bestRally', 'bestServe', 'bestServeIn']) data[key] = integer(value[key]);
     data.wins = Math.min(data.wins, data.matches);
     if(data.xp>=200&&['striker','tactician','retriever'].includes(value.path))data.path=value.path;
     data.victories.jax=value.victories?Math.min(integer(value.victories.jax),data.wins):data.wins;
     data.victories.mira=data.victories.jax>0?Math.min(integer(value.victories?.mira),data.wins-data.victories.jax):0;
     if(data.character.shirt==='#edc76d'&&!data.victories.mira)data.character.shirt=Character.fresh().shirt;
     data.bestServe = Math.min(100, data.bestServe);
+    data.bestServeIn = Math.min(100, data.bestServeIn);
     let budget = Math.floor(data.xp / 100);
     for (const key of names) {
       data.stats[key] = Math.min(integer(value.stats?.[key], 10), budget);

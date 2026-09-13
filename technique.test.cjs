@@ -37,3 +37,11 @@ test('hold duration loads bounded power without replacing timing and positioning
  const weak=S.resolve({...base,charge:quick.charge}),strong=S.resolve({...base,charge:loaded.charge});assert.ok(strong.speed>weak.speed);assert.ok(strong.cost>weak.cost);
  const forced=S.resolve({...base,charge:1,error:.2,reach:.23,stamina:14});assert.ok(forced.speed<strong.speed);assert.ok(forced.pressure>strong.pressure);
 });
+
+test('serve gestures map angle, length and speed independently without random misses',()=>{
+ const {serveGesture}=require('./technique.js'),slow=serveGesture({dx:0,dy:-.2,swipeMs:400}),fast=serveGesture({dx:0,dy:-.2,swipeMs:90});
+ assert.ok(slow.valid&&slow.inBox);assert.deepEqual(slow.target,fast.target);assert.ok(fast.time<slow.time);
+ assert.ok(serveGesture({dx:.1,dy:-.2}).target.x>slow.target.x);assert.ok(serveGesture({dy:-.6}).inBox===false);
+ assert.equal(serveGesture({dy:.2}).valid,false);assert.equal(serveGesture({dy:0}).valid,false);
+ assert.ok(serveGesture({dy:-.2,side:'right'}).target.x>.5);
+});
