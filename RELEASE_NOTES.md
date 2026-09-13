@@ -1,3 +1,10 @@
+## Sculpted player movement refinement
+
+- Lower, wider ready stance and planted support feet during lateral movement; feet settle smoothly after stopping.
+- Torso rotation distributed across the spine with head counter-rotation. Swing recovery retains the loaded torso turn and returns continuously.
+- Added a swing-phase slider to pause and inspect tennis animations.
+- Added support-foot, recovery-boundary and paused-pose tests. Closed finger grip remains pending because the source skeleton has no articulated fingers.
+
 ## Sculpted character on-court playtest
 
 - Added an opt-in match route with the new sculpted player and portraits.

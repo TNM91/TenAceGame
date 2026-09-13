@@ -37,22 +37,46 @@ export function createTennisPlayer(look={},source){
  for(const sign of [-1,1]){const shaft=new T.Mesh(new T.CylinderGeometry(.009,.009,.18,8),material);shaft.position.set(sign*.04,.19,0);shaft.rotation.z=-sign*.45;racket.add(shaft);}
  const points=[];for(let i=-5;i<=5;i++){const x=i*.026,y=Math.sqrt(.16*.16-x*x)*1.3;points.push(v(x,.38-y,0),v(x,.38+y,0));const yy=i*.034,xx=Math.sqrt(.16*.16-(yy/1.3)**2);points.push(v(-xx,.38+yy,0),v(xx,.38+yy,0));}
  racket.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(points),new T.LineBasicMaterial({color:'#edf6e5',transparent:true,opacity:.7})));
- let priorX=null,stride=0;
+ const feet={Left:{},Right:{}};
+ let priorNear=null,priorX=null,stride=0,lastEvent=null,contactTurn=0,turn=0;
+ // Apply torso turns in model space rather than assuming imported bone axes.
+ function twist(bone,amount){
+  const axis=v(0,1,0).applyQuaternion(root.getWorldQuaternion(new T.Quaternion())).applyQuaternion(bone.parent.getWorldQuaternion(new T.Quaternion()).invert());
+  bone.quaternion.premultiply(new T.Quaternion().setFromAxisAngle(axis,amount));bone.updateWorldMatrix(false,true);
+ }
  function pose(p,time,dt,event){
   candidate.setMode('stand');
+  if(priorNear!==p.near){priorNear=p.near;priorX=null;stride=0;feet.Left.planted=feet.Right.planted=null;}
   root.position.set((p.x-.5)*10,0,(p.y-.5)*18);root.rotation.y=p.near?Math.PI:0;root.updateMatrixWorld(true);
   const dx=priorX===null?0:p.x-priorX;priorX=p.x;stride+=p.preview==='run'?dt*9:Math.abs(dx)*90;
   const run=p.preview==='run'?1:clamp(Math.abs(dx)/Math.max(dt,.001)*2,0,1),charge=clamp(p.charge||0,0,1),age=event?time-event.time:10;
   const active=event&&age>=0&&age<.85,load=charge;
   const point=event?root.worldToLocal(event.point.clone()):v(-.4,1.1,.3),back=point.x>0;
   const follow=active?Math.sin(Math.PI*ease(age/.85)):0;
-  bones.Spine.quaternion.premultiply(new T.Quaternion().setFromAxisAngle(v(0,1,0),-load*.3+(back?-.35:.35)*follow));
-  bones.Hips.position.y-=.035+load*.025;root.updateMatrixWorld(true);
+  if(active&&event!==lastEvent){contactTurn=turn;lastEvent=event;}
+  turn=active?contactTurn*(1-ease(age/.25))+(back?-.42:.42)*follow:-load*.3;
+  bones.Hips.position.y-=.105+load*.035;root.updateMatrixWorld(true);
+  twist(bones.Spine02,turn*.3);twist(bones.Spine01,turn*.3);twist(bones.Spine,turn*.4);twist(bones.neck,-turn*.65);
   const world=point=>root.localToWorld(point.clone());
   for(const [side,sign] of [['Left',1],['Right',-1]]){
-   const foot=bones[side+'Foot'],footQ=foot.getWorldQuaternion(new T.Quaternion()),phase=stride+(sign>0?Math.PI:0);
-   arm(bones[side+'UpLeg'],bones[side+'Leg'],foot,world(v(sign*.14+Math.cos(phase)*.04*run,.11+Math.max(0,Math.sin(phase))*.075*run,sign*(p.serve?.07:0))),world(v(sign*.22,.4,.35)));
+   const foot=bones[side+'Foot'],footQ=foot.getWorldQuaternion(new T.Quaternion()),state=feet[side];
+   const phase=(stride/(Math.PI*2)+(sign>0?.5:0))%1,swing=run>.02&&phase>.58;
+   const nominal=world(v(sign*.20,.11,sign*(p.serve?.07:0)));
+   if(!state.planted||state.planted.distanceTo(nominal)>.65){state.planted=nominal.clone();state.swing=false;}
+   let target=state.planted.clone();
+   if(swing){
+    if(!state.swing)state.takeoff=state.planted.clone();
+    const destination=nominal.clone();destination.x+=Math.sign(dx||1)*.10*run;
+    const t=(phase-.58)/.42;target.copy(state.takeoff).lerp(destination,ease(t));
+    state.planted.copy(target);target.y+=Math.sin(Math.PI*t)*.075*root.scale.y;
+   }else if(run<.02){
+    // Settle over time after stopping; paused frames keep their exact support points.
+    state.planted.lerp(nominal,1-Math.exp(-Math.max(0,dt)*12));target.copy(state.planted);
+   }
+   state.swing=swing;
+   arm(bones[side+'UpLeg'],bones[side+'Leg'],foot,target,world(v(sign*.25,.4,.4)));
    foot.quaternion.copy(foot.parent.getWorldQuaternion(new T.Quaternion()).invert().multiply(footQ));foot.updateWorldMatrix(false,true);
+
   }
   let target=v(-.22,1.05,.30).lerp(v(-.45,1.18,-.12),load),left=v(.23,1.1,.3),direction=v(0,1,0);
   if(p.serve){target=v(-.18,1.4,-.10);left=v(.15,1.6,.15);}

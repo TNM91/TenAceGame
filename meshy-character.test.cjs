@@ -37,3 +37,26 @@ test('tennis strokes keep the racket attached and skinning finite on both court 
  }
  rig.dispose();
 });
+
+test('lateral support foot remains planted while the body moves',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js'),rig=createTennisPlayer({},await assets());
+ for(const near of [false,true]){
+  rig.pose({x:.5,y:.5,tx:.55,near},0,1/60,null);
+  const before=rig.bones.RightFoot.getWorldPosition(new T.Vector3());
+  for(let i=1;i<=8;i++)rig.pose({x:.5+i*.001,y:.5,tx:.55,near},i/60,1/60,null);
+  assert.ok(before.distanceTo(rig.bones.RightFoot.getWorldPosition(new T.Vector3()))<.003,'support foot slid '+near+' '+before.distanceTo(rig.bones.RightFoot.getWorldPosition(new T.Vector3())));
+ }
+ rig.dispose();
+});
+test('swing recovery is continuous and paused poses remain stable',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js'),rig=createTennisPlayer({},await assets()),p={x:.5,y:.5,tx:.5,near:false};
+ for(const shot of ['topspin','slice','flat','serve']){
+  const event={time:0,shot,point:new T.Vector3(-.42,shot==='serve'?2.05:1.38,.3)};
+  for(const boundary of [.065,.48,.85]){
+   rig.pose(p,boundary-.0001,0,event);const before=rig.root.getObjectByName('RacketContact').getWorldPosition(new T.Vector3());
+   rig.pose(p,boundary+.0001,0,event);assert.ok(before.distanceTo(rig.root.getObjectByName('RacketContact').getWorldPosition(new T.Vector3()))<.003);
+  }
+  rig.pose(p,.3,0,event);const before=rig.bones.RightHand.matrixWorld.clone();rig.pose(p,.3,0,event);assert.deepEqual(rig.bones.RightHand.matrixWorld.elements,before.elements);
+ }
+ rig.dispose();
+});
