@@ -6,14 +6,14 @@
 <meta name="theme-color" content="#06131f"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<title>TenAce — Road to #1 · 0.10</title>
+<title>TenAce — Road to #1 · 0.11</title>
 <link rel="manifest" href="./manifest.webmanifest"/>
 <style>
 :root{--navy:#06131f;--panel:#0d2a40;--green:#9be11d;--green2:#4ade80;--blue:#255BE3;--text:#f8fbff;--muted:#97aec1}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%;background:#02070c;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;overflow:hidden}
 button{font:inherit}
-#app{width:min(100vw,520px);height:100dvh;margin:auto;position:relative;overflow:hidden;background:linear-gradient(#06131f,#020a11);touch-action:none}
+#app{width:min(100vw,520px);height:100dvh;margin:auto;position:relative;overflow:hidden;background:linear-gradient(#06131f,#020a11);touch-action:pan-y}
 header{height:16.5%;min-height:118px;padding:calc(env(safe-area-inset-top) + 8px) 13px 8px;background:linear-gradient(180deg,#03101bfa,#082034ee);border-bottom:1px solid #1c3e56;position:relative;z-index:5}
 .brandrow{display:flex;align-items:center;justify-content:space-between;height:41px;gap:8px}
 .brandrow img{height:38px;max-width:58%;object-fit:contain;object-position:left center}
@@ -127,6 +127,12 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 </style>
 <style>
 .journeyXP{height:5px;background:#041323;border-radius:8px;overflow:hidden;margin:4px 0 14px}.journeyXP span{display:block;height:100%;background:linear-gradient(90deg,#51ccb4,#b8f26b)}.pathBox{padding:13px;background:#061c2a;border:1px solid #42615f;border-radius:12px;margin:14px 0}.pathBox label{font-size:11px;color:#d4ebd7;display:block;margin-bottom:8px}.pathBox select{width:100%;min-height:44px;background:#102c3b;color:#eef8e7;border:1px solid #668879;border-radius:8px;font:14px system-ui;padding:8px}.pathBox p{font-size:11px;line-height:1.5;color:#b9d2cc}.optionLine{display:flex;align-items:center;gap:10px;font-size:12px;padding:12px 0}.optionLine input{width:21px;height:21px;accent-color:#b9ed62}.controls{grid-template-columns:repeat(3,1fr)}.shot[data-shot="flat"]{display:none}.controls.advanced{grid-template-columns:repeat(4,1fr)}.controls.advanced .shot[data-shot="flat"]{display:flex}.shot{max-width:88px;justify-self:center;width:100%}#contactCue{position:absolute;left:50%;bottom:40px;transform:translateX(-50%);z-index:3;padding:6px 13px;border:1px solid #bfd79088;border-radius:20px;background:#092531d9;color:#e7ffc2;font-size:11px;pointer-events:none;white-space:nowrap}#contactCue:empty{display:none}#techniqueReward{color:#c9eda2;font-size:12px;line-height:1.6;margin:10px 0}
+/* Menus scroll naturally; only the court owns swipe gestures. */
+#game,#serveUI{touch-action:none}.panel{overscroll-behavior:contain}
+.toolbar{flex-wrap:wrap}.toolbar button{min-height:44px;min-width:44px;font-size:10px}#rallyLabel{flex:1}
+.playSettings{margin-top:14px;border-top:1px solid #426079;padding-top:12px}.playSettings summary{min-height:44px;display:flex;align-items:center;font-size:13px;font-weight:750;cursor:pointer}.playSettings label{display:block;font-size:12px;margin:10px 0}.playSettings select{width:100%;min-height:44px;background:#102c40;color:#f8fbff;border:1px solid #668879;border-radius:9px;padding:8px;font:inherit}
+#resumeCue{display:none;position:absolute;inset:0;z-index:8;place-content:center;text-align:center;background:#03162666;color:#edffca;font-size:64px;font-weight:900;pointer-events:auto}#resumeCue.show{display:grid}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -159,7 +165,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
   <div class="toolbar"><span id="rallyLabel">First to 7 · Swipe to hit</span><span id="renderStatus" role="status">Loading 3D</span><button id="viewBtn" aria-label="Switch court view">2D view</button><button id="soundBtn" aria-pressed="false">Sound off</button><button id="pauseBtn" aria-label="Pause game" disabled>Pause</button></div>
 </header>
 <main id="gameWrap">
-  <canvas id="court3d" aria-label="3D tennis court"></canvas>
+  <div id="resumeCue" role="status" aria-live="polite"></div><canvas id="court3d" aria-label="3D tennis court"></canvas>
   <canvas id="game"></canvas>
   <div id="aimHint">Drag to aim · Release after the bounce</div>
   <div id="contactCue" role="status"></div>
@@ -183,26 +189,31 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.10 · Build your game</div>
+   <div class="eyebrow">Season 0.11 · Build your game</div>
    <h1 id="introTitle">Jax owns these courts.</h1>
    <div class="copy">First to 7. Build your attributes, unlock rivals, and choose your specialization at level 3.</div>
    <div id="careerSummary" class="careerline"></div>
    <div class="tip">Completed matches: 120 XP for a win, 60 for a loss. Clean contacts add 3 XP each (up to 30); an 8-shot rally adds 15. Every 100 XP earns an upgrade point.</div>
    <div class="journeyXP"><span id="careerXP"></span></div>
+   <button id="startBtn" class="primary">Challenge Jax</button>
    <div class="clubPortrait"><canvas id="clubPreview" width="216" height="180" aria-label="Your customized player"></canvas><div><b id="clubName">Rookie</b><small>RIVERDALE ROOKIE / YOUR JOURNEY</small></div></div>
    <div id="practiceSummary" class="tip" role="status"></div>
    <div id="introQuote" class="rivalQuote">“Nice gear. Shame the racquet can't hit the ball for you.” — Jax</div>
    <button id="mapBtn" class="secondary">Career map · Chapters & rewards</button>
    <label class="difficultyLabel" for="difficulty">Match difficulty</label>
    <select id="difficulty"><option value="relaxed">Relaxed · More time to react</option><option value="standard" selected>Standard · Original challenge</option><option value="competitive">Competitive · Faster opponents</option></select>
-   <button id="startBtn" class="primary">Challenge Jax</button>
+   <details class="playSettings"><summary>Practice & shot controls</summary>
    <button id="rallyPractice" class="secondary">Rally practice · 12 feeds</button>
    <button id="learnBtn" class="secondary">Learn touch controls · Guided drill</button>
    <label class="optionLine"><input id="advancedShots" type="checkbox">Enable flat shot · Advanced risk</label>
    <button id="practiceBtn" class="secondary">Serve practice · 10 attempts</button>
+   </details>
    <button id="careerBtn" class="secondary">Player upgrades</button>
    <button id="customizeBtn" class="secondary">Customize player</button>
    <div class="tip">Choose your serve placement, then tap in the green. Let the return bounce once, then swipe toward your target when it enters your hitting zone. Drag or use ← ↑ → on desktop. Two serve faults lose the point.</div>
+   <details class="playSettings"><summary>Display & feel</summary>
+   <label for="graphicsQuality">Graphics</label><select id="graphicsQuality"><option value="auto">Auto · Adapt for smoother play</option><option value="high">Quality · Detailed shadows</option><option value="low">Performance · Reduced detail</option></select><p id="qualityNote" class="tip"></p>
+   <label class="optionLine"><input id="haptics" type="checkbox" checked>Touch feedback · Where supported</label></details>
    <div class="saveStatus" id="saveStatus" role="status"></div>
  </div>
 </div>
@@ -283,10 +294,20 @@ const pScoreEl=document.getElementById('pScore'),oScoreEl=document.getElementByI
 const pStamBar=document.getElementById('pStamBar'),oStamBar=document.getElementById('oStamBar'),pIqBar=document.getElementById('pIqBar');
 let W=0,H=0,dpr=1,last=performance.now(),selected='topspin',swipe=null;
 let view3D=null,aimPreview=null,prefer3D=true;
+let graphicsQuality='auto',effectiveQuality='high',haptics=true,slowFrames=0,lastPaint=-Infinity,resumeUntil=0;
+try{const q=localStorage.getItem('tenace.graphics');if(['auto','high','low'].includes(q))graphicsQuality=q;haptics=localStorage.getItem('tenace.haptics')!=='off'}catch{}
+effectiveQuality=graphicsQuality==='low'?'low':'high';
+function qualityLabel(){document.getElementById('qualityNote').textContent=effectiveQuality==='low'?'Performance mode: reduced resolution and shadows. Shot timing and progression stay the same.':'Quality mode: detailed shadows. Auto reduces graphics if sustained frame delays occur.';}
+function applyQuality(){view3D?.setQuality?.(effectiveQuality);qualityLabel();lastPaint=-Infinity;}
+document.getElementById('graphicsQuality').value=graphicsQuality;
+document.getElementById('graphicsQuality').onchange=e=>{graphicsQuality=['auto','high','low'].includes(e.target.value)?e.target.value:'auto';effectiveQuality=graphicsQuality==='low'?'low':'high';slowFrames=0;try{localStorage.setItem('tenace.graphics',graphicsQuality)}catch{}applyQuality();};
+document.getElementById('haptics').checked=haptics;
+document.getElementById('haptics').onchange=e=>{haptics=e.target.checked;try{localStorage.setItem('tenace.haptics',haptics?'on':'off')}catch{}};
+qualityLabel();
 const Technique=window.TenAceTechnique;let cleanContacts=0,guided=false;
 const sceneCanvas=document.getElementById('court3d'),renderStatus=document.getElementById('renderStatus');
 function fallback3D(){view3D?.dispose();view3D=null;sceneCanvas.style.display='none';C.classList.remove('threeActive');renderStatus.textContent='2D court';document.getElementById('viewBtn').textContent='Try 3D';}
-function enable3D(){if(view3D||!prefer3D||!window.TenAce3D)return;try{view3D=window.TenAce3D.create(sceneCanvas,fallback3D);view3D.resize(W,H);sceneCanvas.style.display='block';C.classList.add('threeActive');renderStatus.textContent='3D court';document.getElementById('viewBtn').textContent='2D view';}catch{fallback3D();renderStatus.textContent='2D · WebGL unavailable';}}
+function enable3D(){if(view3D||!prefer3D||!window.TenAce3D)return;try{view3D=window.TenAce3D.create(sceneCanvas,fallback3D);view3D.resize(W,H);applyQuality();sceneCanvas.style.display='block';C.classList.add('threeActive');renderStatus.textContent='3D court';document.getElementById('viewBtn').textContent='2D view';}catch{fallback3D();renderStatus.textContent='2D · WebGL unavailable';}}
 addEventListener('tenace3dready',enable3D);
 document.getElementById('rendererModule').onerror=()=>{renderStatus.textContent='2D · 3D unavailable';};
 document.getElementById('viewBtn').onclick=()=>{if(view3D){prefer3D=false;fallback3D();}else{prefer3D=true;enable3D();}};
@@ -325,7 +346,7 @@ document.getElementById('creatorForm').onchange=readDraft;
 document.getElementById('creatorForm').onsubmit=e=>{e.preventDefault();readDraft();if(draft.shirt==='#edc76d'&&!career.victories.mira)draft.shirt=Character.fresh().shirt;career.character={...draft};saveCareer();draft=null;home()};
 document.getElementById('creatorCancel').onclick=()=>{draft=null;home()};
 
-function vib(ms=20){try{navigator.vibrate?.(ms)}catch{}}
+function vib(ms=20){if(!haptics)return;try{navigator.vibrate?.(ms)}catch{}}
 function resize(){dpr=Math.min(devicePixelRatio||1,2);W=wrap.clientWidth;H=wrap.clientHeight;C.width=W*dpr;C.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);
 court.L=W*.055;court.R=W*.945;court.T=H*.36;court.B=H*.92;court.N=(court.T+court.B)/2;
 backdrop.width=W*dpr;backdrop.height=H*dpr;backCtx.setTransform(dpr,0,0,dpr,0,0);Graphics.court(backCtx,W,H,court,rival.theme);view3D?.resize(W,H)}
@@ -355,7 +376,8 @@ function renderCareer(){
  renderMap();
 }
 document.getElementById('careerPath').onchange=e=>{if(Progress.choosePath(career,e.target.value))saveCareer()};
-document.getElementById('advancedShots').onchange=e=>{document.getElementById('shotControls').classList.toggle('advanced',e.target.checked);if(!e.target.checked&&selected==='flat'){selected='topspin';document.querySelectorAll('.shot').forEach(b=>b.classList.toggle('active',b.dataset.shot===selected));}};
+document.getElementById('advancedShots').onchange=e=>{try{localStorage.setItem('tenace.advanced',String(e.target.checked))}catch{}document.getElementById('shotControls').classList.toggle('advanced',e.target.checked);if(!e.target.checked&&selected==='flat'){selected='topspin';document.querySelectorAll('.shot').forEach(b=>b.classList.toggle('active',b.dataset.shot===selected));}};
+try{const advanced=localStorage.getItem('tenace.advanced')==='true';document.getElementById('advancedShots').checked=advanced;document.getElementById('shotControls').classList.toggle('advanced',advanced)}catch{}
 function renderMap(){
  const unlocked=Progress.unlocked(career,'mira');
  document.getElementById('chooseMira').disabled=!unlocked;document.getElementById('chooseMira').textContent=unlocked?'Meet Mira Sol':'Beat Jax to unlock';
@@ -374,7 +396,7 @@ function selectRival(id){if(!Progress.unlocked(career,id))return;rival=Rivals[id
 document.getElementById('mapBtn').onclick=openMap;document.getElementById('resultMap').onclick=openMap;document.getElementById('mapHome').onclick=home;
 document.getElementById('chooseJax').onclick=()=>selectRival('jax');document.getElementById('chooseMira').onclick=()=>selectRival('mira');
 function resetSession(nextMode){
- mode=nextMode;paused=false;matchFinished=false;point=false;ball.active=false;servePending=false;swipe=null;aimPreview=null;
+ mode=nextMode;resumeUntil=0;document.getElementById('resumeCue').classList.remove('show');lastPaint=-Infinity;paused=false;matchFinished=false;point=false;ball.active=false;servePending=false;swipe=null;aimPreview=null;
  playerSwing=oppSwing=celebration=0;impact=null;cleanContacts=0;guided=false;
  faults=0;bufferedHit=null;bounceMark=null;player.y=.86;opp.y=.16;
  nextPoint=matchEndAt=practiceNext=drillNext=Infinity;bestRally=0;pScore=oScore=0;pStam=oStam=100;
@@ -387,14 +409,17 @@ function resetSession(nextMode){
 }
 function home(){resetSession('home');document.getElementById('intro').classList.add('show')}
 function startMatch(){Sound.unlock();resetSession('match');nextPoint=performance.now()+400}
-function pauseGame(){if(mode==='home'||matchFinished||paused)return;paused=true;pausedAt=performance.now();swipe=null;aimPreview=null;bufferedHit=null;document.getElementById('paused').classList.add('show')}
-function resumeGame(){if(!paused)return;const delay=performance.now()-pausedAt;nextPoint+=delay;matchEndAt+=delay;practiceNext+=delay;drillNext+=delay;paused=false;last=performance.now();document.getElementById('paused').classList.remove('show')}
+function pauseGame(){if(resumeUntil){resumeUntil=0;document.getElementById('resumeCue').classList.remove('show');document.getElementById('paused').classList.add('show');}if(mode==='home'||matchFinished||paused)return;paused=true;lastPaint=-Infinity;pausedAt=performance.now();swipe=null;aimPreview=null;bufferedHit=null;document.getElementById('paused').classList.add('show')}
+function finishResume(){const delay=performance.now()-pausedAt;nextPoint+=delay;matchEndAt+=delay;practiceNext+=delay;drillNext+=delay;paused=false;last=performance.now();document.getElementById('paused').classList.remove('show');resumeUntil=0;document.getElementById('resumeCue').classList.remove('show');lastPaint=-Infinity;}
+function resumeGame(){if(!paused||resumeUntil||document.hidden)return;Sound.unlock();resumeUntil=performance.now()+3000;document.getElementById('paused').classList.remove('show');document.getElementById('resumeCue').classList.add('show');document.getElementById('resumeCue').textContent='3';}
 document.getElementById('pauseBtn').onclick=pauseGame;
 document.getElementById('resumeBtn').onclick=resumeGame;
 document.getElementById('leaveBtn').onclick=home;
 document.getElementById('resultHome').onclick=home;
 document.getElementById('careerBtn').onclick=()=>{document.getElementById('intro').classList.remove('show');document.getElementById('career').classList.add('show')};
 document.getElementById('careerClose').onclick=home;
+addEventListener('pagehide',pauseGame);
+addEventListener('blur',pauseGame);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame()});
 function practiceServe(){servePending=true;servePhase=0;serveUI.classList.add('show');document.getElementById('rallyLabel').textContent=`Serve lab · Attempt ${practiceAttempts+1}/10`}
 document.getElementById('practiceBtn').onclick=()=>{Sound.unlock();resetSession('practice');practiceAttempts=practiceTotal=0;practiceServe()};
@@ -486,10 +511,12 @@ function serve(){
 document.getElementById('tapServe').onclick=serve;
 
 function pos(e){const r=C.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height,t:performance.now()}}
-C.onpointerdown=e=>{if(point&&!servePending&&!paused){C.setPointerCapture(e.pointerId);swipe=pos(e);aimPreview=Technique.aim(0,selected)}}
-C.onpointermove=e=>{if(!swipe||paused)return;const b=pos(e);aimPreview=Technique.aim(b.x-swipe.x,selected);};
-C.onpointercancel=()=>{swipe=null;aimPreview=null};
-C.onpointerup=e=>{if(!swipe||!point||servePending||paused)return;const b=pos(e),dx=b.x-swipe.x,dy=b.y-swipe.y,d=Math.hypot(dx,dy),dur=b.t-swipe.t;swipe=null;aimPreview=null;playerHit(dx,dy,d,dur)}
+C.onpointerdown=e=>{if(swipe||e.isPrimary===false||e.button>0)return;if(point&&!servePending&&!paused){C.setPointerCapture(e.pointerId);swipe={...pos(e),id:e.pointerId};aimPreview=Technique.aim(0,selected)}};
+function ownsSwipe(e){return swipe&&(e.pointerId===undefined||e.pointerId===swipe.id)}
+C.onpointermove=e=>{if(!ownsSwipe(e)||paused)return;const b=pos(e);aimPreview=Technique.aim(b.x-swipe.x,selected);};
+C.onpointercancel=e=>{if(ownsSwipe(e)){swipe=null;aimPreview=null;bufferedHit=null}};
+C.onlostpointercapture=C.onpointercancel;
+C.onpointerup=e=>{if(!ownsSwipe(e))return;const origin=swipe;swipe=null;aimPreview=null;if(!point||servePending||paused)return;const b=pos(e),dx=b.x-origin.x,dy=b.y-origin.y;playerHit(dx,dy,Math.hypot(dx,dy),b.t-origin.t)};
 document.addEventListener('keydown',e=>{
  if(e.key==='Escape'){paused?resumeGame():pauseGame();return}
  if(!['match','rally'].includes(mode)||paused||matchFinished||servePending||!point||!['ArrowLeft','ArrowUp','ArrowRight'].includes(e.key))return;
@@ -580,9 +607,22 @@ function drawEffects(){
 }
 function drawPortrait(id,look,large){const canvas=document.getElementById(id),c=canvas.getContext('2d'),w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;const ratio=Math.min(devicePixelRatio||1,2);if(canvas.width!==Math.round(w*ratio)||canvas.height!==Math.round(h*ratio)){canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio)}c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);Graphics.person(c,w*.48,h*.92,large?h/126:h/122,look,{time:animTime,run:0});}
 function hudPortrait(id,look){const canvas=document.getElementById(id),w=canvas.clientWidth,h=canvas.clientHeight,ratio=Math.min(devicePixelRatio||1,2),key=JSON.stringify(look)+w+':'+h+':'+ratio;if(!w||!h||canvas.dataset.drawn===key)return;canvas.dataset.drawn=key;canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio);const c=canvas.getContext('2d');c.setTransform(ratio,0,0,ratio,0,0);Graphics.person(c,w*.5,h*1.78,h/66,look,{time:0});}
-function loop(t){const dt=Math.min(.033,(t-last)/1000);last=t;
+function loop(t){const elapsed=Math.max(0,(t-last)/1000);last=t;
+ if(document.hidden){requestAnimationFrame(loop);return;}
+ if(elapsed>.25&&mode!=='home'&&!matchFinished&&!paused)pauseGame();
+ let resumed=false;
+ if(resumeUntil){if(t>=resumeUntil){finishResume();resumed=true;}else document.getElementById('resumeCue').textContent=String(Math.ceil((resumeUntil-t)/1000));}
+ const dt=paused||resumed?0:Math.min(.1,elapsed);
+ if(graphicsQuality==='auto'&&effectiveQuality==='high'&&!paused&&mode!=='home'){
+  slowFrames=elapsed>.026?slowFrames+1:Math.max(0,slowFrames-1);
+  if(slowFrames>=90){effectiveQuality='low';applyQuality();}
+ }
+
  if(!paused){animTime+=dt;playerSwing=Math.max(0,playerSwing-dt*3);oppSwing=Math.max(0,oppSwing-dt*3);celebration=Math.max(0,celebration-dt);if(impact){impact.life-=dt*4;if(impact.life<=0)impact=null}if(bounceMark){bounceMark.life-=dt*2;if(bounceMark.life<=0)bounceMark=null}}
- update(dt,t);
+ // Substeps preserve ball collisions and pace on slower screens.
+ if(!paused){const steps=Math.max(1,Math.ceil(dt/.016));for(let i=0;i<steps;i++)update(dt/steps,t-dt*1000+(i+1)*dt/steps*1000);}
+ // Render menu previews at 10 fps instead of running a full-rate hidden match.
+ if((paused||mode==='home'||matchFinished)&&t-lastPaint<100){requestAnimationFrame(loop);return;}lastPaint=t;
  if(view3D){ctx.clearRect(0,0,W,H);try{view3D.render({time:animTime,dt,theme:rival.theme,ball,serving:servePending,aim:aimPreview||(servePending?Physics.serveTarget(serveAim,serviceSide):null),landing:ball.active?Physics.landing(ball):null,celebration,player:{...player,look:career.character,near:true,swing:playerSwing,side:swingSide,shot:selected,serve:servePending,ready:ball.active&&ball.last==='opp',celebrate:celebration>0},opp:{...opp,look:rivalLook,swing:oppSwing,shot:rival.id==='mira'?'lob':'topspin',ready:ball.active&&ball.last==='player'}});}catch{fallback3D();}}
  else{drawCourt();drawPlayer(opp,false);Graphics.net(ctx,court);drawPlayer(player,true);drawBall();drawEffects();}
  document.getElementById('aimHint').textContent=paused||mode==='home'||servePending?'':aimPreview?'Release to hit toward the green target':ball.active&&ball.last==='opp'?(view3D?'Landing ring · Let it bounce, then swing':'Let it bounce, then swing'):'Recover to center · Prepare for the return';

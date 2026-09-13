@@ -39,10 +39,12 @@ function boot(storage = new Map(), blocked = false, random = .5, engine = null) 
     localStorage: { getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => { if (blocked) throw Error('storage blocked'); storage.set(key, value); } },
     performance: { now: () => now }, navigator: {}, devicePixelRatio: 1,
-    addEventListener() {}, requestAnimationFrame: fn => { frame = fn; },
+    addEventListener(name,fn) {listeners[name]=fn;}, requestAnimationFrame: fn => { frame = fn; },
     setTimeout: () => 1, clearTimeout() {},
   });
   return { ids, upgrades, storage,
+    visibility(hidden){document.hidden=hidden;listeners.visibilitychange();},
+    blur(){listeners.blur();},
     press(key){listeners.keydown({key,preventDefault(){}});},
     tick(ms = 16) { now += ms; frame(now); },
     runUntil(predicate, limit = 20000) {
@@ -194,4 +196,40 @@ test('chapter selection enforces unlocks, loads Mira, and keeps Jax available',(
  assert.equal(game.ids.rivalName.textContent,'Mira Sol');assert.match(game.ids.venueLabel.textContent,/Solstice/);
  loseMatch(game);assert.match(game.ids.resultQuote.textContent,/Mira/);
  game.ids.resultMap.onclick();game.ids.chooseJax.onclick();assert.equal(game.ids.rivalName.textContent,'Jax Mercer');
+});
+
+
+test('resume countdown keeps the ball frozen and interruption requires another deliberate resume',()=>{
+ let state;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(s){state={time:s.time,x:s.ball.x,y:s.ball.y}},dispose(){}})});
+ game.ids.rallyPractice.onclick();game.runUntil(()=>game.ids.rallyLabel.textContent.includes('Feed 1/12'));game.tick();
+ game.visibility(true);game.tick(10000);game.visibility(false);game.tick();const before={...state};
+ game.ids.resumeBtn.onclick();assert.ok(game.ids.resumeCue.classList.contains('show'));
+ for(let i=0;i<120;i++)game.tick();assert.deepEqual(state,before,'countdown must not move ball or animation');
+ game.blur();assert.ok(game.ids.paused.classList.contains('show'));assert.ok(!game.ids.resumeCue.classList.contains('show'));
+ for(let i=0;i<100;i++)game.tick();assert.deepEqual(state,before);
+ game.ids.resumeBtn.onclick();for(let i=0;i<195;i++)game.tick();assert.ok(!game.ids.resumeCue.classList.contains('show'));assert.ok(state.time>before.time);
+});
+test('a second finger cannot steal or cancel the active aiming gesture',()=>{
+ let state;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(s){state=s},dispose(){}})});
+ game.ids.rallyPractice.onclick();game.runUntil(()=>game.ids.rallyLabel.textContent.includes('Feed 1/12'));
+ const c=game.ids.game;c.onpointerdown({pointerId:1,clientX:150,clientY:400});c.onpointermove({pointerId:1,clientX:240,clientY:300});game.tick();const x=state.aim.x;
+ c.onpointerdown({pointerId:2,clientX:50,clientY:400});c.onpointermove({pointerId:2,clientX:20,clientY:300});c.onpointercancel({pointerId:2});game.tick();assert.equal(state.aim.x,x);
+ c.onlostpointercapture({pointerId:1});game.tick();assert.equal(state.aim,null);
+});
+test('auto graphics reduce rendering cost after sustained delays; manual selection persists',()=>{
+ let quality;const engine={create:()=>({resize(){},render(){},dispose(){},setQuality(q){quality=q}})};
+ const game=boot(new Map(),false,.5,engine);assert.equal(quality,'high');game.ids.rallyPractice.onclick();for(let i=0;i<95;i++)game.tick(34);assert.equal(quality,'low');
+ game.ids.graphicsQuality.onchange({target:{value:'high'}});assert.equal(quality,'high');for(let i=0;i<100;i++)game.tick(34);assert.equal(quality,'high');
+ assert.equal(boot(game.storage,false,.5,engine).ids.graphicsQuality.value,'high');
+ game.ids.haptics.onchange({target:{checked:false}});game.ids.advancedShots.onchange({target:{checked:true}});
+ const reload=boot(game.storage);assert.equal(reload.ids.haptics.checked,false);assert.equal(reload.ids.advancedShots.checked,true);
+});
+test('menus render less often and a long active-frame stall pauses safely',()=>{
+ let renders=0;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(){renders++},dispose(){}})});
+ for(let i=0;i<60;i++)game.tick();assert.ok(renders<12,'idle previews do not render at full frame rate');
+ game.ids.rallyPractice.onclick();game.tick(400);assert.ok(game.ids.paused.classList.contains('show'));assert.equal(game.ids.oScore.textContent,'0');
+});
+test('ball travel remains consistent at 60 and 30 fps',()=>{
+ function sample(ms){let state;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(s){state={x:s.ball.x,y:s.ball.y}},dispose(){}})});game.ids.rallyPractice.onclick();for(let t=0;t<1280;t+=ms)game.tick(ms);return state;}
+ const fast=sample(16),slow=sample(32);assert.ok(Math.abs(fast.x-slow.x)<.015);assert.ok(Math.abs(fast.y-slow.y)<.025);
 });

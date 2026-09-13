@@ -104,6 +104,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  const contactRing=mesh(scene,new T.RingGeometry(.12,.16,24),new T.MeshBasicMaterial({color:'#f5ff9c',side:T.DoubleSide,transparent:true}));
  const rigs={},keys={},events={};let previousTheme='';
  function disposeObject(root){const geometries=new Set(),materials=new Set();root.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of [o.material].flat().filter(Boolean))materials.add(m)});geometries.forEach(g=>g.dispose());materials.forEach(m=>{m.map?.dispose();m.dispose()});}
+ function setQuality(quality){renderer.setPixelRatio(Math.min(devicePixelRatio||1,quality==='low'?1:1.5));renderer.shadowMap.enabled=quality!=='low';scene.traverse(o=>{if(o.material)for(const m of [o.material].flat())m.needsUpdate=true;});}
  function resize(w,h){renderer.setSize(w,h,false);camera.aspect=w/h;camera.position.set(0,10.5,21+Math.max(0,.72-camera.aspect)*10);camera.lookAt(0,1.6,-.6);camera.updateProjectionMatrix();}
  function contact(who,b,shot,time){events[who]={point:world(b.x,b.y,b.z||.12),shot,time};}
  function render(s){
@@ -120,6 +121,6 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  }
  const lost=e=>{e.preventDefault();onFailure();};canvas.addEventListener('webglcontextlost',lost);
  function dispose(){disposed=true;canvas.removeEventListener('webglcontextlost',lost);disposeObject(scene);renderer.dispose();}
- return {resize,render,contact,dispose};
+ return {resize,render,contact,dispose,setQuality};
 }
 if(typeof window!=='undefined'){window.TenAce3D={create};window.dispatchEvent(new Event('tenace3dready'));}

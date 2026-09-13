@@ -28,3 +28,14 @@ test('3D racket head reaches the actual contact point for forehand and backhand'
   const actual=point.clone();rim.getWorldPosition(actual);assert.ok(actual.distanceTo(point)<1e-6,'racket head and ball share contact position');
  }
 });
+
+test('graphics presets change the real renderer resolution and shadow state without replacing the scene',async()=>{
+ global.devicePixelRatio=3;
+ const {create}=await import('./court3d.js');let ratio,disposed=false;
+ const renderer={shadowMap:{},setPixelRatio(v){ratio=v},setSize(){},dispose(){disposed=true}};
+ const canvas={addEventListener(){},removeEventListener(){}};
+ const court=create(canvas,()=>{},()=>renderer);court.resize(390,500);
+ court.setQuality('low');assert.equal(ratio,1);assert.equal(renderer.shadowMap.enabled,false);
+ court.setQuality('high');assert.equal(ratio,1.5);assert.equal(renderer.shadowMap.enabled,true);
+ court.dispose();assert.equal(disposed,true);delete global.devicePixelRatio;
+});

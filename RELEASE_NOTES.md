@@ -2,6 +2,16 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
+## 0.11 — Phone comfort and reliable frame pacing
+
+- Match simulation uses small substeps so slower rendering does not slow ball travel. Long active-frame stalls pause safely; backgrounding or losing focus also pauses.
+- A three-second resume countdown keeps the point frozen. Interrupting the countdown requires a deliberate resume, with pending serve/drill/point deadlines preserved.
+- Auto, Quality, and Performance graphics presets. Auto drops to reduced pixel density and disables dynamic shadows after sustained slow frames. Explicit presets persist, with no gameplay or progression changes. Menu previews render at 10 fps and hidden pages skip rendering.
+- Court gestures track their owning pointer so another finger cannot steal or cancel aim. Lost capture clears queued input. Menu scrolling is separated from court gestures, toolbar targets are at least 44 pixels tall, and Challenge is presented earlier in the clubhouse.
+- Collapsible practice/display sections, persisted advanced-shot preference, and optional touch feedback where vibration is supported.
+
+Validation: 42 automated tests passed, including renderer presets, multi-touch ownership, interrupted resume, slow-frame adaptation, frame-rate consistency, and career regressions. Browser checks at 390×844 and 375×667 verified 3D, settings persistence, the resume countdown, a clean touch return after resuming, no horizontal overflow, and no console errors. This is browser verification, not a physical iPhone/Android frame-rate, thermal, or battery benchmark. Bespoke character art and authored animation remain future work; this release does not claim App Store readiness.
+
 ## 0.10 — Skill and player identity
 
 - Phone controls start with topspin, slice, and lob. Flat shots can be enabled as an advanced option. A tap makes a center return; dragging sets direction. Buttons now work with keyboard activation as well as touch.
