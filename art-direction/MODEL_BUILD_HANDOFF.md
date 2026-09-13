@@ -1,6 +1,6 @@
 # First character: model build handoff
 
-Status: first textured Meshy 7 model generated on 2026-09-12. GLB export is blocked by the Free plan; no new model has been downloaded, rigged or integrated. The live game remains 0.20.
+Status: Pro upgrade confirmed on 2026-09-13. The model has been remeshed, rigged, exported and loaded in `meshy-preview.html`. Gameplay remains 0.20; tennis animation and modular customization acceptance are pending.
 
 ## Generation input
 
@@ -15,7 +15,7 @@ Meshy's documented workflow supports image-to-3D, rigging and GLB export:
 - https://docs.meshy.ai/en/api/image-to-3d
 - https://help.meshy.ai/en/articles/16231707-how-to-create-3d-animation-with-auto-rigging
 
-Check the signed-in generation cost and export eligibility before starting. Public Free-plan help pages differ on which model versions can be downloaded; do not promise a free export. No subscription, generation purchase or paid commission has been authorized. Do not put API credentials in this repository or the browser game.
+Check the signed-in generation cost and export eligibility before starting. Public Free-plan help pages differ on which model versions can be downloaded; do not promise a free export. The user completed the Pro upgrade on 2026-09-13. No further paid purchase is authorized by this handoff. Do not put API credentials in this repository or the browser game.
 
 ## Inspection and integration
 
@@ -40,4 +40,17 @@ Using the approved TenAce concept board as the visual identity reference, create
 - A geometry candidate and textured derivative are visible in the account's workspace under 09/12/2026. The textured candidate visually retains the teal/navy kit, sculpted dark hair, separated hands and athletic silhouette.
 - Viewer reports 1,937,350 triangle faces and 999,983 vertices for the textured source. This is a high-resolution source asset, not a mobile-ready model. Retopology/decimation, skinning, contact tests and modular garment inspection remain necessary.
 - Attempting the GLB Download opened a subscription gate. The Pro Monthly option shown is $10 for the first month, then $20/month. The alternative selected by default was annual billing ($120 today); monthly was selected for review only. Subscribe Now was not clicked.
-- Awaiting explicit purchase authorization or a user-completed plan upgrade. Do not bypass the download restriction by extracting viewer resources.
+- Historical gate resolved on 2026-09-13 by the user-completed Pro upgrade.
+
+
+## Remesh, rig and export - 2026-09-13
+
+- Pro verified in the signed-in workspace.
+- Fixed 10K Quad remesh: viewer reports 10,244 faces / 10,246 vertices. These are quad source faces; GLB rendering uses triangulated geometry.
+- Humanoid auto-rig, 1.7 m height, with groin marker adjusted to the inseam.
+- Export task: `01a09cee-0ae0-7479-bec8-0297d5994949`.
+- `assets/meshy/player.glb`: 12,049,424 bytes; one skinned mesh, one baked material, three embedded textures, 28 joints. No finger articulation or embedded clip.
+- `assets/meshy/player-running.glb`: 73,292 bytes; animation-only export with two clips. Preview uses `retarget_clip`, keeping horizontal hip translation in place.
+- Preview supports run, reference A-pose, pause, orbit, close-up and skeleton inspection. Actual vertex skinning, normalized weights, pose restoration and stationary root are tested.
+- The export is fused. It does not meet the modular creator acceptance gate. Separate hair/garments, compatible variants, hand grip, tennis contact, movement transitions and physical phone performance remain required before replacing match characters.
+- Preserve the original CC BY 4.0 generation provenance; see `assets/meshy/CREDITS.md`.

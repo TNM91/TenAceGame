@@ -1,3 +1,9 @@
+## September 13, 2026 - Sculpted character preview
+
+- Added the real textured Meshy character and running animation in `meshy-preview.html`, linked from the clubhouse and previous studio.
+- Inspect orbit, face close-up, reference pose, pause and skeleton.
+- Retained source attribution and documented the remaining modular customization and tennis animation work. Match gameplay remains 0.20.
+
 # TenAce releases
 
 Live game: https://ten-ace-game.vercel.app/

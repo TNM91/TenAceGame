@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>TenAce · New Character Preview</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b1b25;color:#eef3e9;font:15px system-ui}main{max-width:1040px;margin:auto;padding:24px}header{display:flex;justify-content:space-between;gap:16px;align-items:center}h1{font-size:clamp(25px,4vw,38px);margin:6px 0}p{color:#b9cbd0;line-height:1.5}a{color:#d2ef8b}small{color:#c2e891;letter-spacing:.12em}.stage{height:60vh;min-height:340px;border-radius:22px;overflow:hidden;position:relative;background:#203844}canvas{width:100%;height:100%;display:block;touch-action:none}#status{position:absolute;left:14px;bottom:14px;background:#0b1b25dd;padding:8px 12px;border-radius:8px;font-size:12px;max-width:90%}.tools{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}button{font:inherit;min-height:44px;padding:10px 16px;border:1px solid #557078;background:#173440;color:#eef3e9;border-radius:10px;cursor:pointer}button[aria-pressed=true]{background:#c3e888;color:#102a22}.note{font-size:13px;max-width:760px}footer{display:flex;gap:20px;flex-wrap:wrap;margin:24px 0}@media(max-width:600px){main{padding:16px}header{align-items:start}.stage{height:53vh}}
+</style>
+<main><header><div><small>TENACE / CHARACTER IN DEVELOPMENT</small><h1>From concept to motion.</h1></div><a href="./index.html">Clubhouse</a></header>
+<p>The new sculpt, running on a real skeleton. Drag to turn the player.</p>
+<div class="stage"><canvas id="stage" aria-label="New rigged TenAce character"></canvas><div id="status" role="status">Loading character and motion…</div></div>
+<div class="tools" aria-label="Character preview controls"><button id="run" aria-pressed="true" disabled>Run</button><button id="stand" aria-pressed="false" disabled>A-pose</button><button id="pause" aria-pressed="false" disabled>Pause motion</button><button id="face" aria-pressed="false" disabled>Face close-up</button><button id="skeleton" aria-pressed="false" disabled>Show skeleton</button></div>
+<p class="note">This is the new asset preview. Tennis strokes, separate clothing and create-your-own-player options are still in development. Matches currently use the existing customizable player.</p>
+<footer><a href="./index.html">Play the current game →</a><a href="./rig-preview.html">Previous character studio</a><a href="./art-direction/create-your-player-v1.png">Approved art direction</a></footer>
+<p class="note">Character generated with Meshy from original TenAce concept art. Source created under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>; remeshed and rigged for TenAce. <a href="https://www.meshy.ai/">Meshy</a></p>
+</main><script type="module" src="./meshy-preview.js"></script></html>
