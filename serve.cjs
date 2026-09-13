@@ -3,6 +3,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const files = {
+  '/technique.js': ['technique.js', 'text/javascript; charset=utf-8'],
   '/court3d.js': ['court3d.js', 'text/javascript; charset=utf-8'],
   '/vendor/three.module.min.js': ['vendor/three.module.min.js', 'text/javascript; charset=utf-8'],
   '/vendor/three.core.min.js': ['vendor/three.core.min.js', 'text/javascript; charset=utf-8'],

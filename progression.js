@@ -8,7 +8,7 @@
   const names = ['power', 'control', 'speed', 'iq'];
   const integer = (n, max = 1000000) => Number.isSafeInteger(n) && n >= 0 ? Math.min(n, max) : 0;
   function fresh() {
-    return { version: 1, xp: 0, matches: 0, wins: 0, bestRally: 0, bestServe: 0, victories: {jax:0,mira:0}, character: Character.fresh(), stats: { power: 0, control: 0, speed: 0, iq: 0 } };
+    return { version: 1, xp: 0, matches: 0, wins: 0, bestRally: 0, bestServe: 0, path:'balanced', victories: {jax:0,mira:0}, character: Character.fresh(), stats: { power: 0, control: 0, speed: 0, iq: 0 } };
   }
   function normalize(value) {
     const data = fresh();
@@ -16,6 +16,7 @@
     data.character = Character.normalize(value.character);
     for (const key of ['xp', 'matches', 'wins', 'bestRally', 'bestServe']) data[key] = integer(value[key]);
     data.wins = Math.min(data.wins, data.matches);
+    if(data.xp>=200&&['striker','tactician','retriever'].includes(value.path))data.path=value.path;
     data.victories.jax=value.victories?Math.min(integer(value.victories.jax),data.wins):data.wins;
     data.victories.mira=data.victories.jax>0?Math.min(integer(value.victories?.mira),data.wins-data.victories.jax):0;
     if(data.character.shirt==='#edc76d'&&!data.victories.mira)data.character.shirt=Character.fresh().shirt;
@@ -41,18 +42,22 @@
   }
   function effects(data) {
     const s = data.stats;
-    return { power: 1 + s.power * .025, timing: .05 + s.control * .004,
+    const fx={ power: 1 + s.power * .025, timing: .05 + s.control * .004,
       risk: 1 - s.control * .045, movement: 1.8 + s.speed * .14,
-      anticipation: .5 + s.iq * .05, serveWindow: .08 + s.control * .004 };
+      anticipation: .5 + s.iq * .05, serveWindow: .08 + s.control * .004,staminaCost:1,recovery:7+(s.speed>=5?3:0) };
+    if(data.xp>=200){if(data.path==='striker')fx.power*=1.08;if(data.path==='tactician')fx.timing+=.012;if(data.path==='retriever'){fx.movement*=1.12;fx.staminaCost=.85;}}
+    return fx;
   }
+  function choosePath(data,path){if(data.xp<200||!['balanced','striker','tactician','retriever'].includes(path))return false;data.path=path;return true;}
   function unlocked(data,rival){return rival==='jax'||rival==='mira'&&data.victories.jax>0;}
-  function rewardMatch(data,won,rally,rival){
+  function rewardMatch(data,won,rally,rival,cleanContacts=0){
     if(!unlocked(data,rival))return {earned:0,bonus:0,first:false};
     const first=won&&data.victories[rival]===0;
     const bonus=first?(rival==='jax'?80:100):0;
-    const earned=reward(data,won,rally)+bonus;
-    data.xp+=bonus;if(won)data.victories[rival]++;
-    return {earned,bonus,first};
+    const technique=Math.min(30,integer(cleanContacts)*3)+(integer(rally)>=8?15:0);
+    const earned=reward(data,won,rally)+bonus+technique;
+    data.xp+=bonus+technique;if(won)data.victories[rival]++;
+    return {earned,bonus,first,technique};
   }
-  return { KEY, fresh, normalize, points, upgrade, reward, rewardMatch, unlocked, effects };
+  return { KEY, fresh, normalize, points, upgrade, reward, rewardMatch, unlocked, effects,choosePath };
 });

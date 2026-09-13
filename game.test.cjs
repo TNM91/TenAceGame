@@ -35,7 +35,7 @@ function boot(storage = new Map(), blocked = false, random = .5, engine = null) 
     addEventListener(name,fn) {listeners[name]=fn;} };
   const math = Object.create(Math); math.random = () => random;
   vm.runInNewContext(html.match(/<script>([\s\S]*?)<\/script>/)[1], {
-    document, window: {TenAce3D:engine, TenAceProgression: Progress, TenAceRivals:require('./rivals.js'),TenAceCharacter: Character, TenAcePhysics:require('./physics.js'),TenAceSound:{enabled:false,unlock(){},set(){},play(){}}, TenAceGraphics: {person(){},court(){},net(){}} }, Math: math,
+    document, window: {TenAceTechnique:require('./technique.js'),TenAce3D:engine, TenAceProgression: Progress, TenAceRivals:require('./rivals.js'),TenAceCharacter: Character, TenAcePhysics:require('./physics.js'),TenAceSound:{enabled:false,unlock(){},set(){},play(){}}, TenAceGraphics: {person(){},court(){},net(){}} }, Math: math,
     localStorage: { getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => { if (blocked) throw Error('storage blocked'); storage.set(key, value); } },
     performance: { now: () => now }, navigator: {}, devicePixelRatio: 1,

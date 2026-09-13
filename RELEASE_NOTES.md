@@ -2,7 +2,19 @@
 
 Live game: https://ten-ace-game.vercel.app/
 
-## 0.9 — First playable 3D court (local verification build)
+## 0.10 — Skill and player identity
+
+- Phone controls start with topspin, slice, and lob. Flat shots can be enabled as an advanced option. A tap makes a center return; dragging sets direction. Buttons now work with keyboard activation as well as touch.
+- Guided rally drill with preparation/release cues and live aiming. Practice continues awarding no XP; incomplete matches do not pay rewards.
+- Deterministic rally-shot quality: timing, reach, stamina, control, and power determine pace and placement. A pressured safe shot becomes a shorter, slower defensive ball; a badly forced flat can miss. Player rally shots no longer use random out rolls. Serving and opponent errors retain their existing rules.
+- Completed matches award +3 XP per clean contact (cap 30), plus 15 for reaching an eight-shot rally. Results report technique XP and level-ups. First-win rewards still apply once.
+- Level 3 unlocks freely selectable specializations between matches: Striker (+8% pace), Tactician (+0.012 timing window), Retriever (+12% positioning speed and −15% rally stamina cost). Speed 5 adds three stamina recovery per point. Saves migrate to Balanced and preserve earned progress.
+- XP bar, player rank titles, specialization descriptions, and clearer upgrade milestones.
+- 3D visual refinement: shaped shirt silhouettes, collars, articulated knees and shorts, textured court/grass, corrected banner text, revised framing, and a simpler backdrop composition. Characters remain procedural; bespoke modeled characters and authored animation are still needed to reach the intended premium visual quality.
+
+Validation: 36 automated tests pass. Live WebGL rendering, a successful clean-contact swipe, guided practice, pause/leave, and locked specialization UI were verified in the browser at phone sizes (390 × 844 and 375 × 667). This release also includes the previously unpublished 0.9 renderer.
+
+## 0.9 — First playable 3D court (included in 0.10)
 
 - Added a Three.js WebGL renderer with a perspective camera, lit court materials, directional shadows, a 3D net, trees, clubhouse, crowd, and courtside furniture. The illustrated club asset remains a distant backdrop.
 - Procedural 3D athletes retain saved skin, hair, clothing, and racket choices. Articulated arms/legs animate footwork, preparation, shots, serves, and celebrations. Racket contact uses the actual physics contact position.
