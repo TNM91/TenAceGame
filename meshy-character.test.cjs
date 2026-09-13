@@ -26,3 +26,14 @@ test('running deforms the real mesh without drifting and restores the reference 
  rig.root.traverse(o=>{assert.ok(o.matrixWorld.elements.every(Number.isFinite));if(o.isSkinnedMesh){o.skeleton.update();for(let n=0;n<o.geometry.attributes.position.count;n+=31){const p=new T.Vector3().fromBufferAttribute(o.geometry.attributes.position,n);o.applyBoneTransform(n,p);assert.ok(p.toArray().every(Number.isFinite));assert.ok(p.length()<4,'vertex escaped the body');}}});}
  assert.ok(changed);const paused=leg.quaternion.clone();rig.update(0);assert.deepEqual(leg.quaternion.toArray(),paused.toArray());rig.setMode('stand');assert.deepEqual(leg.quaternion.toArray(),rest.toArray());rig.dispose();
 });
+
+test('tennis strokes keep the racket attached and skinning finite on both court sides',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js'),rig=createTennisPlayer({},await assets());
+ for(const near of [true,false])for(const side of [-1,1])for(const shot of ['topspin','slice','flat','serve']){
+  const p={x:.5,y:.5,tx:.5,near},event={time:0,shot,point:new T.Vector3(side*.42,shot==='serve'?2.05:1.38,near?-.3:.3)};
+  for(let i=0;i<60;i++){rig.pose(p,i/60,1/60,event);if(i===0)assert.ok(rig.root.getObjectByName('RacketContact').getWorldPosition(new T.Vector3()).distanceTo(event.point)<.025,'racket missed '+shot+' '+near+' '+side);const wrist=rig.bones.RightHand.getWorldPosition(new T.Vector3()),grip=rig.root.getObjectByName('Racket').getWorldPosition(new T.Vector3());assert.ok(wrist.distanceTo(grip)<1e-5);
+   rig.root.traverse(o=>{assert.ok(o.matrixWorld.elements.every(Number.isFinite));if(o.isSkinnedMesh){o.skeleton.update();for(let j=0;j<o.geometry.attributes.position.count;j+=73){const v=new T.Vector3().fromBufferAttribute(o.geometry.attributes.position,j);o.applyBoneTransform(j,v);assert.ok(v.toArray().every(Number.isFinite));assert.ok(v.length()<4);}}});
+  }
+ }
+ rig.dispose();
+});

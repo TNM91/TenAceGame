@@ -54,3 +54,10 @@ Using the approved TenAce concept board as the visual identity reference, create
 - Preview supports run, reference A-pose, pause, orbit, close-up and skeleton inspection. Actual vertex skinning, normalized weights, pose restoration and stationary root are tested.
 - The export is fused. It does not meet the modular creator acceptance gate. Separate hair/garments, compatible variants, hand grip, tennis contact, movement transitions and physical phone performance remain required before replacing match characters.
 - Preserve the original CC BY 4.0 generation provenance; see `assets/meshy/CREDITS.md`.
+
+
+## On-court playtest
+
+`index.html?player=meshy` loads the sculpted character for court and portraits. The preview now includes ready, lateral steps, forehand, backhand and serve. Two-bone arm solving targets the ball and keeps the racket anchored at the wrist; contact is tested on both court sides. Unreachable targets clamp to the arm's actual reach instead of detaching the racket.
+
+This is an opt-in fixed-appearance playtest. Existing appearance saves are preserved, but hair/skin/kit choices are not represented by this fused asset. The base game retains the original customizable player. Finger articulation, closed grip, refined lateral footwork and mobile device performance certification remain outstanding. The tennis motion is procedural over the real skeleton, not authored tennis motion capture.

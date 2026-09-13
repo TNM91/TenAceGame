@@ -1,3 +1,10 @@
+## Sculpted character on-court playtest
+
+- Added an opt-in match route with the new sculpted player and portraits.
+- Added skeletal ready, lateral movement, forehand, backhand and serve poses with wrist-attached racket and tested contact.
+- Extended the character preview with tennis swing controls and a play link.
+- Fixed appearance remains explicit; finger grip and animation polish are still in development.
+
 ## September 13, 2026 - Sculpted character preview
 
 - Added the real textured Meshy character and running animation in `meshy-preview.html`, linked from the clubhouse and previous studio.

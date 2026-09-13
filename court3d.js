@@ -93,7 +93,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  const scene=new T.Scene();scene.background=new T.Color('#a9c3cc');scene.fog=new T.Fog('#a9c3cc',32,72);
  let disposed=false,riggedFactory=null;
  const wantsRig=typeof location!=='undefined'&&new URLSearchParams(location.search).get('classic')!=='1';
- if(wantsRig){import('./original-player.js').then(module=>{if(disposed)return;riggedFactory=module.createOriginal;document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Toon players ready'}));}).catch(()=>{if(!disposed)document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Character preview unavailable · Standard player active'}));});}
+ if(wantsRig){(new URLSearchParams(location.search).get('player')==='meshy'?import('./meshy-tennis.js').then(async module=>{const source=await module.loadCharacterCandidate();return {createOriginal:look=>module.createTennisPlayer(look,source)};}):import('./original-player.js')).then(module=>{if(disposed)return;riggedFactory=module.createOriginal;document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:new URLSearchParams(location.search).get('player')==='meshy'?'Sculpted player playtest':'Toon players ready'}));}).catch(()=>{if(!disposed)document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Character preview unavailable · Standard player active'}));});}
 
  const camera=new T.PerspectiveCamera(48,1,.1,100);
  scene.add(new T.HemisphereLight('#d4e8ff','#425b52',1.8));
@@ -161,7 +161,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  const contactRing=mesh(scene,new T.RingGeometry(.12,.16,24),new T.MeshBasicMaterial({color:'#f5ff9c',side:T.DoubleSide,transparent:true}));
  const rigs={},keys={},events={};let previousTheme='',viewWidth=390,viewHeight=500,portraitRig=null,portraitKey='';
  const portraitScene=new T.Scene();portraitScene.background=new T.Color('#102e3b');portraitScene.add(new T.HemisphereLight('#e8f2ff','#657467',2.6));const portraitLight=new T.DirectionalLight('#ffe9cf',2.4);portraitLight.position.set(-3,5,4);portraitScene.add(portraitLight);const portraitCamera=new T.PerspectiveCamera(34,1,.1,20);
- function disposeObject(root){const geometries=new Set(),materials=new Set();root.traverse(o=>{o.userData.release?.();if(o.geometry)geometries.add(o.geometry);for(const m of [o.material].flat().filter(Boolean))materials.add(m)});geometries.forEach(g=>g.dispose());materials.forEach(m=>{for(const key of ["map","normalMap","roughnessMap"])m[key]?.dispose();m.dispose()});}
+ function disposeObject(root){const geometries=new Set(),materials=new Set();root.traverse(o=>{o.userData.release?.();if(o.geometry)geometries.add(o.geometry);for(const m of [o.material].flat().filter(Boolean))materials.add(m)});geometries.forEach(g=>g.dispose());materials.forEach(m=>{for(const key of ["map","normalMap","roughnessMap","metalnessMap"])m[key]?.dispose();m.dispose()});}
  function setQuality(quality){renderer.setPixelRatio(Math.min(devicePixelRatio||1,quality==='low'?1:1.5));renderer.shadowMap.enabled=quality!=='low';scene.traverse(o=>{if(o.material)for(const m of [o.material].flat())m.needsUpdate=true;});}
  function resize(w,h){viewWidth=w;viewHeight=h;renderer.setSize(w,h,false);camera.aspect=w/h;camera.position.set(0,wantsRig?9.4:11.5,(wantsRig?18.6:20)+Math.max(0,.72-camera.aspect)*10);camera.lookAt(0,.2,wantsRig?.1:1.2);camera.updateProjectionMatrix();}
  function portrait(target,look,full=false){
