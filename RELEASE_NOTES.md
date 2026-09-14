@@ -1,3 +1,10 @@
+## Animation asset review / 0.26
+
+- Resolved the Meshy serve export and retained a 135 KB animation-only GLB instead of duplicating its 12 MB character payload.
+- Added generated-motion review with pause, slow motion and scrubbing in the studio.
+- Rejected the candidate for live match use: its recovery turns the player away from court. Existing match animation is retained.
+- Verified joint binding, finite transforms, stationary horizontal root and deterministic scrubbing.
+
 ## 0.25 - Rally preparation and readable contact
 
 - Sculpted players prepare forehands or backhands from the incoming ball position, blending torso and arm setup without altering shot power or paused poses.

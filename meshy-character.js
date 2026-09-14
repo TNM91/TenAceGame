@@ -17,5 +17,6 @@ export function createCharacterCandidate(source){
  let mode='run';action.play();
  function setMode(next){mode=next;action.stop();for(const r of bones){r.bone.position.copy(r.position);r.bone.quaternion.copy(r.quaternion);r.bone.scale.copy(r.scale);}if(mode==='run')action.reset().play();root.updateMatrixWorld(true);}
  function update(dt){if(mode==='run'){mixer.update(Math.max(0,Math.min(.05,dt)));hips.position.x=origin.x;hips.position.z=origin.z;}root.updateMatrixWorld(true);}
- return {root,setMode,update,clipName:clip.name,dispose(){mixer.stopAllAction();mixer.uncacheRoot(root);}};
+ function sample(time){if(mode==='run'){mixer.setTime(Math.max(0,time));hips.position.x=origin.x;hips.position.z=origin.z;root.updateMatrixWorld(true);}}
+ return {root,setMode,update,sample,duration:clip.duration,clipName:clip.name,dispose(){mixer.stopAllAction();mixer.uncacheRoot(root);}};
 }

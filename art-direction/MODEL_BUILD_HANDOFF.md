@@ -77,3 +77,10 @@ Version 0.21 ships deterministic swipe serving with a synchronized 0.6-second to
 `grip-corrective.js` closes the sculpt's actual right-hand vertices, including vertices weighted to its end joint, in bind space. It preserves the original GLB, UVs, skin weights and untouched body normals. Handle alignment is adjusted across the palm; this is a fixed closed-hand corrective, not independent finger articulation.
 
 `tennis-motion.js` supplies editable ready/trophy poses and distinct stroke arcs. Runtime solving retains ball contact and transitions back into ready. The studio exposes flat/slice, slow motion, grip inspection and a contact-ball visualization. This local set is not the imported Meshy motion candidate; that candidate's export remains unresolved.
+
+## Generated serve export resolved / review result
+The current-motion asset was exposed after reloading Meshy, selecting the rigged related asset and exporting Current animation. `assets/meshy/player-serve.glb` is now a 135,236-byte animation-only GLB with the source node hierarchy and both exported clips. No additional motion generation credits were used.
+
+The clip binds to the existing sculpt and runs for 3.033 seconds. Sampling 90 poses measured a maximum hip rotation from the start of 179.61 degrees; visual review shows the player facing away during recovery. It fails the grounded, court-facing serve acceptance requirement. It is available through Generated serve · Review in the studio, with pause, slow motion and scrubbing, and is deliberately excluded from live matches.
+
+Next asset work: a new court-facing serve with no turn-away; a coordinated two-handed backhand and forehand; tennis-specific split-step and shuffle clips. Review raw motion before runtime contact correction. Do not describe this rejected candidate as a finished animation upgrade.

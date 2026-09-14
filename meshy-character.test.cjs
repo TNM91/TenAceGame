@@ -104,3 +104,14 @@ test('incoming ball selects a smooth forehand or backhand preparation on both si
  rig.pose({...p,incomingX:frontX},2,0,null);assert.ok(wrist().distanceTo(back)<1e-6,'paused preparation moved');rig.dispose();
  }
 });
+
+test('exported serve clip binds to the sculpt and supports deterministic paused review',async t=>{
+ const {GLTFLoader}=await import('./vendor/GLTFLoader.js'),{createCharacterCandidate}=await import('./meshy-character.js'),T=await import('./vendor/three.module.min.js');
+ const bytes=fs.readFileSync('assets/meshy/player-serve.glb'),motion=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
+ const src=await assets(),rig=createCharacterCandidate({character:src.character,motion}),hips=rig.root.getObjectByName('Hips'),hand=rig.root.getObjectByName('RightHand'),head=rig.root.getObjectByName('Head');
+ assert.ok(rig.duration>2&&rig.duration<5);for(const track of motion.animations[0].tracks)assert.ok(rig.root.getObjectByName(track.name.split('.')[0]),'missing animated joint');
+ rig.sample(0);const origin=hips.position.clone(),start=hips.quaternion.clone();let maxTurn=0,maxHandAboveHead=-Infinity;
+ for(let i=0;i<90;i++){rig.sample(rig.duration*i/90);maxTurn=Math.max(maxTurn,start.angleTo(hips.quaternion));maxHandAboveHead=Math.max(maxHandAboveHead,hand.getWorldPosition(new T.Vector3()).y-head.getWorldPosition(new T.Vector3()).y);assert.equal(hips.position.x,origin.x);assert.equal(hips.position.z,origin.z);rig.root.traverse(o=>assert.ok(o.matrixWorld.elements.every(Number.isFinite)));}
+ rig.sample(.8);const pose=hand.matrixWorld.clone();rig.sample(.8);assert.deepEqual(hand.matrixWorld.elements,pose.elements);rig.dispose();
+ t.diagnostic(JSON.stringify({duration:rig.duration,maxHipRotationDegrees:maxTurn*180/Math.PI,maxHandAboveHead}));
+});
