@@ -185,7 +185,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
   target.material.color.set(s.aim?.inBox===false?'#ff8e70':'#b7ff63');
   target.visible=!!s.aim;if(s.aim)target.position.copy(world(s.aim.x,s.aim.y)).y=.04;
   landing.visible=s.ball.active&&s.ball.last==='opp'&&(s.contactReady||s.ball.bounces===0&&s.landing?.y<1&&s.landing?.y>.5);
-  if(landing.visible){landing.material.color.set(s.contactReady?'#baff72':'#fff2ba');landing.position.copy(s.contactReady?world(s.player.x,s.player.y):world(s.landing.x,s.landing.y)).y=.035;landing.scale.setScalar(s.contactReady?1.45:1);} 
+  if(landing.visible){landing.material.color.set(s.contactReady?'#baff72':'#fff2ba');landing.position.copy(s.contactReady?world(s.player.x,s.player.y):world(s.landing.x,s.landing.y)).y=.035;landing.scale.setScalar(s.contactReady?1.45:1);}
   const event=Object.values(events).sort((a,b)=>b.time-a.time)[0],age=event?s.time-event.time:1;contactRing.visible=age>=0&&age<.22;if(contactRing.visible){contactRing.position.copy(event.point);contactRing.quaternion.copy(camera.quaternion);contactRing.scale.setScalar(1+age*5);contactRing.material.opacity=1-age/.22;}
 
   renderer.render(scene,camera);
