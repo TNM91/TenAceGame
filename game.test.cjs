@@ -289,3 +289,15 @@ test('serve hold stays neutral while touch feedback clears on cancellation',()=>
  game.ids.game.onpointerdown({pointerId:2,clientX:180,clientY:300});game.tick();game.ids.game.onpointermove({pointerId:2,clientX:180,clientY:380});game.tick();assert.equal(state.player.shot,'slice');assert.ok(state.player.charge>0);
  game.ids.pauseBtn.onclick();game.tick();assert.equal(state.player.charge,0);assert.equal(game.ids.serveUI.classList.contains('aiming'),false);
 });
+
+test('rally contact cue agrees with bounce, height, timing zone and actual reach',()=>{
+ let state,readyFrames=0;const Physics=require('./physics.js');
+ const engine={create:()=>({resize(){},render(s){state=s},contact(){},dispose(){}})};
+ const game=boot(new Map(),false,.5,engine);game.ids.rallyPractice.onclick();
+ for(let i=0;i<700;i++){game.tick();if(!state.ball.active||state.ball.last!=='opp')continue;
+ const expected=Physics.canHit(state.ball,'player')&&state.ball.y>=state.player.y-.19&&Math.hypot((state.ball.x-state.player.x)*1.15,(state.ball.y-state.player.y)*1.15)<=.23;
+ assert.equal(state.contactReady,expected);assert.equal(game.ids.contactCue.textContent==='RELEASE · Swing now',expected);
+ assert.ok(Number.isFinite(state.player.incomingX));if(expected)readyFrames++;
+ }
+ assert.ok(readyFrames>0,'drill offers a reachable contact window');
+});

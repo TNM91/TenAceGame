@@ -90,3 +90,17 @@ test('sculpt kits isolate color uniforms and masks while racket frames retain co
  assert.notEqual(shaders[0].uniforms.kitColor.value,shaders[1].uniforms.kitColor.value);assert.notEqual(shaders[0].uniforms.kitColor.value.getHex(),shaders[1].uniforms.kitColor.value.getHex());
  src.character.scene.traverse(o=>{if(o.isMesh)assert.equal(o.geometry.attributes.kitMask,undefined);});
 });
+
+test('incoming ball selects a smooth forehand or backhand preparation on both sides',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js');
+ for(const near of [false,true]){
+ const rig=createTennisPlayer({},await assets()),p={x:.5,y:.5,near,ready:true,charge:1};
+ const wrist=()=>rig.root.worldToLocal(rig.bones.RightHand.getWorldPosition(new T.Vector3()));
+ const frontX=near?.7:.3,backX=near?.3:.7;
+ for(let i=0;i<50;i++)rig.pose({...p,incomingX:frontX},i/60,1/60,null);
+ const fore=wrist();rig.pose({...p,incomingX:backX},1,1/60,null);assert.ok(wrist().distanceTo(fore)<.22,'preparation snaps on direction change');
+ for(let i=0;i<50;i++)rig.pose({...p,incomingX:backX},1+i/60,1/60,null);
+ const back=wrist();assert.ok(back.x-fore.x>.45,'backhand never crosses the body');
+ rig.pose({...p,incomingX:frontX},2,0,null);assert.ok(wrist().distanceTo(back)<1e-6,'paused preparation moved');rig.dispose();
+ }
+});

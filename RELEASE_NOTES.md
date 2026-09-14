@@ -1,3 +1,10 @@
+## 0.25 - Rally preparation and readable contact
+
+- Sculpted players prepare forehands or backhands from the incoming ball position, blending torso and arm setup without altering shot power or paused poses.
+- The first-bounce marker disappears after landing. A green ring at the player appears only when bounce, height, timing zone and reach allow contact.
+- The release instruction uses the same reach conditions as gameplay; unreachable returns no longer display a misleading hit cue.
+- Studio backhands now demonstrate the matching preparation. These remain procedural poses, not a replacement authored animation library.
+
 ## 0.24 - Sculpted player kit customization
 
 - Saved jersey colors tint the sculpt's teal fabric panels while preserving texture detail, skin and trim. Per-instance uniforms and bone-weight masks keep player and rival kits independent.

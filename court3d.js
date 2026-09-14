@@ -93,7 +93,7 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
  const scene=new T.Scene();scene.background=new T.Color('#a9c3cc');scene.fog=new T.Fog('#a9c3cc',32,72);
  let disposed=false,riggedFactory=null;
  const wantsRig=typeof location!=='undefined'&&new URLSearchParams(location.search).get('classic')!=='1';
- if(wantsRig){(new URLSearchParams(location.search).get('player')==='meshy'?import('./meshy-tennis.js?v=0.24').then(async module=>{const source=await module.loadCharacterCandidate();return {createOriginal:look=>module.createTennisPlayer(look,source)};}):import('./original-player.js')).then(module=>{if(disposed)return;riggedFactory=module.createOriginal;document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:new URLSearchParams(location.search).get('player')==='meshy'?'Sculpted player playtest':'Toon players ready'}));}).catch(()=>{if(!disposed)document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Character preview unavailable · Standard player active'}));});}
+ if(wantsRig){(new URLSearchParams(location.search).get('player')==='meshy'?import('./meshy-tennis.js?v=0.25').then(async module=>{const source=await module.loadCharacterCandidate();return {createOriginal:look=>module.createTennisPlayer(look,source)};}):import('./original-player.js')).then(module=>{if(disposed)return;riggedFactory=module.createOriginal;document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:new URLSearchParams(location.search).get('player')==='meshy'?'Sculpted player playtest':'Toon players ready'}));}).catch(()=>{if(!disposed)document.dispatchEvent(new CustomEvent('tenacerigstatus',{detail:'Character preview unavailable · Standard player active'}));});}
 
  const camera=new T.PerspectiveCamera(48,1,.1,100);
  scene.add(new T.HemisphereLight('#d4e8ff','#425b52',1.8));
@@ -184,7 +184,8 @@ export function create(canvas,onFailure,makeRenderer=options=>new T.WebGLRendere
   serviceBox.visible=!!s.serving;serviceBox.position.x=s.player.x>.5?-1.6:1.6;serviceBox.position.z=-2.61;
   target.material.color.set(s.aim?.inBox===false?'#ff8e70':'#b7ff63');
   target.visible=!!s.aim;if(s.aim)target.position.copy(world(s.aim.x,s.aim.y)).y=.04;
-  landing.visible=s.ball.active&&s.ball.last==='opp'&&s.landing?.y<1&&s.landing?.y>.5;if(landing.visible)landing.position.copy(world(s.landing.x,s.landing.y)).y=.035;
+  landing.visible=s.ball.active&&s.ball.last==='opp'&&(s.contactReady||s.ball.bounces===0&&s.landing?.y<1&&s.landing?.y>.5);
+  if(landing.visible){landing.material.color.set(s.contactReady?'#baff72':'#fff2ba');landing.position.copy(s.contactReady?world(s.player.x,s.player.y):world(s.landing.x,s.landing.y)).y=.035;landing.scale.setScalar(s.contactReady?1.45:1);} 
   const event=Object.values(events).sort((a,b)=>b.time-a.time)[0],age=event?s.time-event.time:1;contactRing.visible=age>=0&&age<.22;if(contactRing.visible){contactRing.position.copy(event.point);contactRing.quaternion.copy(camera.quaternion);contactRing.scale.setScalar(1+age*5);contactRing.material.opacity=1-age/.22;}
 
   renderer.render(scene,camera);

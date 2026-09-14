@@ -46,7 +46,7 @@ export function createTennisPlayer(look={},source){
  for(const point of points)point.y-=.38;
  head.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(points),new T.LineBasicMaterial({color:'#edf6e5',transparent:true,opacity:.7})));
  const feet={Left:{},Right:{}};
- let priorNear=null,priorX=null,stride=0,lastEvent=null,contactTurn=0,turn=0,lastLoad=0,contactLoad=0;
+ let priorNear=null,priorX=null,stride=0,lastEvent=null,contactTurn=0,turn=0,lastLoad=0,contactLoad=0,preparation=0;
  // Apply torso turns in model space rather than assuming imported bone axes.
  function twist(bone,amount){
   const axis=v(0,1,0).applyQuaternion(root.getWorldQuaternion(new T.Quaternion())).applyQuaternion(bone.parent.getWorldQuaternion(new T.Quaternion()).invert());
@@ -58,12 +58,15 @@ export function createTennisPlayer(look={},source){
   root.position.set((p.x-.5)*10,0,(p.y-.5)*18);root.rotation.y=p.near?Math.PI:0;root.updateMatrixWorld(true);
   const dx=priorX===null?0:p.x-priorX;priorX=p.x;stride+=p.preview==='run'?dt*9:Math.abs(dx)*90;
   const run=p.preview==='run'?1:clamp(Math.abs(dx)/Math.max(dt,.001)*2,0,1),charge=clamp(p.charge||0,0,1),age=event?time-event.time:10;
-  const active=event&&age>=0&&age<.85,load=charge;
+  const active=event&&age>=0&&age<.85,load=Math.max(charge,p.ready?.22:0);
+  const incomingLocal=Number.isFinite(p.incomingX)?(p.incomingX-p.x)*(p.near?-1:1):0;
+  const wantsBack=incomingLocal>.015?1:incomingLocal<-.015?0:preparation;
+  if(!active&&!p.serve)preparation+=(wantsBack-preparation)*(1-Math.exp(-Math.max(0,dt)*14));
   const point=event?root.worldToLocal(event.point.clone()):v(-.4,1.1,.3),back=point.x>0;
   const follow=active?Math.sin(Math.PI*ease(age/.85)):0,stroke=strokes[event?.shot]||strokes.topspin,servePose=p.serve?sampleServe(p.serveProgress??load):null;
   const readyHand=v(...readyPose.hand),readyDirection=v(...readyPose.racket).normalize();
   if(active&&event!==lastEvent){contactTurn=turn;contactLoad=lastLoad;lastEvent=event;}
-  turn=active?contactTurn*(1-ease(age/.25))+(back?-stroke.turn:stroke.turn)*follow:servePose?servePose.turn:-load*.44;
+  turn=active?contactTurn*(1-ease(age/.25))+(back?-stroke.turn:stroke.turn)*follow:servePose?servePose.turn:load*(-.44+.88*preparation);
   bones.Hips.position.y-=.105+(active?contactLoad*(1-ease(age/.28)):load)*.035;lastLoad=load;
   bones.Hips.position.y+=servePose?servePose.lift:active&&event.shot==='serve'?.075*(1-ease(age/.28)):0;
   bones.Hips.position.x+=(back?-.028:.028)*follow;root.updateMatrixWorld(true);
@@ -90,7 +93,7 @@ export function createTennisPlayer(look={},source){
    foot.quaternion.copy(foot.parent.getWorldQuaternion(new T.Quaternion()).invert().multiply(footQ));foot.updateWorldMatrix(false,true);
 
   }
-  let target=readyHand.clone().lerp(v(-.45,1.18,-.12),load),left=v(...readyPose.support).lerp(v(.25,1.18,.38),load),direction=readyDirection.clone();
+  let target=readyHand.clone().lerp(v(-.45+.9*preparation,1.18,-.12+.25*preparation),load),left=v(...readyPose.support).lerp(v(.25+.12*preparation,1.18,.38),load),direction=readyDirection.clone();
   if(p.serve){
    const t=clamp(p.serveProgress??load,0,1),drive=ease((t-.65)/.35);
    target.set(...servePose.hand);left.set(...servePose.support);
