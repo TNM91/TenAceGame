@@ -9,4 +9,4 @@ Modified September 13, 2026: remeshed to the 10K Quad target, humanoid auto-rigg
 - `player.glb`: textured, rigged character; original export preserved.
 - `player-running.glb`: animation-only export; original export preserved.
 
-The preview clones the skeleton and removes horizontal animation root motion at runtime. No texture recoloring or mesh editing is applied. One fused mesh/material; modular customization and tennis animation are not included yet.
+The preview clones the skeleton and removes horizontal animation root motion at runtime. The original GLB remains unchanged. Version 0.22 applies a bind-space right-hand grip corrective to cloned geometry at runtime, preserving UVs and skin weights, and adds authored tennis pose curves. One fused mesh/material; modular customization remains pending. Tennis animation is supplied by the local pose system.

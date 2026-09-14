@@ -70,3 +70,10 @@ Generated in Meshy Text to Motion using Motion Prime, 3 seconds, named `TenAce s
 Prompt: Athletic right-handed tennis serve. Start sideways in a balanced stance, toss ball with left hand, bend knees into trophy pose, drop right racket arm behind head, extend legs and right arm to strike overhead, follow through across body, land on front foot and recover to ready. One smooth grounded serve, no spinning or walking away. Right hand holds a racket grip throughout.
 
 Version 0.21 ships deterministic swipe serving with a synchronized 0.6-second toss/strike using the existing skeleton and pose system. Closed finger grip and the full authored tennis animation set are still outstanding.
+
+
+## 0.22 local grip and motion assets
+
+`grip-corrective.js` closes the sculpt's actual right-hand vertices, including vertices weighted to its end joint, in bind space. It preserves the original GLB, UVs, skin weights and untouched body normals. Handle alignment is adjusted across the palm; this is a fixed closed-hand corrective, not independent finger articulation.
+
+`tennis-motion.js` supplies editable ready/trophy poses and distinct stroke arcs. Runtime solving retains ball contact and transitions back into ready. The studio exposes flat/slice, slow motion, grip inspection and a contact-ball visualization. This local set is not the imported Meshy motion candidate; that candidate's export remains unresolved.

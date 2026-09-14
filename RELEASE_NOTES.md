@@ -1,3 +1,12 @@
+## 0.22 - Closed grip and tennis motion set
+
+- Reshaped the actual sculpt's right-hand vertices into a closed grip and aligned the handle across the palm. Includes fingertip end-joint weights; the original GLB and unaffected body normals remain intact.
+- Added an editable tennis pose set: forward ready position; curved, distinct topspin/flat/slice/lob/serve recoveries; trophy pose, knee compression and upward drive for the serve. Contact solving remains tied to the actual ball.
+- Loading stalls before a point no longer trigger an unnecessary pause; active rallies and tosses retain stall protection.
+- Added slow motion, grip inspection, flat/slice controls and a contact-ball visualization to the studio.
+- Validated contact, finite skinning, source preservation, full fingertip correction, support feet, pause and recovery boundaries.
+- These are authored pose curves plus runtime contact solving, not imported motion capture. The generated Meshy serve remains available in its workspace; its export is not part of this release.
+
 ## 0.21 - Swipe serving
 
 - Replaced the moving timing bar and placement buttons with an upward court swipe. Angle sets placement, length sets depth and swipe speed sets pace. The landing target warns about out-of-box intent; no random fault roll is added.

@@ -40,3 +40,10 @@ Swipe upward anywhere on court to serve. Angle the swipe to move the landing tar
 Serve practice now scores real landings (percentage in), with no career XP. In-box personal best is tracked separately; the older timing-drill record is preserved in the save.
 
 Interaction reference: Apple's Tennis Clash guide, https://apps.apple.com/nz/iphone/story/id1500619989 . TenAce's deterministic targeting and gesture tuning are its own implementation.
+
+
+## 0.22 character motion
+
+The sculpted-player playtest now includes a closed-hand corrective, aligned grip and distinct tennis motion curves in `tennis-motion.js`. The studio adds slow motion, flat/slice shots, a contact-ball visualization and hand inspection. Original GLB bytes are preserved; instance geometry is corrected once on construction, keeping UVs and skin weights.
+
+The generated Meshy serve is still separate. This release uses authored pose curves with runtime contact solving, not a motion-capture library. The player retains a fixed appearance pending modular customization.

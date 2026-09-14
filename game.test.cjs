@@ -224,7 +224,7 @@ test('auto graphics reduce rendering cost after sustained delays; manual selecti
 test('menus render less often and a long active-frame stall pauses safely',()=>{
  let renders=0;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(){renders++},dispose(){}})});
  for(let i=0;i<60;i++)game.tick();assert.ok(renders<12,'idle previews do not render at full frame rate');
- game.ids.rallyPractice.onclick();game.tick(400);assert.ok(game.ids.paused.classList.contains('show'));assert.equal(game.ids.oScore.textContent,'0');
+ game.ids.rallyPractice.onclick();game.runUntil(()=>game.ids.rallyLabel.textContent.includes('Feed 1/12'));game.tick(400);assert.ok(game.ids.paused.classList.contains('show'));assert.equal(game.ids.oScore.textContent,'0');
 });
 test('ball travel remains consistent at 60 and 30 fps',()=>{
  function sample(ms){let state;const game=boot(new Map(),false,.5,{create:()=>({resize(){},render(s){state={x:s.ball.x,y:s.ball.y}},dispose(){}})});game.ids.rallyPractice.onclick();for(let t=0;t<1280;t+=ms)game.tick(ms);return state;}
@@ -270,4 +270,10 @@ test('serve swipe previews intent, cancels safely and launches once after a paus
  game.ids.pauseBtn.onclick();const progress=state.serveProgress;game.tick(1000);assert.equal(state.serveProgress,progress);game.ids.resumeBtn.onclick();for(let i=0;i<200;i++)game.tick();
  game.runUntil(()=>contacts===1);assert.ok(state.ball.active);const landing=require('./physics.js').landing(state.ball);assert.ok(Math.abs(landing.x-target.x)<1e-6);assert.ok(Math.abs(landing.y-target.y)<1e-6);
  game.ids.leaveBtn.onclick();for(let i=0;i<200;i++)game.tick();assert.equal(contacts,1);
+});
+
+test('asset loading before a serve does not force an unnecessary pause',()=>{
+ const game=boot();game.ids.startBtn.onclick();game.tick(500);assert.equal(game.ids.paused.classList.contains('show'),false);
+ game.runUntil(()=>game.ids.serveUI.classList.contains('show'));game.tick(800);assert.equal(game.ids.paused.classList.contains('show'),false);
+ game.ids.tapServe.onclick();game.tick(400);assert.equal(game.ids.paused.classList.contains('show'),true);
 });

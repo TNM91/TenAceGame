@@ -69,3 +69,13 @@ test('serve windup meets the same overhead contact used at ball launch',async()=
  rig.pose(p,.6,0,event);const contact=rig.root.getObjectByName('RacketContact').getWorldPosition(new T.Vector3());
  assert.ok(contact.distanceTo(event.point)<.025);assert.ok(before.distanceTo(contact)<.005,'serve snapped at release');rig.dispose();
 });
+
+test('grip corrective closes all finger-weight regions without changing the source sculpt',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js'),src=await assets();let original;src.character.scene.traverse(o=>{if(o.isSkinnedMesh)original=o;});const before=original.geometry.attributes.position.array.slice(),normals=original.geometry.attributes.normal.array.slice();
+ const rig=createTennisPlayer({},src);let sculpt;rig.root.traverse(o=>{if(o.isSkinnedMesh)sculpt=o;});assert.notEqual(sculpt.geometry,original.geometry);assert.deepEqual(original.geometry.attributes.position.array,before);
+ let changed=0;for(let i=0;i<before.length;i+=3){const p=sculpt.geometry.attributes.position.array;if(p[i]!==before[i]||p[i+1]!==before[i+1]||p[i+2]!==before[i+2])changed++;else assert.deepEqual(Array.from(sculpt.geometry.attributes.normal.array.slice(i,i+3)),Array.from(normals.slice(i,i+3)));}
+ assert.ok(changed>500&&changed<2000,'corrective must be confined to the full hand');
+ const inverse=rig.bones.RightHand.matrixWorld.clone().invert(),indices=new Set();rig.bones.RightHand.traverse(b=>{const i=sculpt.skeleton.bones.indexOf(b);if(i>=0)indices.add(i);});
+ for(let i=0;i<sculpt.geometry.attributes.position.count;i++){let weight=0;for(let k=0;k<4;k++)if(indices.has(sculpt.geometry.attributes.skinIndex.getComponent(i,k)))weight+=sculpt.geometry.attributes.skinWeight.getComponent(i,k);if(weight>.95){const point=new T.Vector3().fromBufferAttribute(sculpt.geometry.attributes.position,i).applyMatrix4(sculpt.matrixWorld).applyMatrix4(inverse);assert.ok(point.y<.14,'a fingertip was left extended');}}
+ rig.dispose();
+});

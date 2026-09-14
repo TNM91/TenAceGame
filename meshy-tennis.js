@@ -1,6 +1,8 @@
 import * as T from './vendor/three.module.min.js';
 import {createCharacterCandidate,loadCharacterCandidate} from './meshy-character.js';
 export {loadCharacterCandidate};
+import {readyPose,strokes,sampleServe} from './tennis-motion.js';
+import {closeRacketHand,gripOffset,handGripRotation} from './grip-corrective.js?v=0.22.1';
 const v=(x,y,z)=>new T.Vector3(x,y,z),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
 
@@ -29,16 +31,18 @@ export function createTennisPlayer(look={},source){
  // Each court/portrait instance owns the resources disposed by the renderer.
  model.traverse(o=>{if(o.isMesh){o.geometry=o.geometry.clone();o.material=o.material.clone();for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(o.material[key])o.material[key]=o.material[key].clone();}});
  candidate.setMode('stand');const bones={};model.traverse(o=>{if(o.isBone)bones[o.name]=o;});
+ closeRacketHand(model);
  const racket=new T.Group();racket.name='Racket';root.add(racket);
+ const equipment=new T.Group();equipment.position.copy(gripOffset);racket.add(equipment);
  const material=new T.MeshStandardMaterial({color:look.racket||'#c8ef66',metalness:.25,roughness:.4});
- const rim=new T.Mesh(new T.TorusGeometry(.16,.013,8,40),material);rim.position.y=.38;rim.scale.y=1.3;racket.add(rim);
- const contact=new T.Object3D();contact.name='RacketContact';contact.position.y=.38;racket.add(contact);
- const grip=new T.Mesh(new T.CylinderGeometry(.018,.021,.20,12),new T.MeshStandardMaterial({color:'#132432'}));grip.position.y=.03;racket.add(grip);
- for(const sign of [-1,1]){const shaft=new T.Mesh(new T.CylinderGeometry(.009,.009,.18,8),material);shaft.position.set(sign*.04,.19,0);shaft.rotation.z=-sign*.45;racket.add(shaft);}
+ const rim=new T.Mesh(new T.TorusGeometry(.16,.013,8,40),material);rim.position.y=.38;rim.scale.y=1.3;equipment.add(rim);
+ const contact=new T.Object3D();contact.name='RacketContact';contact.position.y=.38;equipment.add(contact);
+ const grip=new T.Mesh(new T.CylinderGeometry(.018,.021,.20,12),new T.MeshStandardMaterial({color:'#132432'}));grip.position.y=.03;equipment.add(grip);
+ for(const sign of [-1,1]){const shaft=new T.Mesh(new T.CylinderGeometry(.009,.009,.18,8),material);shaft.position.set(sign*.04,.19,0);shaft.rotation.z=-sign*.45;equipment.add(shaft);}
  const points=[];for(let i=-5;i<=5;i++){const x=i*.026,y=Math.sqrt(.16*.16-x*x)*1.3;points.push(v(x,.38-y,0),v(x,.38+y,0));const yy=i*.034,xx=Math.sqrt(.16*.16-(yy/1.3)**2);points.push(v(-xx,.38+yy,0),v(xx,.38+yy,0));}
- racket.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(points),new T.LineBasicMaterial({color:'#edf6e5',transparent:true,opacity:.7})));
+ equipment.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(points),new T.LineBasicMaterial({color:'#edf6e5',transparent:true,opacity:.7})));
  const feet={Left:{},Right:{}};
- let priorNear=null,priorX=null,stride=0,lastEvent=null,contactTurn=0,turn=0;
+ let priorNear=null,priorX=null,stride=0,lastEvent=null,contactTurn=0,turn=0,lastLoad=0,contactLoad=0;
  // Apply torso turns in model space rather than assuming imported bone axes.
  function twist(bone,amount){
   const axis=v(0,1,0).applyQuaternion(root.getWorldQuaternion(new T.Quaternion())).applyQuaternion(bone.parent.getWorldQuaternion(new T.Quaternion()).invert());
@@ -52,12 +56,16 @@ export function createTennisPlayer(look={},source){
   const run=p.preview==='run'?1:clamp(Math.abs(dx)/Math.max(dt,.001)*2,0,1),charge=clamp(p.charge||0,0,1),age=event?time-event.time:10;
   const active=event&&age>=0&&age<.85,load=charge;
   const point=event?root.worldToLocal(event.point.clone()):v(-.4,1.1,.3),back=point.x>0;
-  const follow=active?Math.sin(Math.PI*ease(age/.85)):0;
-  if(active&&event!==lastEvent){contactTurn=turn;lastEvent=event;}
-  turn=active?contactTurn*(1-ease(age/.25))+(back?-.42:.42)*follow:-load*.3;
-  bones.Hips.position.y-=.105+load*.035;root.updateMatrixWorld(true);
+  const follow=active?Math.sin(Math.PI*ease(age/.85)):0,stroke=strokes[event?.shot]||strokes.topspin,servePose=p.serve?sampleServe(p.serveProgress??load):null;
+  const readyHand=v(...readyPose.hand),readyDirection=v(...readyPose.racket).normalize();
+  if(active&&event!==lastEvent){contactTurn=turn;contactLoad=lastLoad;lastEvent=event;}
+  turn=active?contactTurn*(1-ease(age/.25))+(back?-stroke.turn:stroke.turn)*follow:servePose?servePose.turn:-load*.44;
+  bones.Hips.position.y-=.105+(active?contactLoad*(1-ease(age/.28)):load)*.035;lastLoad=load;
+  bones.Hips.position.y+=servePose?servePose.lift:active&&event.shot==='serve'?.075*(1-ease(age/.28)):0;
+  bones.Hips.position.x+=(back?-.028:.028)*follow;root.updateMatrixWorld(true);
   twist(bones.Spine02,turn*.3);twist(bones.Spine01,turn*.3);twist(bones.Spine,turn*.4);twist(bones.neck,-turn*.65);
   const world=point=>root.localToWorld(point.clone());
+ const wristFor=(point,direction)=>point.clone().sub(gripOffset.clone().add(v(0,.38,0)).applyQuaternion(new T.Quaternion().setFromUnitVectors(v(0,1,0),direction)));
   for(const [side,sign] of [['Left',1],['Right',-1]]){
    const foot=bones[side+'Foot'],footQ=foot.getWorldQuaternion(new T.Quaternion()),state=feet[side];
    const phase=(stride/(Math.PI*2)+(sign>0?.5:0))%1,swing=run>.02&&phase>.58;
@@ -78,22 +86,28 @@ export function createTennisPlayer(look={},source){
    foot.quaternion.copy(foot.parent.getWorldQuaternion(new T.Quaternion()).invert().multiply(footQ));foot.updateWorldMatrix(false,true);
 
   }
-  let target=v(-.22,1.05,.30).lerp(v(-.45,1.18,-.12),load),left=v(.23,1.1,.3),direction=v(0,1,0);
+  let target=readyHand.clone().lerp(v(-.45,1.18,-.12),load),left=v(...readyPose.support).lerp(v(.25,1.18,.38),load),direction=readyDirection.clone();
   if(p.serve){
-   const t=clamp(p.serveProgress??load,0,1),lift=ease(t/.45),drive=ease((t-.65)/.35);
-   target.lerp(v(-.22,1.36,-.16),lift);left.lerp(v(.15,1.64,.16),lift).lerp(v(.23,1.1,.3),drive);
+   const t=clamp(p.serveProgress??load,0,1),drive=ease((t-.65)/.35);
+   target.set(...servePose.hand);left.set(...servePose.support);
    // Authored trophy pose flows into the same overhead contact used by the ball.
    const overhead=v(-.025*10/1.22,.158*14/1.22,.015*18/1.22),shoulder=root.worldToLocal(bones.RightArm.getWorldPosition(v()));
    const hitDirection=overhead.clone().sub(shoulder).normalize();
-   target.lerp(overhead.addScaledVector(hitDirection,-.38),drive);direction.lerp(hitDirection,drive).normalize();
+   target.lerp(wristFor(overhead,hitDirection),drive);direction.lerp(hitDirection,drive).normalize();
+  }
+  if(event&&!p.serve&&age<0&&age>-.18){
+   const approach=ease((age+.18)/.18),toward=point.clone().sub(root.worldToLocal(bones.RightArm.getWorldPosition(v()))).normalize();
+   target.lerp(wristFor(point,toward),approach);direction.lerp(toward,approach).normalize();
   }
   if(active){
    const shoulder=root.worldToLocal(bones.RightArm.getWorldPosition(v()));
    direction.copy(point).sub(shoulder).normalize();
-   const hit=point.clone().addScaledVector(direction,-.38),finish=v(back?-.25:.25,event.shot==='serve'?.85:event.shot==='slice'?.9:event.shot==='flat'?1.1:1.35,.35);
+   const hit=wristFor(point,direction),finish=v(...stroke.finish),arc=v(...stroke.arc);if(back){finish.x=-finish.x;arc.x=-arc.x;}
    const recovery=ease((age-.48)/.37),sweep=ease((age-.065)/.415);
-   target.copy(hit).lerp(finish,sweep).lerp(v(-.22,1.05,.30),recovery);
-   direction.lerp(v(0,1,0),sweep).normalize();
+   target.copy(hit).multiplyScalar((1-sweep)**2).addScaledVector(arc,2*(1-sweep)*sweep).addScaledVector(finish,sweep*sweep).lerp(readyHand,recovery);
+   const finishDirection=v(...stroke.face);if(back)finishDirection.x=-finishDirection.x;
+   const q=new T.Quaternion().setFromUnitVectors(v(0,1,0),direction),endQ=new T.Quaternion().setFromUnitVectors(v(0,1,0),finishDirection.normalize());
+   q.slerp(endQ,sweep).slerp(new T.Quaternion().setFromUnitVectors(v(0,1,0),readyDirection),recovery);direction.set(0,1,0).applyQuaternion(q);
    if(back)left.lerp(target.clone().add(v(.05,-.06,0)),1-recovery);
   }
   arm(bones.RightArm,bones.RightForeArm,bones.RightHand,world(target),world(v(-.65,.9,.12)));
@@ -101,7 +115,7 @@ export function createTennisPlayer(look={},source){
   racket.position.copy(root.worldToLocal(bones.RightHand.getWorldPosition(v())));
   racket.quaternion.setFromUnitVectors(v(0,1,0),direction);
   // Keep the racket anchored at the actual wrist; unreachable balls never detach it.
-  const hand=bones.RightHand,desired=root.getWorldQuaternion(new T.Quaternion()).multiply(racket.quaternion);
+  const hand=bones.RightHand,desired=root.getWorldQuaternion(new T.Quaternion()).multiply(racket.quaternion).multiply(handGripRotation);
   hand.quaternion.copy(hand.parent.getWorldQuaternion(new T.Quaternion()).invert().multiply(desired));
   root.updateMatrixWorld(true);
  }
