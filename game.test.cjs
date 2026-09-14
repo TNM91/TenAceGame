@@ -277,3 +277,15 @@ test('asset loading before a serve does not force an unnecessary pause',()=>{
  game.runUntil(()=>game.ids.serveUI.classList.contains('show'));game.tick(800);assert.equal(game.ids.paused.classList.contains('show'),false);
  game.ids.tapServe.onclick();game.tick(400);assert.equal(game.ids.paused.classList.contains('show'),true);
 });
+
+test('serve hold stays neutral while touch feedback clears on cancellation',()=>{
+ let state;const engine={create:()=>({resize(){},render(s){state=s},contact(){},dispose(){}})};
+ const game=boot(new Map(),false,.5,engine);game.ids.startBtn.onclick();game.runUntil(()=>game.ids.serveUI.classList.contains('show'));
+ game.ids.game.onpointerdown({pointerId:1,clientX:180,clientY:420});for(let i=0;i<40;i++)game.tick();
+ assert.equal(state.player.charge,0);assert.ok(game.ids.serveUI.classList.contains('aiming'));
+ game.ids.game.onpointermove({pointerId:1,clientX:210,clientY:320});game.tick();assert.ok(state.aim);
+ game.ids.game.onpointercancel({pointerId:1});game.tick();assert.equal(game.ids.serveUI.classList.contains('aiming'),false);assert.ok(game.ids.serveUI.classList.contains('show'));
+ game.ids.rallyPractice.onclick();game.runUntil(()=>game.ids.rallyLabel.textContent.includes('Feed 1/12'));
+ game.ids.game.onpointerdown({pointerId:2,clientX:180,clientY:300});game.tick();game.ids.game.onpointermove({pointerId:2,clientX:180,clientY:380});game.tick();assert.equal(state.player.shot,'slice');assert.ok(state.player.charge>0);
+ game.ids.pauseBtn.onclick();game.tick();assert.equal(state.player.charge,0);assert.equal(game.ids.serveUI.classList.contains('aiming'),false);
+});

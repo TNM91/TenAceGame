@@ -36,7 +36,7 @@ canvas{display:block;width:100%;height:100%;background:#4e895b}
 .toast{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:#03111de8;border:1px solid #3b596e;border-radius:999px;padding:7px 11px;font-size:10px;font-weight:850;text-transform:uppercase;letter-spacing:.05em;opacity:0;transition:.15s opacity;white-space:nowrap;z-index:3}
 .toast.show{opacity:1}
 #serveUI{position:absolute;inset:0;display:none;z-index:4;align-items:flex-end;justify-content:center;padding-bottom:19px;background:linear-gradient(180deg,transparent 65%,rgba(2,8,13,.38))}
-#serveUI.show{display:flex}
+#serveUI.show{display:flex}#serveUI.aiming .servebox{visibility:hidden}
 .servebox{width:88%;background:#071b2bea;border:1px solid #36546c;border-radius:18px;padding:10px 12px;text-align:center}
 .serveTitle{font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.09em}
 .tossbar{height:14px;background:#03101a;border-radius:999px;margin:8px 0 5px;position:relative;overflow:hidden;border:1px solid #2d4a60}
@@ -190,7 +190,7 @@ header{background:linear-gradient(#03172d,#082943);padding:8px 10px 6px;border-b
 
 <div id="intro" class="modal show">
  <div class="panel">
-   <div class="eyebrow">Season 0.22 · Build your game</div>
+   <div class="eyebrow">Season 0.23 · Build your game</div>
    <h1 id="introTitle">Jax owns these courts.</h1>
    <div class="copy">First to 7. Build your attributes, unlock rivals, and choose your specialization at level 3.</div>
    <div id="careerSummary" class="careerline"></div>
@@ -509,9 +509,9 @@ document.getElementById('tapServe').onclick=()=>serve();
 
 function pos(e){const r=C.getBoundingClientRect();return{x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height,t:performance.now()}}
 function readSwing(b){const dx=b.x-swipe.x,dy=b.y-swipe.y;return swipe.serving?Technique.serveGesture({dx,dy,swipeMs:Math.max(1,b.t-(swipe.motionAt??swipe.t)),side:serviceSide,power:fx.power}):Technique.gesture({dx,dy,heldMs:b.t-swipe.t,swipeMs:Math.max(1,b.t-(swipe.motionAt??b.t))});}
-C.onpointerdown=e=>{if(swipe||e.isPrimary===false||e.button>0)return;if(point&&!serveMotion&&!paused){C.setPointerCapture(e.pointerId);bufferedHit=null;swipe={...pos(e),id:e.pointerId,motionAt:null,serving:servePending};aimPreview=null;}};
+C.onpointerdown=e=>{if(swipe||e.isPrimary===false||e.button>0)return;if(point&&!serveMotion&&!paused){C.setPointerCapture(e.pointerId);bufferedHit=null;swipe={...pos(e),id:e.pointerId,motionAt:null,trail:[],serving:servePending};aimPreview=null;}};
 function ownsSwipe(e){return swipe&&(e.pointerId===undefined||e.pointerId===swipe.id)}
-C.onpointermove=e=>{if(!ownsSwipe(e)||paused)return;const b=pos(e);if(swipe.motionAt===null&&Math.hypot(b.x-swipe.x,b.y-swipe.y)>.02)swipe.motionAt=b.t;const g=readSwing(b);swipe.preview=g;aimPreview=g.valid?g.target:null;};
+C.onpointermove=e=>{if(!ownsSwipe(e)||paused)return;const b=pos(e);if(swipe.motionAt===null&&Math.hypot(b.x-swipe.x,b.y-swipe.y)>.02)swipe.motionAt=b.t;swipe.trail.push(b);if(swipe.trail.length>24)swipe.trail.shift();const g=readSwing(b);swipe.preview=g;aimPreview=g.valid?g.target:null;};
 C.onpointercancel=e=>{if(ownsSwipe(e)){swipe=null;aimPreview=null;bufferedHit=null}};
 C.onlostpointercapture=C.onpointercancel;
 C.onpointerup=e=>{if(!ownsSwipe(e))return;const b=pos(e),g=readSwing(b),serving=swipe.serving;swipe=null;aimPreview=null;if(!point||paused)return;if(serving){if(g.valid)serve(g);else say('Swipe up to serve · Tap cancels',700);return;}if(!g.valid){bufferedHit=null;return say('Swing cancelled · Swipe to hit',500);}playerHit(g.dx,g.dy,Math.hypot(g.dx,g.dy),g.charge*900,g);};
@@ -605,6 +605,20 @@ function drawEffects(){
  if(impact){ctx.save();ctx.globalAlpha=impact.life;ctx.strokeStyle=impact.color;ctx.lineWidth=2;const radius=5+(1-impact.life)*22;for(let i=0;i<6;i++){const a=i*Math.PI/3;ctx.beginPath();ctx.moveTo(impact.x+Math.cos(a)*radius,impact.y+Math.sin(a)*radius);ctx.lineTo(impact.x+Math.cos(a)*(radius+6),impact.y+Math.sin(a)*(radius+6));ctx.stroke()}ctx.restore()}
  if(celebration>0){ctx.save();ctx.globalAlpha=Math.min(1,celebration);for(let i=0;i<18;i++){ctx.fillStyle=i%2?'#b9ed62':'#f8daa1';const x=W*.5+Math.sin(i*13)*(1.8-celebration)*W*.45,y=H*.3+(1.8-celebration)*H*.22+Math.cos(i*9)*30;ctx.fillRect(x,y,3,6)}ctx.restore()}
 }
+function drawGesture(t){
+ if(!swipe||paused)return;
+ const g=swipe.preview,valid=g?.valid,color=g?.inBox===false?'#ff947e':({slice:'#7ee8f2',flat:'#ffdb79',lob:'#c5a1ff',topspin:'#baff72'}[g?.shot]||'#baff72');
+ const power=swipe.serving?(g?.pace||0):Math.min(1,(t-swipe.t)/900),start={x:swipe.x*W,y:swipe.y*H},last=swipe.trail.at(-1),end=last?{x:last.x*W,y:last.y*H}:start;
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#041824aa';ctx.lineWidth=7;
+ ctx.beginPath();ctx.moveTo(start.x,start.y);for(const p of swipe.trail)ctx.lineTo(p.x*W,p.y*H);ctx.stroke();
+ ctx.strokeStyle=color;ctx.lineWidth=3;ctx.stroke();
+ ctx.beginPath();ctx.arc(start.x,start.y,22,0,Math.PI*2);ctx.strokeStyle='#ffffff44';ctx.lineWidth=3;ctx.stroke();
+ if(power>0){ctx.beginPath();ctx.arc(start.x,start.y,22,-Math.PI/2,-Math.PI/2+power*Math.PI*2);ctx.strokeStyle=color;ctx.stroke();}
+ if(valid){const a=Math.atan2(end.y-start.y,end.x-start.x);ctx.beginPath();ctx.moveTo(end.x-Math.cos(a-.55)*13,end.y-Math.sin(a-.55)*13);ctx.lineTo(end.x,end.y);ctx.lineTo(end.x-Math.cos(a+.55)*13,end.y-Math.sin(a+.55)*13);ctx.strokeStyle=color;ctx.stroke();}
+ const label=swipe.serving?(valid?(g.inBox?'SERVE':'OUT · ADJUST'):'SWIPE UP'):(valid?g.shot.toUpperCase():'LOAD')+' · '+Math.round(power*100)+'%';
+ const x=Math.max(72,Math.min(W-72,end.x)),y=Math.max(26,Math.min(H-16,end.y-38));
+ ctx.font='700 11px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#041824ed';ctx.fillRect(x-68,y-12,136,24);ctx.fillStyle=color;ctx.fillText(label,x,y);ctx.restore();
+}
 function drawPortrait(id,look,large){const canvas=document.getElementById(id),c=canvas.getContext('2d'),w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;const ratio=Math.min(devicePixelRatio||1,2),key=JSON.stringify(look)+w+':'+h+':'+ratio+':'+portraitVersion;if(canvas.dataset.drawn===key)return;canvas.dataset.drawn=key;canvas.width=Math.round(w*ratio);canvas.height=Math.round(h*ratio);if(view3D?.portrait){try{view3D.portrait(canvas,look,large);return;}catch{}}c.setTransform(ratio,0,0,ratio,0,0);c.clearRect(0,0,w,h);Graphics.person(c,w*.48,h*.92,large?h/126:h/122,look,{time:0,run:0});}
 function hudPortrait(id,look){drawPortrait(id,look,false);}
 
@@ -624,8 +638,9 @@ function loop(t){const elapsed=Math.max(0,(t-last)/1000);last=t;
  if(!paused){const steps=Math.max(1,Math.ceil(dt/.016));for(let i=0;i<steps;i++)update(dt/steps,t-dt*1000+(i+1)*dt/steps*1000);}
  // Render menu previews at 10 fps instead of running a full-rate hidden match.
  if((paused||mode==='home'||matchFinished)&&t-lastPaint<100){requestAnimationFrame(loop);return;}lastPaint=t;
- if(view3D){ctx.clearRect(0,0,W,H);try{view3D.render({time:animTime,dt,theme:rival.theme,ball,serving:servePending||!!serveMotion,serveProgress:serveMotion?Math.min(1,serveMotion.elapsed/.6):0,aim:aimPreview||(servePending?Physics.serveTarget('body',serviceSide):null),landing:ball.active?Physics.landing(ball):null,celebration,player:{...player,look:career.character,near:true,swing:playerSwing,side:swingSide,shot:selected,charge:swipe?Math.min(1,(t-swipe.t)/900):0,serve:!!serveMotion,serveProgress:serveMotion?Math.min(1,serveMotion.elapsed/.6):0,ready:ball.active&&ball.last==='opp',celebrate:celebration>0},opp:{...opp,look:rivalLook,swing:oppSwing,shot:ball.last==='opp'?ball.kind:'topspin',ready:ball.active&&ball.last==='player'}});}catch{fallback3D();}}
+ if(view3D){ctx.clearRect(0,0,W,H);try{view3D.render({time:animTime,dt,theme:rival.theme,ball,serving:servePending||!!serveMotion,serveProgress:serveMotion?Math.min(1,serveMotion.elapsed/.6):0,aim:aimPreview||(servePending?Physics.serveTarget('body',serviceSide):null),landing:ball.active?Physics.landing(ball):null,celebration,player:{...player,look:career.character,near:true,swing:playerSwing,side:swingSide,shot:swipe?.preview?.shot||selected,charge:swipe&&!swipe.serving?Math.min(1,(t-swipe.t)/900):0,serve:!!serveMotion,serveProgress:serveMotion?Math.min(1,serveMotion.elapsed/.6):0,ready:ball.active&&ball.last==='opp',celebrate:celebration>0},opp:{...opp,look:rivalLook,swing:oppSwing,shot:ball.last==='opp'?ball.kind:'topspin',ready:ball.active&&ball.last==='player'}});}catch{fallback3D();}}
  else{drawCourt();drawPlayer(opp,false);Graphics.net(ctx,court);drawPlayer(player,true);drawBall();drawEffects();}
+ drawGesture(t);serveUI.classList.toggle('aiming',!!swipe);
  document.getElementById('aimHint').textContent=paused||mode==='home'||servePending?'':aimPreview?'Swipe toward the target · Release at contact':ball.active&&ball.last==='opp'?(view3D?'Landing ring · Let it bounce, then swing':'Let it bounce, then swing'):'Recover to center · Prepare for the return';
  document.getElementById('contactCue').textContent=paused||!ball.active||ball.last!=='opp'?'':Physics.canHit(ball,'player')&&ball.y>=player.y-.19?'RELEASE · Swing now':guided?(swipe?'POWER LOADING · Swipe at contact':'HOLD TO LOAD · Wait for the bounce'):'PREPARE · Wait for the bounce';
  const charge=swipe?(swipe.serving?(swipe.preview?.pace||0):Math.min(1,(t-swipe.t)/900)):0;

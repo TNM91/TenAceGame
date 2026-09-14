@@ -1,3 +1,10 @@
+## 0.23 - Touch feedback on court
+
+- Added a bounded swipe trail, directional arrow, hold-power ring and shot label at the touch point in both court views. Serve intent turns coral when the target is out; holding alone does not add serve power.
+- Serve instructions move out of the way while aiming and return when a gesture is cancelled.
+- Fixed the sculpted player's pre-serve hold incorrectly loading the rally stance. The renderer now receives the shot being previewed.
+- Verified pointer cancellation, pause cleanup, neutral serve holds and live shot preview; 79 tests pass.
+
 ## 0.22 - Closed grip and tennis motion set
 
 - Reshaped the actual sculpt's right-hand vertices into a closed grip and aligned the handle across the palm. Includes fingertip end-joint weights; the original GLB and unaffected body normals remain intact.
