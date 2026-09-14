@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import {loadCharacterCandidate,createTennisPlayer} from './meshy-tennis.js?v=0.25';
+import {loadCharacterCandidate,createTennisPlayer} from './meshy-tennis.js?v=0.28.1';
 import {GLTFLoader} from './vendor/GLTFLoader.js';
 import {createCharacterCandidate} from './meshy-character.js?v=0.26';
 const canvas=document.getElementById('stage'),status=document.getElementById('status');

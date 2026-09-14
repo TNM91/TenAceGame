@@ -115,3 +115,11 @@ for(const file of ['player-serve.glb','player-serve-v2.glb','player-footwork.glb
  rig.sample(.8);const pose=hand.matrixWorld.clone();rig.sample(.8);assert.deepEqual(hand.matrixWorld.elements,pose.elements);rig.dispose();
  t.diagnostic(JSON.stringify({duration:rig.duration,maxHipRotationDegrees:maxTurn*180/Math.PI,maxHandAboveHead}));
 });
+
+test('backhand top hand tracks the racket through contact and early follow-through',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js');
+ for(const near of [false,true]){const rig=createTennisPlayer({},await assets()),p={x:.5,y:.5,near};
+ const event={time:0,shot:'topspin',point:new T.Vector3(near?-.42:.42,1.38,near?-.3:.3)};
+ for(let i=0;i<=28;i++){rig.pose(p,i/60,1/60,event);const actual=rig.bones.LeftHand.getWorldPosition(new T.Vector3()),target=rig.root.getObjectByName('SupportWristTarget').getWorldPosition(new T.Vector3());assert.ok(actual.distanceTo(target)<.025,'top hand missed grip at '+i+' by '+actual.distanceTo(target));}
+ rig.pose(p,.8499,0,event);const before=rig.bones.LeftHand.getWorldPosition(new T.Vector3());rig.pose(p,.8501,0,event);assert.ok(before.distanceTo(rig.bones.LeftHand.getWorldPosition(new T.Vector3()))<.003,'support hand snapped at recovery');rig.dispose();}
+});

@@ -1,3 +1,10 @@
+## 0.28 - Connected two-handed backhand
+
+- Supporting wrist follows the racket handle position and orientation through backhand contact, then releases during recovery. Slice and serve retain their free supporting arm.
+- Follow-through keeps the shared handle within both arms' reach instead of stretching one hand away. Ball contact remains unchanged.
+- Verified support-hand tracking on both court sides, recovery continuity and existing contact/skin deformation checks. The left hand still has the source model's open fingers; this is arm-and-wrist coordination, not complete finger grip animation.
+- Reference: USTA, Driving the Two-Handed Backhand: https://www.usta.com/en/home/improve/tips-and-instruction/national/improve-your-tennis-game--the-driving-force-in-your-two-handed-b.html
+
 ## 0.27 - Replacement motion assessment
 
 - Generated and imported a second serve and lateral-footwork candidate; added a selector for all three raw clips in the animation studio.

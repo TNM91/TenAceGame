@@ -35,6 +35,7 @@ export function createTennisPlayer(look={},source){
  closeRacketHand(model);applySculptKit(model,look);
  const racket=new T.Group();racket.name='Racket';root.add(racket);
  const equipment=new T.Group();equipment.position.copy(gripOffset);racket.add(equipment);
+ const supportGrip=new T.Object3D();supportGrip.name='SupportWristTarget';supportGrip.position.set(-.15,.097,0);racket.add(supportGrip);
  const material=new T.MeshStandardMaterial({color:look.racket||'#c8ef66',metalness:.25,roughness:.4});
  const frameWidth=look.frame==='power'?1.16:look.frame==='control'?.9:1,frameHeight=look.frame==='control'?1.08:1;
  const head=new T.Group();head.position.y=.38;head.scale.set(frameWidth,frameHeight,1);equipment.add(head);
@@ -115,12 +116,27 @@ export function createTennisPlayer(look={},source){
    const finishDirection=v(...stroke.face);if(back)finishDirection.x=-finishDirection.x;
    const q=new T.Quaternion().setFromUnitVectors(v(0,1,0),direction),endQ=new T.Quaternion().setFromUnitVectors(v(0,1,0),finishDirection.normalize());
    q.slerp(endQ,sweep).slerp(new T.Quaternion().setFromUnitVectors(v(0,1,0),readyDirection),recovery);direction.set(0,1,0).applyQuaternion(q);
-   if(back)left.lerp(target.clone().add(v(.05,-.06,0)),1-recovery);
+  }
+  if(active&&back&&event.shot!=='slice'&&event.shot!=='serve'&&age>.065){
+   // Keep the shared handle inside both arm reach envelopes during the finish.
+   const q=new T.Quaternion().setFromUnitVectors(v(0,1,0),direction),offset=supportGrip.position.clone().applyQuaternion(q).multiplyScalar(root.scale.x).applyQuaternion(root.quaternion),desired=world(target);
+   for(let pass=0;pass<4;pass++)for(const side of ['Right','Left']){
+    const a=bones[side+'Arm'].getWorldPosition(v()),b=bones[side+'ForeArm'].getWorldPosition(v()),c=bones[side+'Hand'].getWorldPosition(v()),radius=a.distanceTo(b)+b.distanceTo(c)-.003;
+    const center=side==='Left'?a.sub(offset):a,delta=desired.clone().sub(center);if(delta.length()>radius)desired.copy(center).add(delta.setLength(radius));
+   }
+   target.lerp(root.worldToLocal(desired),ease((age-.065)/.12)*(1-ease((age-.48)/.37)));
   }
   arm(bones.RightArm,bones.RightForeArm,bones.RightHand,world(target),world(v(-.65,.9,.12)));
-  arm(bones.LeftArm,bones.LeftForeArm,bones.LeftHand,world(left),world(v(.65,.9,.15)));
   racket.position.copy(root.worldToLocal(bones.RightHand.getWorldPosition(v())));
   racket.quaternion.setFromUnitVectors(v(0,1,0),direction);
+  // The top hand follows the actual racket frame, not a fixed world-space offset.
+  const twoHanded=event?.shot!=='slice'&&event?.shot!=='serve';
+  const supportWeight=p.serve?0:active?(back&&twoHanded?1-ease((age-.48)/.37):0):preparation*load;
+  const supportTarget=supportGrip.position.clone().applyQuaternion(racket.quaternion).add(racket.position);
+  left.lerp(supportTarget,supportWeight);
+  arm(bones.LeftArm,bones.LeftForeArm,bones.LeftHand,world(left),world(v(.65,.9,.15)));
+  const topHand=bones.LeftHand,topRotation=root.getWorldQuaternion(new T.Quaternion()).multiply(racket.quaternion).multiply(new T.Quaternion().setFromAxisAngle(v(0,0,1),-Math.PI/2));
+  topHand.quaternion.slerp(topHand.parent.getWorldQuaternion(new T.Quaternion()).invert().multiply(topRotation),supportWeight);
   // Keep the racket anchored at the actual wrist; unreachable balls never detach it.
   const hand=bones.RightHand,desired=root.getWorldQuaternion(new T.Quaternion()).multiply(racket.quaternion).multiply(handGripRotation);
   hand.quaternion.copy(hand.parent.getWorldQuaternion(new T.Quaternion()).invert().multiply(desired));

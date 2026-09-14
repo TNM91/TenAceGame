@@ -97,3 +97,8 @@ Both are available in the studio motion selector. `scripts/extract-motion.py` re
 Use reference-driven motion or a character animator instead of further broad text-only generations. Required references: one complete right-handed serve (toss through recovery), a forehand and two-handed backhand, and a front-view split-step followed by two lateral shuffles each way. Full body including both feet must stay visible.
 
 Acceptance: start/end ready poses with compatible orientation; forward-facing recovery; planted support feet; clear overhead serve contact; no unwanted crossover in shuffle; stable root and editable joint curves. Supply animation-only GLB or FBX on the existing 28-joint Meshy rig, with source frames for contact and foot plants. Integrate contact correction only after the raw clip passes visual review.
+
+## Coaching-reference correction and 0.28 implementation
+Crossover steps are valid for appropriate travel/recovery situations; rotation magnitude alone is not a pass/fail test for tennis strokes. Assess the complete movement, foot contact, balance and recovery against the task. Use USTA two-handed-backhand coaching and LTA Tennis Made Easy as movement references.
+
+The live procedural backhand now ties the supporting wrist to the racket frame, projects the finish into both arm reach envelopes, and blends back to ready. Left finger closure remains outstanding. This is not an imported replacement stroke clip.
