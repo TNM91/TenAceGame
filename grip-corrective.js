@@ -13,8 +13,10 @@ export function closeRacketHand(model,side='RightHand'){
    if(weight<.5)continue;const source=new T.Vector3().fromBufferAttribute(p,i),local=source.clone().applyMatrix4(toHand),original=local.clone();
    const mirror=side==='LeftHand'?-1:1;local.x*=mirror;original.copy(local);
    const thumb=smooth(.018,.045,local.z)*(1-smooth(.11,.14,local.y));
-   if(local.y>.075){const length=local.y-.075,radius=.027,angle=Math.min(3.8,length/radius);
-    const curl=local.clone();curl.y=.075+radius*Math.sin(angle);curl.z+=radius*(1-Math.cos(angle));curl.x=-.013+(curl.x+.013)*(1-.22*smooth(.075,.15,local.y));
+   if(local.y>.075){const length=local.y-.075,angle=length/.038,radial=.028-local.z;
+    // Bend the full finger cross-section around the handle. Translating z alone
+    // flattened the mesh at a 90-degree bend; a hard angle cap merged tip rings.
+    const curl=local.clone();curl.y=.075+radial*Math.sin(angle);curl.z=.028-radial*Math.cos(angle);curl.x=-.013+(curl.x+.013)*(1-.22*smooth(.075,.15,local.y));
     local.lerp(curl,1-thumb);
    }
    const oppose=smooth(.035,.09,original.y)*thumb;

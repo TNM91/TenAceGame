@@ -133,3 +133,11 @@ test('supporting fingers close for backhand and reopen for serve without changin
  assert.ok(count>500,'fingers were not reshaped');rig.pose({...p,serve:true,serveProgress:.4},1,0,null);assert.equal(sculpt.morphTargetInfluences[0],0);rig.pose(p,0,0,{...event,shot:'slice'});assert.equal(sculpt.morphTargetInfluences[0],0);
  src.character.scene.traverse(o=>{if(o.isMesh)assert.equal(o.geometry.morphAttributes.position,undefined);});rig.dispose();other.dispose();
 });
+
+test('curled fingertips retain triangle area instead of collapsing at the curl limit',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js'),src=await assets(),rig=createTennisPlayer({},src);let original,sculpt;src.character.scene.updateMatrixWorld(true);src.character.scene.traverse(o=>{if(o.isSkinnedMesh)original=o;});rig.root.traverse(o=>{if(o.isSkinnedMesh)sculpt=o;});
+ for(const side of ['RightHand','LeftHand']){const hand=src.character.scene.getObjectByName(side),matrix=hand.matrixWorld.clone().invert().multiply(original.matrixWorld),index=original.geometry.index,base=original.geometry.attributes.position,closed=side==='RightHand'?sculpt.geometry.attributes.position:sculpt.geometry.morphAttributes.position[0];let checked=0;
+ const area=points=>points[1].clone().sub(points[0]).cross(points[2].clone().sub(points[0])).length();
+ for(let i=0;i<index.count;i+=3){const ids=[index.getX(i),index.getX(i+1),index.getX(i+2)],before=ids.map(n=>new T.Vector3().fromBufferAttribute(base,n).applyMatrix4(matrix));if(!before.every(p=>p.y>.177&&p.y<.205&&Math.abs(p.x)<.09&&p.z<.018&&p.z>-.06))continue;const a=area(before);if(a<1e-10)continue;const after=ids.map(n=>new T.Vector3().fromBufferAttribute(closed,n).applyMatrix4(matrix));assert.ok(area(after)/a>.02,'fingertip triangle collapsed');checked++;}
+ assert.ok(checked>5,'test must cover fingertip faces');}rig.dispose();
+});

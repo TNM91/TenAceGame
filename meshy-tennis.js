@@ -3,7 +3,7 @@ import {createCharacterCandidate,loadCharacterCandidate} from './meshy-character
 export {loadCharacterCandidate};
 import {applySculptKit} from './sculpt-kit.js';
 import {readyPose,strokes,sampleServe} from './tennis-motion.js';
-import {closeRacketHand,createSupportGrip,gripOffset,handGripRotation} from './grip-corrective.js?v=0.29';
+import {closeRacketHand,createSupportGrip,gripOffset,handGripRotation} from './grip-corrective.js?v=0.30';
 const v=(x,y,z)=>new T.Vector3(x,y,z),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
 

@@ -1,3 +1,9 @@
+## 0.30 - Finger deformation cleanup
+
+- Replaced the capped finger curl with a continuous bend that rotates the finger cross-section, preserving thickness through the curve.
+- Prevents fingertip sections collapsing onto the same angle and removes the 90-degree flattening from the previous deformation.
+- Applies to the fixed racket grip and animated supporting grip. Added actual fingertip triangle-area checks for both hands; existing contact and open/closed transitions remain covered.
+
 ## 0.29 - Supporting-hand grip animation
 
 - Added a left-hand closure shape that blends with backhand support and releases during recovery. Serve tosses and slice strokes retain the open hand.
