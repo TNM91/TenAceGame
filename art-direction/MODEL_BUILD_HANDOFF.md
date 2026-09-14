@@ -102,3 +102,6 @@ Acceptance: start/end ready poses with compatible orientation; forward-facing re
 Crossover steps are valid for appropriate travel/recovery situations; rotation magnitude alone is not a pass/fail test for tennis strokes. Assess the complete movement, foot contact, balance and recovery against the task. Use USTA two-handed-backhand coaching and LTA Tennis Made Easy as movement references.
 
 The live procedural backhand now ties the supporting wrist to the racket frame, projects the finish into both arm reach envelopes, and blends back to ready. Left finger closure remains outstanding. This is not an imported replacement stroke clip.
+
+## 0.29 support-hand closure
+The mirrored left-hand corrective now supplies a morph target rather than permanently closing the free hand. Its weight follows backhand grip support and fades during recovery; serve and slice leave it open. The exported GLB is unchanged. The source has no independently articulated fingers; close-up hand topology and grip intersections still merit artist cleanup.

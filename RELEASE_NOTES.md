@@ -1,3 +1,9 @@
+## 0.29 - Supporting-hand grip animation
+
+- Added a left-hand closure shape that blends with backhand support and releases during recovery. Serve tosses and slice strokes retain the open hand.
+- Closure affects only left-hand weighted vertices; UVs, source geometry, the right-hand corrective and other body vertices are preserved.
+- Tested independent player instances, finite deformed vertices, backhand closure and reopening for serve/slice. This is a mesh-shape blend, not individually articulated finger bones.
+
 ## 0.28 - Connected two-handed backhand
 
 - Supporting wrist follows the racket handle position and orientation through backhand contact, then releases during recovery. Slice and serve retain their free supporting arm.

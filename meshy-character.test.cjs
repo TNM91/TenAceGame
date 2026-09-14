@@ -123,3 +123,13 @@ test('backhand top hand tracks the racket through contact and early follow-throu
  for(let i=0;i<=28;i++){rig.pose(p,i/60,1/60,event);const actual=rig.bones.LeftHand.getWorldPosition(new T.Vector3()),target=rig.root.getObjectByName('SupportWristTarget').getWorldPosition(new T.Vector3());assert.ok(actual.distanceTo(target)<.025,'top hand missed grip at '+i+' by '+actual.distanceTo(target));}
  rig.pose(p,.8499,0,event);const before=rig.bones.LeftHand.getWorldPosition(new T.Vector3());rig.pose(p,.8501,0,event);assert.ok(before.distanceTo(rig.bones.LeftHand.getWorldPosition(new T.Vector3()))<.003,'support hand snapped at recovery');rig.dispose();}
 });
+
+test('supporting fingers close for backhand and reopen for serve without changing other vertices',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js'),src=await assets();
+ const rig=createTennisPlayer({},src),other=createTennisPlayer({},src);let sculpt,second;rig.root.traverse(o=>{if(o.isSkinnedMesh)sculpt=o;});other.root.traverse(o=>{if(o.isSkinnedMesh)second=o;});
+ const p={x:.5,y:.5,near:false},event={time:0,shot:'topspin',point:new T.Vector3(.42,1.38,.3)};rig.pose(p,0,0,event);assert.equal(sculpt.morphTargetInfluences[0],1);assert.equal(second.morphTargetInfluences[0],0);
+ const g=sculpt.geometry,base=g.attributes.position,closed=g.morphAttributes.position[0],w=g.attributes.skinWeight,j=g.attributes.skinIndex,handBones=new Set();rig.bones.LeftHand.traverse(b=>handBones.add(sculpt.skeleton.bones.indexOf(b)));let count=0;
+ for(let i=0;i<base.count;i++){let weight=0;for(let k=0;k<4;k++)if(handBones.has(j.getComponent(i,k)))weight+=w.getComponent(i,k);const a=new T.Vector3().fromBufferAttribute(base,i),b=new T.Vector3().fromBufferAttribute(closed,i);if(weight<.5)assert.deepEqual(a.toArray(),b.toArray());if(a.distanceTo(b)>.001)count++;const posed=sculpt.getVertexPosition(i,new T.Vector3());assert.ok(posed.toArray().every(Number.isFinite));}
+ assert.ok(count>500,'fingers were not reshaped');rig.pose({...p,serve:true,serveProgress:.4},1,0,null);assert.equal(sculpt.morphTargetInfluences[0],0);rig.pose(p,0,0,{...event,shot:'slice'});assert.equal(sculpt.morphTargetInfluences[0],0);
+ src.character.scene.traverse(o=>{if(o.isMesh)assert.equal(o.geometry.morphAttributes.position,undefined);});rig.dispose();other.dispose();
+});

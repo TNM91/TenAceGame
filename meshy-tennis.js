@@ -3,7 +3,7 @@ import {createCharacterCandidate,loadCharacterCandidate} from './meshy-character
 export {loadCharacterCandidate};
 import {applySculptKit} from './sculpt-kit.js';
 import {readyPose,strokes,sampleServe} from './tennis-motion.js';
-import {closeRacketHand,gripOffset,handGripRotation} from './grip-corrective.js?v=0.22.1';
+import {closeRacketHand,createSupportGrip,gripOffset,handGripRotation} from './grip-corrective.js?v=0.29';
 const v=(x,y,z)=>new T.Vector3(x,y,z),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 const ease=x=>{x=clamp(x,0,1);return x*x*(3-2*x);};
 
@@ -32,7 +32,7 @@ export function createTennisPlayer(look={},source){
  // Each court/portrait instance owns the resources disposed by the renderer.
  model.traverse(o=>{if(o.isMesh){o.geometry=o.geometry.clone();o.material=o.material.clone();for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(o.material[key])o.material[key]=o.material[key].clone();}});
  candidate.setMode('stand');const bones={};model.traverse(o=>{if(o.isBone)bones[o.name]=o;});
- closeRacketHand(model);applySculptKit(model,look);
+ closeRacketHand(model);const setSupportGrip=createSupportGrip(model);applySculptKit(model,look);
  const racket=new T.Group();racket.name='Racket';root.add(racket);
  const equipment=new T.Group();equipment.position.copy(gripOffset);racket.add(equipment);
  const supportGrip=new T.Object3D();supportGrip.name='SupportWristTarget';supportGrip.position.set(-.15,.097,0);racket.add(supportGrip);
@@ -132,6 +132,7 @@ export function createTennisPlayer(look={},source){
   // The top hand follows the actual racket frame, not a fixed world-space offset.
   const twoHanded=event?.shot!=='slice'&&event?.shot!=='serve';
   const supportWeight=p.serve?0:active?(back&&twoHanded?1-ease((age-.48)/.37):0):preparation*load;
+  setSupportGrip(supportWeight);
   const supportTarget=supportGrip.position.clone().applyQuaternion(racket.quaternion).add(racket.position);
   left.lerp(supportTarget,supportWeight);
   arm(bones.LeftArm,bones.LeftForeArm,bones.LeftHand,world(left),world(v(.65,.9,.15)));
