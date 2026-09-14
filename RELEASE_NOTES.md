@@ -1,3 +1,10 @@
+## 0.24 - Sculpted player kit customization
+
+- Saved jersey colors tint the sculpt's teal fabric panels while preserving texture detail, skin and trim. Per-instance uniforms and bone-weight masks keep player and rival kits independent.
+- Classic, wide and long racket frames retain the same solved contact point.
+- The sculpted route's creator supports name, jersey and racket options; unavailable skin, hairstyle, hair color and shorts controls are disabled with an explanation. Existing saved choices remain intact for the original player.
+- Hair silhouettes and interchangeable garments still require separate modeled assets; this release adds material customization, not modular clothing.
+
 ## 0.23 - Touch feedback on court
 
 - Added a bounded swipe trail, directional arrow, hold-power ring and shot label at the touch point in both court views. Serve intent turns coral when the target is out; holding alone does not add serve power.

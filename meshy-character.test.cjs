@@ -79,3 +79,14 @@ test('grip corrective closes all finger-weight regions without changing the sour
  for(let i=0;i<sculpt.geometry.attributes.position.count;i++){let weight=0;for(let k=0;k<4;k++)if(indices.has(sculpt.geometry.attributes.skinIndex.getComponent(i,k)))weight+=sculpt.geometry.attributes.skinWeight.getComponent(i,k);if(weight>.95){const point=new T.Vector3().fromBufferAttribute(sculpt.geometry.attributes.position,i).applyMatrix4(sculpt.matrixWorld).applyMatrix4(inverse);assert.ok(point.y<.14,'a fingertip was left extended');}}
  rig.dispose();
 });
+
+test('sculpt kits isolate color uniforms and masks while racket frames retain contact',async()=>{
+ const {createTennisPlayer}=await import('./meshy-tennis.js'),T=await import('./vendor/three.module.min.js'),src=await assets();
+ const rigs=['classic','power','control'].map((frame,i)=>createTennisPlayer({shirt:['#f37968','#778dff','#f4eee1'][i],frame},src));
+ const shaders=[];
+ for(const rig of rigs){let mesh;rig.root.traverse(o=>{if(o.isSkinnedMesh)mesh=o;});const mask=mesh.geometry.attributes.kitMask.array;assert.ok(mask.some(v=>v>.95));assert.ok(mask.some(v=>v===0));assert.ok([...mask].every(v=>Number.isFinite(v)&&v>=0&&v<1.002));
+ const shader={uniforms:{},vertexShader:'#include <begin_vertex>',fragmentShader:'#include <map_fragment>'};mesh.material.onBeforeCompile(shader);shaders.push(shader);
+ const point=new T.Vector3(-.42,1.38,.3);rig.pose({x:.5,y:.5,near:false},0,0,{time:0,shot:'flat',point});assert.ok(rig.root.getObjectByName('RacketContact').getWorldPosition(new T.Vector3()).distanceTo(point)<.025);rig.dispose();}
+ assert.notEqual(shaders[0].uniforms.kitColor.value,shaders[1].uniforms.kitColor.value);assert.notEqual(shaders[0].uniforms.kitColor.value.getHex(),shaders[1].uniforms.kitColor.value.getHex());
+ src.character.scene.traverse(o=>{if(o.isMesh)assert.equal(o.geometry.attributes.kitMask,undefined);});
+});

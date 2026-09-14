@@ -1,6 +1,7 @@
 import * as T from './vendor/three.module.min.js';
 import {createCharacterCandidate,loadCharacterCandidate} from './meshy-character.js';
 export {loadCharacterCandidate};
+import {applySculptKit} from './sculpt-kit.js';
 import {readyPose,strokes,sampleServe} from './tennis-motion.js';
 import {closeRacketHand,gripOffset,handGripRotation} from './grip-corrective.js?v=0.22.1';
 const v=(x,y,z)=>new T.Vector3(x,y,z),clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
@@ -31,16 +32,19 @@ export function createTennisPlayer(look={},source){
  // Each court/portrait instance owns the resources disposed by the renderer.
  model.traverse(o=>{if(o.isMesh){o.geometry=o.geometry.clone();o.material=o.material.clone();for(const key of ['map','normalMap','roughnessMap','metalnessMap'])if(o.material[key])o.material[key]=o.material[key].clone();}});
  candidate.setMode('stand');const bones={};model.traverse(o=>{if(o.isBone)bones[o.name]=o;});
- closeRacketHand(model);
+ closeRacketHand(model);applySculptKit(model,look);
  const racket=new T.Group();racket.name='Racket';root.add(racket);
  const equipment=new T.Group();equipment.position.copy(gripOffset);racket.add(equipment);
  const material=new T.MeshStandardMaterial({color:look.racket||'#c8ef66',metalness:.25,roughness:.4});
- const rim=new T.Mesh(new T.TorusGeometry(.16,.013,8,40),material);rim.position.y=.38;rim.scale.y=1.3;equipment.add(rim);
+ const frameWidth=look.frame==='power'?1.16:look.frame==='control'?.9:1,frameHeight=look.frame==='control'?1.08:1;
+ const head=new T.Group();head.position.y=.38;head.scale.set(frameWidth,frameHeight,1);equipment.add(head);
+ const rim=new T.Mesh(new T.TorusGeometry(.16,.013,8,40),material);rim.scale.y=1.3;head.add(rim);
  const contact=new T.Object3D();contact.name='RacketContact';contact.position.y=.38;equipment.add(contact);
  const grip=new T.Mesh(new T.CylinderGeometry(.018,.021,.20,12),new T.MeshStandardMaterial({color:'#132432'}));grip.position.y=.03;equipment.add(grip);
  for(const sign of [-1,1]){const shaft=new T.Mesh(new T.CylinderGeometry(.009,.009,.18,8),material);shaft.position.set(sign*.04,.19,0);shaft.rotation.z=-sign*.45;equipment.add(shaft);}
  const points=[];for(let i=-5;i<=5;i++){const x=i*.026,y=Math.sqrt(.16*.16-x*x)*1.3;points.push(v(x,.38-y,0),v(x,.38+y,0));const yy=i*.034,xx=Math.sqrt(.16*.16-(yy/1.3)**2);points.push(v(-xx,.38+yy,0),v(xx,.38+yy,0));}
- equipment.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(points),new T.LineBasicMaterial({color:'#edf6e5',transparent:true,opacity:.7})));
+ for(const point of points)point.y-=.38;
+ head.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(points),new T.LineBasicMaterial({color:'#edf6e5',transparent:true,opacity:.7})));
  const feet={Left:{},Right:{}};
  let priorNear=null,priorX=null,stride=0,lastEvent=null,contactTurn=0,turn=0,lastLoad=0,contactLoad=0;
  // Apply torso turns in model space rather than assuming imported bone axes.

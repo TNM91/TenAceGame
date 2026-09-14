@@ -1,5 +1,5 @@
 import * as T from './vendor/three.module.min.js';
-import {loadCharacterCandidate,createTennisPlayer} from './meshy-tennis.js?v=0.22.1';
+import {loadCharacterCandidate,createTennisPlayer} from './meshy-tennis.js?v=0.24';
 const canvas=document.getElementById('stage'),status=document.getElementById('status');
 const scene=new T.Scene();scene.background=new T.Color('#203844');
 scene.add(new T.HemisphereLight('#f5f7ff','#657770',2.1));

@@ -47,3 +47,6 @@ Interaction reference: Apple's Tennis Clash guide, https://apps.apple.com/nz/iph
 The sculpted-player playtest now includes a closed-hand corrective, aligned grip and distinct tennis motion curves in `tennis-motion.js`. The studio adds slow motion, flat/slice shots, a contact-ball visualization and hand inspection. Original GLB bytes are preserved; instance geometry is corrected once on construction, keeping UVs and skin weights.
 
 The generated Meshy serve is still separate. This release uses authored pose curves with runtime contact solving, not a motion-capture library. The player retains a fixed appearance pending modular customization.
+
+### Sculpted kit customization (0.24)
+On `index.html?player=meshy`, use Customize player to save jersey-panel color and racket color/shape. The shader preserves source texture detail and keeps skin and trim untouched. Hair, skin and shorts remain fixed; modular clothing is not implemented.
