@@ -105,9 +105,9 @@ test('incoming ball selects a smooth forehand or backhand preparation on both si
  }
 });
 
-test('exported serve clip binds to the sculpt and supports deterministic paused review',async t=>{
+for(const file of ['player-serve.glb','player-serve-v2.glb','player-footwork.glb'])test(file+' binds to the sculpt and supports deterministic paused review',async t=>{
  const {GLTFLoader}=await import('./vendor/GLTFLoader.js'),{createCharacterCandidate}=await import('./meshy-character.js'),T=await import('./vendor/three.module.min.js');
- const bytes=fs.readFileSync('assets/meshy/player-serve.glb'),motion=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
+ const bytes=fs.readFileSync('assets/meshy/'+file),motion=await new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength),'');
  const src=await assets(),rig=createCharacterCandidate({character:src.character,motion}),hips=rig.root.getObjectByName('Hips'),hand=rig.root.getObjectByName('RightHand'),head=rig.root.getObjectByName('Head');
  assert.ok(rig.duration>2&&rig.duration<5);for(const track of motion.animations[0].tracks)assert.ok(rig.root.getObjectByName(track.name.split('.')[0]),'missing animated joint');
  rig.sample(0);const origin=hips.position.clone(),start=hips.quaternion.clone();let maxTurn=0,maxHandAboveHead=-Infinity;

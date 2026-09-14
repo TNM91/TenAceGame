@@ -1,3 +1,10 @@
+## 0.27 - Replacement motion assessment
+
+- Generated and imported a second serve and lateral-footwork candidate; added a selector for all three raw clips in the animation studio.
+- Serve v2 retains an excessive turn-away. Footwork improves orientation but needs foot-contact and crossover cleanup. Neither replaces match animation.
+- Added a reusable animation-only GLB extraction script and compatibility/scrubbing checks for both new clips.
+- Documented a reference-driven animation brief and the remaining acceptance requirements.
+
 ## Animation asset review / 0.26
 
 - Resolved the Meshy serve export and retained a 135 KB animation-only GLB instead of duplicating its 12 MB character payload.

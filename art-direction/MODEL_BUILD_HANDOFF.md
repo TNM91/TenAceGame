@@ -84,3 +84,16 @@ The current-motion asset was exposed after reloading Meshy, selecting the rigged
 The clip binds to the existing sculpt and runs for 3.033 seconds. Sampling 90 poses measured a maximum hip rotation from the start of 179.61 degrees; visual review shows the player facing away during recovery. It fails the grounded, court-facing serve acceptance requirement. It is available through Generated serve · Review in the studio, with pause, slow motion and scrubbing, and is deliberately excluded from live matches.
 
 Next asset work: a new court-facing serve with no turn-away; a coordinated two-handed backhand and forehand; tennis-specific split-step and shuffle clips. Review raw motion before runtime contact correction. Do not describe this rejected candidate as a finished animation upgrade.
+
+## Replacement motion candidates / 0.27
+Two further Motion Prime jobs were requested at 10 credits each. No subscription purchase.
+
+- `player-serve-v2.glb`: motion `01a09d8c-960e-72cf-a4db-9fb5fd29690a`, 135,240 bytes, 3.033 seconds. Overhead reach improves (right wrist reaches 0.351 m above head joint); maximum hip rotation from start remains 162.42 degrees. Visual recovery still faces away. Not accepted for matches.
+- `player-footwork.glb`: motion `01a09d8e-aec2-7418-a879-f45a78f285d1`, 135,248 bytes, 3.033 seconds. Maximum hip rotation 23.04 degrees. Direction is better, but late crossing/lifted steps are unsuitable as a direct lateral shuffle loop. Requires animation cleanup, stride matching and foot grounding before integration.
+
+Both are available in the studio motion selector. `scripts/extract-motion.py` removes duplicated character payload while preserving animation accessor data and node hierarchy. Source exports remain outside the release assets.
+
+### Next production method
+Use reference-driven motion or a character animator instead of further broad text-only generations. Required references: one complete right-handed serve (toss through recovery), a forehand and two-handed backhand, and a front-view split-step followed by two lateral shuffles each way. Full body including both feet must stay visible.
+
+Acceptance: start/end ready poses with compatible orientation; forward-facing recovery; planted support feet; clear overhead serve contact; no unwanted crossover in shuffle; stable root and editable joint curves. Supply animation-only GLB or FBX on the existing 28-joint Meshy rig, with source frames for contact and foot plants. Integrate contact correction only after the raw clip passes visual review.

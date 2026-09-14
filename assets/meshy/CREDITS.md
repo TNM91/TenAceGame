@@ -13,3 +13,6 @@ The preview clones the skeleton and removes horizontal animation root motion at 
 
 ## Generated serve review
 `player-serve.glb` was exported from the user-owned Meshy rig during the 0.26 review, motion ID `01a09d13-e466-760d-a9a2-42b78250712d`. Generated from the TenAce serve prompt using Motion Prime. Original export included the character; this distribution removes duplicate meshes and textures and preserves the animation tracks and node hierarchy (135,236 bytes). Same original character provenance applies. The clip is for review only, not used in matches.
+
+## Replacement candidates / 0.27
+`player-serve-v2.glb` and `player-footwork.glb` are user-owned Meshy Motion Prime generations on the same rig and original character provenance. Motion IDs and review findings are in `art-direction/MODEL_BUILD_HANDOFF.md`. Export payloads were reduced to animation data using `scripts/extract-motion.py`; no pose curves were modified. Both remain review assets, excluded from live matches.
